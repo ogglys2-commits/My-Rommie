@@ -1,548 +1,125 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Roomie - Finanzas para Parejas</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        sage: { 50: '#F4F7F4', 100: '#E8F0E6', 500: '#7EA172', 600: '#68885E', 700: '#536E4B' },
-                        slateWarm: { 50: '#F8FAFC', 100: '#EDF2F7', 500: '#4A6B82', 600: '#3B576C', 700: '#2D4354' },
-                        creamBg: '#FAF9F6',
-                        coralAlert: '#E07A5F',
-                        coralSoft: '#FDF0ED',
-                    }
-                }
+// Función para obtener tasas en vivo desde el servidor
+async function fetchLiveRates() {
+    try {
+        const response = await fetch('/api/rates/current');
+        const data = await response.json();
+        
+        if (data.success && data.rates) {
+            // Actualizar el campo de la tasa BCV con el valor real en vivo
+            const bcvInput = document.getElementById('exchangeRate');
+            if (bcvInput) {
+                bcvInput.value = data.rates.BCV_USD.toFixed(2);
+                updateAllCalculations(); // Recalcular automáticamente en $ y Bs.
             }
+            showToast(`💱 Tasa BCV actualizada en vivo: ${data.rates.BCV_USD} Bs/$`);
         }
-    </script>
-    <style>
-        body { background-color: #FAF9F6; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        .nav-active { bg-sage-500; text-white; }
-    </style>
-</head>
-<body class="text-slate-800 antialiased min-h-screen pb-12">
+    } catch (error) {
+        console.log("Usando tasa por defecto o guardada previamente.");
+    }
+}
 
-    <!-- TOAST NOTIFICATIONS -->
-    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+// Ejecutar al cargar la página y cada 5 minutos
+window.addEventListener('DOMContentLoaded', () => {
+    fetchLiveRates();
+    setInterval(fetchLiveRates, 300000); // 300,000 ms = 5 minutos
+});<!-- MÓDULO DE LISTA DE MERCADO REUTILIZABLE -->
+<div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+    <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+        <div class="flex items-center gap-2">
+            <i data-lucide="shopping-cart" class="w-5 h-5 text-sage-600"></i>
+            <h2 class="font-bold text-slateWarm-700">Lista de Compras de Mercado</h2>
+        </div>
+        <span class="text-xs bg-sage-50 text-sage-700 font-semibold px-2.5 py-1 rounded-lg" id="marketCheckCount">0 Seleccionados</span>
+    </div>
 
-    <!-- HEADER / NAV GLOBAL PERSISTENTE -->
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            
-            <!-- LOGO CON MENÚ DESPLEGABLE -->
-            <div class="relative">
-                <button onclick="toggleMenu()" class="flex items-center gap-3 p-1.5 rounded-xl hover:bg-gray-100 transition-all">
-                    <div class="bg-sage-500 text-white p-2 rounded-xl shadow-md">
-                        <i data-lucide="menu" class="w-5 h-5"></i>
-                    </div>
-                    <div class="text-left">
-                        <h1 class="font-bold text-lg text-slateWarm-700 leading-none">My Roomie</h1>
-                        <span class="text-[10px] text-gray-400">Menú de Módulos ▼</span>
-                    </div>
-                </button>
+    <!-- Buscador / Agregar ítem no en lista -->
+    <div class="flex gap-2 mb-4">
+        <input type="text" id="customMarketItem" placeholder="➕ ¿Falta algo que no esté en la lista? Escríbelo aquí..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
+        <button onclick="addCustomMarketItem()" class="bg-sage-500 hover:bg-sage-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1">
+            <i data-lucide="plus" class="w-4 h-4"></i> Añadir
+        </button>
+    </div>
 
-                <!-- MENÚ DROPDOWN DE LAS 6 INTERFACES -->
-                <div id="dropdownNav" class="hidden absolute top-14 left-0 w-64 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 p-2 space-y-1">
-                    <button onclick="navigate('mod-1')" class="w-full text-left px-3 py-2 text-xs font-semibold rounded-xl hover:bg-sage-50 text-slateWarm-700 flex items-center gap-2">
-                        <i data-lucide="calculator" class="w-4 h-4 text-sage-600"></i> 1. Aporte Proporcional
-                    </button>
-                    <button onclick="navigate('mod-2')" class="w-full text-left px-3 py-2 text-xs font-semibold rounded-xl hover:bg-sage-50 text-slateWarm-700 flex items-center gap-2">
-                        <i data-lucide="coins" class="w-4 h-4 text-slateWarm-500"></i> 2. Multimoneda & Tasas
-                    </button>
-                    <button onclick="navigate('mod-3')" class="w-full text-left px-3 py-2 text-xs font-semibold rounded-xl hover:bg-sage-50 text-slateWarm-700 flex items-center gap-2">
-                        <i data-lucide="shopping-cart" class="w-4 h-4 text-sage-600"></i> 3. Lista de Mercado & Inventario
-                    </button>
-                    <button onclick="navigate('mod-4')" class="w-full text-left px-3 py-2 text-xs font-semibold rounded-xl hover:bg-sage-50 text-slateWarm-700 flex items-center gap-2">
-                        <i data-lucide="plus-circle" class="w-4 h-4 text-coralAlert"></i> 4. Registro & Categorías
-                    </button>
-                    <button onclick="navigate('mod-5')" class="w-full text-left px-3 py-2 text-xs font-semibold rounded-xl hover:bg-sage-50 text-slateWarm-700 flex items-center gap-2">
-                        <i data-lucide="history" class="w-4 h-4 text-slateWarm-500"></i> 5. Historial & Reportes
-                    </button>
-                    <button onclick="navigate('mod-6')" class="w-full text-left px-3 py-2 text-xs font-semibold rounded-xl hover:bg-sage-50 text-slateWarm-700 flex items-center gap-2">
-                        <i data-lucide="credit-card" class="w-4 h-4 text-coralAlert"></i> 6. Plan de Créditos
-                    </button>
-                </div>
-            </div>
+    <!-- Categorías Rápidas con Checkboxes -->
+    <div class="space-y-4 max-h-[300px] overflow-y-auto pr-1" id="marketListContainer">
+        <!-- Generado dinámicamente -->
+    </div>
 
-            <!-- CONTROLES DEL HEADER: TASA, MONEDA SELECCIONADA Y SALIR -->
-            <div class="flex items-center gap-3">
-                <div class="hidden sm:flex items-center gap-2 bg-slateWarm-50 border border-slateWarm-100 px-3 py-1.5 rounded-xl text-xs text-slateWarm-600 font-medium">
-                    <span>Tasa:</span>
-                    <strong id="activeRateLabel">36.50 Bs/$</strong>
-                </div>
+    <!-- Botón para registrar la compra total de los ítems seleccionados -->
+    <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+        <span class="text-xs text-gray-500">Selecciona lo que vas a comprar para armar el gasto rápido.</span>
+        <button onclick="registerSelectedMarketItems()" class="bg-slateWarm-600 hover:bg-slateWarm-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-sm">
+            <i data-lucide="check-square" class="w-4 h-4"></i> Cargar a Gastos del Mes
+        </button>
+    </div>
+</div>// Lista base de artículos habituales
+const defaultMarketList = [
+    { category: "🥩 Proteínas y Carnes", items: ["Pollo (Entero/Pechuga)", "Carne molida / para mechar", "Chuleta / Cerdo", "Pescado", "Huevos"] },
+    { category: "🥬 Frutas y Verduras", items: ["Tomate", "Cebolla", "Papas", "Plátanos", "Aguacate", "Ajo", "Frutas variadas"] },
+    { category: "🌾 Víveres y Despensa", items: ["Harina PAN", "Arroz", "Pasta", "Aceite", "Café", "Azúcar / Endulzante", "Mano de queso / Queso duro", "Leche"] },
+    { category: "🧴 Limpieza e Higiene", items: ["Jabón de ropa", "Lavaplatos", "Papel higiénico", "Desinfectante", "Champú / Acondicionador"] }
+];
 
-                <!-- SELECTOR DE MONEDA DE VISUALIZACIÓN -->
-                <select id="currencyView" onchange="updateAllCalculations()" class="bg-gray-100 border border-gray-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slateWarm-700 focus:outline-none">
-                    <option value="USD">USD ($)</option>
-                    <option value="BS">Bs (VES)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="USDT">USDT</option>
-                </select>
+let currentMarketItems = JSON.parse(localStorage.getItem('myroomie_market_items')) || defaultMarketList;
 
-                <!-- BOTÓN SALIR / CERRAR SESIÓN -->
-                <button onclick="logout()" class="flex items-center gap-1.5 bg-coralSoft text-coralAlert border border-coralAlert px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-coralAlert hover:text-white transition-all" title="Cerrar Sesión">
-                    <i data-lucide="log-out" class="w-4 h-4"></i>
-                    <span class="hidden md:inline">Salir</span>
-                </button>
+function renderMarketList() {
+    const container = document.getElementById('marketListContainer');
+    if (!container) return;
+
+    container.innerHTML = currentMarketItems.map((cat, catIdx) => `
+        <div class="bg-gray-50/70 p-3 rounded-xl border border-gray-100">
+            <h4 class="font-bold text-xs text-slateWarm-700 mb-2">${cat.category}</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                ${cat.items.map((item, itemIdx) => `
+                    <label class="flex items-center gap-2 text-xs text-gray-700 bg-white p-2 rounded-lg border border-gray-200 cursor-pointer hover:border-sage-500 transition-colors">
+                        <input type="checkbox" data-item="${item}" class="market-checkbox rounded text-sage-600 focus:ring-sage-500" onchange="updateMarketCount()">
+                        <span class="truncate">${item}</span>
+                    </label>
+                `).join('')}
             </div>
         </div>
-    </header>
+    `).join('');
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+    lucide.createIcons();
+}
 
-        <!-- RESUMEN PERSISTENTE DE BALANCE -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
-                <div>
-                    <p class="text-[10px] text-gray-400 font-bold uppercase">Ingresos Totales</p>
-                    <h3 class="text-xl font-bold text-slateWarm-700" id="topKpiIncome">$0.00</h3>
-                </div>
-                <div class="bg-sage-50 text-sage-600 p-2.5 rounded-xl"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
-            </div>
+function updateMarketCount() {
+    const checked = document.querySelectorAll('.market-checkbox:checked').length;
+    document.getElementById('marketCheckCount').innerText = `${checked} Seleccionados`;
+}
 
-            <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
-                <div>
-                    <p class="text-[10px] text-gray-400 font-bold uppercase">Gastos Totales</p>
-                    <h3 class="text-xl font-bold text-coralAlert" id="topKpiExpenses">$0.00</h3>
-                </div>
-                <div class="bg-coralSoft text-coralAlert p-2.5 rounded-xl"><i data-lucide="trending-down" class="w-5 h-5"></i></div>
-            </div>
+function addCustomMarketItem() {
+    const input = document.getElementById('customMarketItem');
+    const val = input.value.trim();
+    if (!val) return;
 
-            <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
-                <div>
-                    <p class="text-[10px] text-gray-400 font-bold uppercase">Balance Disponible</p>
-                    <h3 class="text-xl font-bold text-slateWarm-600" id="topKpiBalance">$0.00</h3>
-                </div>
-                <div class="bg-slateWarm-50 text-slateWarm-600 p-2.5 rounded-xl"><i data-lucide="wallet" class="w-5 h-5"></i></div>
-            </div>
-        </div>
+    // Agregar a la categoría "Otros / Varios"
+    let otrosCat = currentMarketItems.find(c => c.category.includes("Otros"));
+    if (!otrosCat) {
+        otrosCat = { category: "📦 Personalizados / Varios", items: [] };
+        currentMarketItems.push(otrosCat);
+    }
+    otrosCat.items.push(val);
+    
+    localStorage.setItem('myroomie_market_items', JSON.stringify(currentMarketItems));
+    input.value = '';
+    renderMarketList();
+    showToast(`" ${val} " agregado a la lista de mercado`);
+}
 
-        <!-- ================= INTERFAZ 1: APORTE PROPORCIONAL ================= -->
-        <section id="mod-1" class="app-module space-y-6">
-            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <h2 class="font-bold text-slateWarm-700 text-base mb-1 flex items-center gap-2">
-                    <i data-lucide="calculator" class="w-5 h-5 text-sage-600"></i> Aporte Proporcional según Ingresos Netos
-                </h2>
-                <p class="text-xs text-gray-400 mb-4">Calcula en tiempo real el porcentaje que le corresponde asumir a Danil y Ogglys según sus sueldos.</p>
+function registerSelectedMarketItems() {
+    const selected = Array.from(document.querySelectorAll('.market-checkbox:checked')).map(cb => cb.getAttribute('data-item'));
+    if (selected.length === 0) {
+        showToast('Selecciona al menos un artículo de la lista', 'warning');
+        return;
+    }
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="p-4 bg-slateWarm-50 rounded-xl border border-slateWarm-100">
-                        <span class="text-xs font-bold text-slateWarm-700">Danil</span>
-                        <h3 class="text-lg font-bold text-slateWarm-700" id="pDanilPct">50%</h3>
-                        <p class="text-xs text-gray-500">Ingreso: <span id="pDanilInc" class="font-bold">$0.00</span></p>
-                    </div>
-
-                    <div class="p-4 bg-slateWarm-50 rounded-xl border border-slateWarm-100">
-                        <span class="text-xs font-bold text-slateWarm-700">Ogglys</span>
-                        <h3 class="text-lg font-bold text-slateWarm-700" id="pOgglysPct">50%</h3>
-                        <p class="text-xs text-gray-500">Ingreso: <span id="pOgglysInc" class="font-bold">$0.00</span></p>
-                    </div>
-
-                    <div class="p-4 bg-sage-50 rounded-xl border border-sage-100">
-                        <span class="text-xs font-bold text-sage-700">Total Fondo Combinado</span>
-                        <h3 class="text-xl font-bold text-sage-700" id="pTotalInc">$0.00</h3>
-                    </div>
-                </div>
-
-                <!-- SIMULADOR DE COMPRA COMPARTIDA -->
-                <div class="mt-6 pt-4 border-t border-gray-100">
-                    <h3 class="text-xs font-bold text-slateWarm-700 mb-3">Simulador de Gastos Puntuales (Mercados, Préstamos, Compras)</h3>
-                    <div class="flex flex-col sm:flex-row gap-3 items-center">
-                        <input type="number" id="simAmount" placeholder="Monto del gasto ($)" class="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-slateWarm-700 focus:outline-none w-full sm:w-48">
-                        <button onclick="runSimulation()" class="bg-sage-500 text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-sage-600 transition-all w-full sm:w-auto">Calcular Desglose</button>
-                    </div>
-                    <div id="simResult" class="mt-3 text-xs font-medium text-slateWarm-600 hidden bg-gray-50 p-3 rounded-xl"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= INTERFAZ 2: MULTIMONEDA & TASAS ================= -->
-        <section id="mod-2" class="app-module hidden space-y-6">
-            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <h2 class="font-bold text-slateWarm-700 text-base mb-1 flex items-center gap-2">
-                    <i data-lucide="coins" class="w-5 h-5 text-slateWarm-500"></i> Motor Multimoneda & Tasas en Vivo (Estilo Rial App)
-                </h2>
-                <p class="text-xs text-gray-400 mb-4">Manejo de referencias BCV, Binance P2P (USDT) y promedio automático.</p>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                        <span class="text-[10px] text-gray-400 font-bold uppercase">BCV Dólar</span>
-                        <h3 class="text-lg font-bold text-slateWarm-700" id="rateBcvUsd">36.50 Bs</h3>
-                    </div>
-
-                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                        <span class="text-[10px] text-gray-400 font-bold uppercase">BCV Euro</span>
-                        <h3 class="text-lg font-bold text-slateWarm-700" id="rateBcvEur">39.80 Bs</h3>
-                    </div>
-
-                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                        <span class="text-[10px] text-gray-400 font-bold uppercase">Binance USDT</span>
-                        <h3 class="text-lg font-bold text-slateWarm-700" id="rateBinanceUsdt">37.20 Bs</h3>
-                    </div>
-
-                    <div class="p-4 bg-sage-50 rounded-xl border border-sage-200">
-                        <span class="text-[10px] text-sage-700 font-bold uppercase">Promedio BCV/Binance</span>
-                        <h3 class="text-lg font-bold text-sage-700" id="rateAverage">36.85 Bs</h3>
-                    </div>
-                </div>
-
-                <div class="mt-6 flex gap-3">
-                    <button onclick="fetchLiveRates()" class="bg-slateWarm-500 text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-slateWarm-600 transition-all flex items-center gap-2">
-                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Actualizar Tasas en Vivo
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= INTERFAZ 3: LISTA DE MERCADO & PREDICTOR ================= -->
-        <section id="mod-3" class="app-module hidden space-y-6">
-            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <h2 class="font-bold text-slateWarm-700 text-base mb-1 flex items-center gap-2">
-                    <i data-lucide="shopping-cart" class="w-5 h-5 text-sage-600"></i> Lista de Mercado & Predictor de Reabastecimiento
-                </h2>
-                <p class="text-xs text-gray-400 mb-4">Modifica los productos requeridos. El sistema calculará el ritmo de consumo y recordará cuándo volver a comprar.</p>
-
-                <!-- AGREGAR ITEM A LA LISTA -->
-                <div class="flex gap-2 mb-4">
-                    <input type="text" id="marketItemInput" placeholder="Nombre del producto (ej: Leche, Harina)" class="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none flex-1">
-                    <button onclick="addMarketItem()" class="bg-sage-500 text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-sage-600 transition-all">+ Agregar Item</button>
-                </div>
-
-                <!-- LISTA EDITABLE -->
-                <ul id="marketListContainer" class="divide-y divide-gray-100 text-xs"></ul>
-            </div>
-        </section>
-
-        <!-- ================= INTERFAZ 4: REGISTRO DE MOVIMIENTOS & CATEGORÍAS ================= -->
-        <section id="mod-4" class="app-module hidden space-y-6">
-            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <h2 class="font-bold text-slateWarm-700 text-base mb-1 flex items-center gap-2">
-                    <i data-lucide="plus-circle" class="w-5 h-5 text-coralAlert"></i> Registro de Ingresos y Gastos
-                </h2>
-
-                <form id="txForm" onsubmit="handleNewTx(event)" class="space-y-4 max-w-xl">
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button" id="btnTypeExp" onclick="setTxType('expense')" class="py-2 text-xs font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert">💸 Gasto</button>
-                        <button type="button" id="btnTypeInc" onclick="setTxType('income')" class="py-2 text-xs font-bold rounded-xl border border-gray-200 text-gray-500">💰 Ingreso</button>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Usuario</label>
-                            <select id="txUser" class="w-full bg-gray-50 border rounded-xl px-3 py-2 text-xs">
-                                <option value="Danil">Danil</option>
-                                <option value="Ogglys">Ogglys</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Ámbito</label>
-                            <select id="txScope" class="w-full bg-gray-50 border rounded-xl px-3 py-2 text-xs">
-                                <option value="Pareja">👥 Fondo Pareja</option>
-                                <option value="Individual">👤 Individual</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-2">
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Monto</label>
-                            <input type="number" id="txAmount" step="0.01" required placeholder="0.00" class="w-full bg-gray-50 border rounded-xl px-3 py-2 text-xs font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Moneda</label>
-                            <select id="txCurrency" class="w-full bg-gray-50 border rounded-xl px-3 py-2 text-xs">
-                                <option value="USD">USD ($)</option>
-                                <option value="BS">Bs (VES)</option>
-                                <option value="EUR">EUR (€)</option>
-                                <option value="USDT">USDT</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Semana</label>
-                            <select id="txWeek" class="w-full bg-gray-50 border rounded-xl px-3 py-2 text-xs">
-                                <option value="Semana 1">Semana 1</option>
-                                <option value="Semana 2">Semana 2</option>
-                                <option value="Semana 3">Semana 3</option>
-                                <option value="Semana 4">Semana 4</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-600 mb-1">Descripción</label>
-                        <input type="text" id="txDesc" required placeholder="Ej: Compra de Mercado" class="w-full bg-gray-50 border rounded-xl px-3 py-2 text-xs">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Categoría</label>
-                            <select id="txCategory" class="w-full bg-gray-50 border rounded-xl px-3 py-2 text-xs">
-                                <option value="🛒 Mercado">🛒 Mercado</option>
-                                <option value="🏠 Alquiler">🏠 Alquiler</option>
-                                <option value="⚡ Servicios">⚡ Servicios</option>
-                                <option value="🚗 Transporte">🚗 Transporte</option>
-                                <option value="🍕 Salidas">🍕 Salidas</option>
-                                <option value="💊 Salud">💊 Salud</option>
-                                <option value="📦 Otros">📦 Otros</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Fecha</label>
-                            <input type="date" id="txDate" required class="w-full bg-gray-50 border rounded-xl px-3 py-2 text-xs">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="w-full bg-sage-500 text-white text-xs font-bold py-2.5 rounded-xl shadow-md">Guardar Movimiento</button>
-                </form>
-            </div>
-        </section>
-
-        <!-- ================= INTERFAZ 5: HISTORIAL & REPORTES ================= -->
-        <section id="mod-5" class="app-module hidden space-y-6">
-            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <h2 class="font-bold text-slateWarm-700 text-base mb-4 flex items-center gap-2">
-                    <i data-lucide="history" class="w-5 h-5 text-slateWarm-500"></i> Historial Completo de Transacciones
-                </h2>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-gray-50 text-gray-400 uppercase font-semibold">
-                            <tr>
-                                <th class="py-2.5 px-3">Fecha / Concepto</th>
-                                <th class="py-2.5 px-3">Usuario</th>
-                                <th class="py-2.5 px-3">Categoría</th>
-                                <th class="py-2.5 px-3">Monto ($ USD)</th>
-                                <th class="py-2.5 px-3 text-right">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="histTableBody" class="divide-y divide-gray-100 font-medium"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= INTERFAZ 6: PLAN DE CRÉDITOS ================= -->
-        <section id="mod-6" class="app-module hidden space-y-6">
-            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <h2 class="font-bold text-slateWarm-700 text-base mb-1 flex items-center gap-2">
-                    <i data-lucide="credit-card" class="w-5 h-5 text-coralAlert"></i> Plan de Amortización de Créditos & Préstamos
-                </h2>
-                <p class="text-xs text-gray-400 mb-4">Calcula el plan de pago óptimo sin sobrepasar la capacidad de ahorro libre de la pareja.</p>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-600 mb-1">Monto del Préstamo ($ USD)</label>
-                        <input type="number" id="creditAmount" placeholder="400.00" class="w-full bg-gray-50 border rounded-xl px-3 py-2 text-xs font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-600 mb-1">Plazo de Pago (Meses)</label>
-                        <input type="number" id="creditMonths" value="3" min="1" class="w-full bg-gray-50 border rounded-xl px-3 py-2 text-xs font-bold">
-                    </div>
-                    <div class="flex items-end">
-                        <button onclick="calculateCreditPlan()" class="w-full bg-coralAlert text-white text-xs font-bold py-2 rounded-xl shadow-md">Generar Plan de Pagos</button>
-                    </div>
-                </div>
-
-                <div id="creditPlanResult" class="hidden space-y-3 p-4 bg-gray-50 rounded-2xl border border-gray-200"></div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- JS Y LÓGICA SPA -->
-    <script>
-        let currentTxType = 'expense';
-        let activeRate = 36.50;
-        let transactions = JSON.parse(localStorage.getItem('myroomie_f5_tx') || '[]');
-        let marketList = JSON.parse(localStorage.getItem('myroomie_f5_market') || '[{"id":1,"name":"Leche","status":"pendiente"},{"id":2,"name":"Harina","status":"pendiente"}]');
-
-        function init() {
-            document.getElementById('txDate').valueAsDate = new Date();
-            lucide.createIcons();
-            updateAllCalculations();
-            renderMarketList();
-        }
-
-        // CONTROL DE NAVEGACIÓN SPA
-        function navigate(moduleId) {
-            document.querySelectorAll('.app-module').forEach(m => m.classList.add('hidden'));
-            document.getElementById(moduleId).classList.remove('hidden');
-            document.getElementById('dropdownNav').classList.add('hidden');
-        }
-
-        function toggleMenu() {
-            document.getElementById('dropdownNav').classList.toggle('hidden');
-        }
-
-        function setTxType(t) {
-            currentTxType = t;
-            document.getElementById('btnTypeExp').className = t === 'expense' ? 'py-2 text-xs font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert' : 'py-2 text-xs font-bold rounded-xl border border-gray-200 text-gray-500';
-            document.getElementById('btnTypeInc').className = t === 'income' ? 'py-2 text-xs font-bold rounded-xl border bg-sage-50 text-sage-700 border-sage-500' : 'py-2 text-xs font-bold rounded-xl border border-gray-200 text-gray-500';
-        }
-
-        function handleNewTx(e) {
-            e.preventDefault();
-            const rawAmount = parseFloat(document.getElementById('txAmount').value);
-            const curr = document.getElementById('txCurrency').value;
-            let usdAmount = rawAmount;
-
-            if (curr === 'BS') usdAmount = rawAmount / activeRate;
-
-            const newTx = {
-                id: Date.now(),
-                user: document.getElementById('txUser').value,
-                type: currentTxType,
-                scope: document.getElementById('txScope').value,
-                amountUSD: usdAmount,
-                description: document.getElementById('txDesc').value,
-                category: document.getElementById('txCategory').value,
-                date: document.getElementById('txDate').value
-            };
-
-            transactions.unshift(newTx);
-            localStorage.setItem('myroomie_f5_tx', JSON.stringify(transactions));
-            updateAllCalculations();
-            showToast('Movimiento registrado con éxito');
-            document.getElementById('txForm').reset();
-            document.getElementById('txDate').valueAsDate = new Date();
-        }
-
-        function updateAllCalculations() {
-            let totalInc = 0, totalExp = 0, danilInc = 0, ogglysInc = 0;
-
-            transactions.forEach(t => {
-                if (t.type === 'income') {
-                    totalInc += t.amountUSD;
-                    if (t.user === 'Danil') danilInc += t.amountUSD;
-                    if (t.user === 'Ogglys') ogglysInc += t.amountUSD;
-                }
-                if (t.type === 'expense') totalExp += t.amountUSD;
-            });
-
-            const bal = totalInc - totalExp;
-
-            document.getElementById('topKpiIncome').innerText = `$${totalInc.toFixed(2)}`;
-            document.getElementById('topKpiExpenses').innerText = `$${totalExp.toFixed(2)}`;
-            document.getElementById('topKpiBalance').innerText = `$${bal.toFixed(2)}`;
-
-            // Proporcional
-            const pairInc = danilInc + ogglysInc;
-            const danilPct = pairInc > 0 ? (danilInc / pairInc) * 100 : 50;
-            const ogglysPct = pairInc > 0 ? (ogglysInc / pairInc) * 100 : 50;
-
-            document.getElementById('pDanilPct').innerText = `${danilPct.toFixed(1)}%`;
-            document.getElementById('pDanilInc').innerText = `$${danilInc.toFixed(2)}`;
-            document.getElementById('pOgglysPct').innerText = `${ogglysPct.toFixed(1)}%`;
-            document.getElementById('pOgglysInc').innerText = `$${ogglysInc.toFixed(2)}`;
-            document.getElementById('pTotalInc').innerText = `$${pairInc.toFixed(2)}`;
-
-            renderHistory();
-        }
-
-        function runSimulation() {
-            const amt = parseFloat(document.getElementById('simAmount').value);
-            if (isNaN(amt) || amt <= 0) return;
-
-            const danilInc = transactions.filter(t => t.type==='income' && t.user==='Danil').reduce((s,t) => s+t.amountUSD, 0);
-            const ogglysInc = transactions.filter(t => t.type==='income' && t.user==='Ogglys').reduce((s,t) => s+t.amountUSD, 0);
-            const tot = danilInc + ogglysInc;
-
-            const dShare = tot > 0 ? (amt * (danilInc / tot)) : amt / 2;
-            const oShare = tot > 0 ? (amt * (ogglysInc / tot)) : amt / 2;
-
-            const res = document.getElementById('simResult');
-            res.innerHTML = `Para un gasto de <strong>$${amt.toFixed(2)}</strong>:<br>• Danil paga: <strong>$${dShare.toFixed(2)}</strong><br>• Ogglys paga: <strong>$${oShare.toFixed(2)}</strong>`;
-            res.classList.remove('hidden');
-        }
-
-        function renderHistory() {
-            const tbody = document.getElementById('histTableBody');
-            tbody.innerHTML = transactions.map(t => `
-                <tr class="hover:bg-gray-50">
-                    <td class="py-2.5 px-3"><strong>${t.description}</strong><br><span class="text-[10px] text-gray-400">${t.date}</span></td>
-                    <td class="py-2.5 px-3">${t.user} (${t.scope})</td>
-                    <td class="py-2.5 px-3">${t.category}</td>
-                    <td class="py-2.5 px-3 font-bold ${t.type==='income'?'text-sage-600':'text-coralAlert'}">$${t.amountUSD.toFixed(2)}</td>
-                    <td class="py-2.5 px-3 text-right"><button onclick="deleteTx(${t.id})" class="text-gray-300 hover:text-coralAlert"><i data-lucide="trash" class="w-4 h-4"></i></button></td>
-                </tr>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        function deleteTx(id) {
-            transactions = transactions.filter(t => t.id !== id);
-            localStorage.setItem('myroomie_f5_tx', JSON.stringify(transactions));
-            updateAllCalculations();
-        }
-
-        // MERCADO & PREDICTOR
-        function renderMarketList() {
-            const c = document.getElementById('marketListContainer');
-            c.innerHTML = marketList.map(item => `
-                <li class="py-2 flex items-center justify-between">
-                    <span class="font-medium text-slateWarm-700">${item.name}</span>
-                    <button onclick="removeMarketItem(${item.id})" class="text-coralAlert hover:underline text-[11px]">Eliminar</button>
-                </li>
-            `).join('');
-        }
-
-        function addMarketItem() {
-            const input = document.getElementById('marketItemInput');
-            if (!input.value.trim()) return;
-            marketList.push({ id: Date.now(), name: input.value.trim(), status: 'pendiente' });
-            localStorage.setItem('myroomie_f5_market', JSON.stringify(marketList));
-            input.value = '';
-            renderMarketList();
-        }
-
-        function removeMarketItem(id) {
-            marketList = marketList.filter(i => i.id !== id);
-            localStorage.setItem('myroomie_f5_market', JSON.stringify(marketList));
-            renderMarketList();
-        }
-
-        // CRÉDITOS Y CERO MARGEN DE ERROR
-        function calculateCreditPlan() {
-            const amt = parseFloat(document.getElementById('creditAmount').value);
-            const months = parseInt(document.getElementById('creditMonths').value);
-            if (isNaN(amt) || isNaN(months) || months <= 0) return;
-
-            const monthlyFee = amt / months;
-            const res = document.getElementById('creditPlanResult');
-            res.innerHTML = `
-                <h4 class="font-bold text-xs text-slateWarm-700">Plan de Amortización para $${amt.toFixed(2)}</h4>
-                <p class="text-xs text-gray-600">Cuota Mensual Estimada: <strong>$${monthlyFee.toFixed(2)}/mes</strong> ($${(monthlyFee/4).toFixed(2)}/semana).</p>
-            `;
-            res.classList.remove('hidden');
-        }
-
-        function logout() {
-            if (confirm('¿Deseas cerrar la sesión activa?')) {
-                showToast('Sesión cerrada correctamente');
-                setTimeout(() => location.reload(), 800);
-            }
-        }
-
-        function showToast(msg) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = 'bg-slateWarm-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-lg pointer-events-auto';
-            toast.innerText = msg;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        window.onload = init;
-    </script>
-</body>
-</html>
+    const description = `Mercado (${selected.length} ítems: ${selected.slice(0, 3).join(', ')}${selected.length > 3 ? '...' : ''})`;
+    
+    // Auto-llenar el formulario de gastos con el concepto armado
+    document.getElementById('txDescription').value = description;
+    document.getElementById('txCategory').value = '🛒 Mercado';
+    document.getElementById('txAmount').focus();
+    
+    showToast('Ítems cargados en el formulario. Ingresa el monto total pagado.');
+}
