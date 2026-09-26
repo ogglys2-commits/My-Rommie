@@ -1,0 +1,24 @@
+:root {
+  --color-cream: #FAF9F6;
+  --color-sage: #7EA172;
+  --color-slate-warm: #4A6B82;
+  --color-coral: #E07A5F;
+}
+
+body {
+  background-color: var(--color-cream);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.modal-active {
+  display: flex !important;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}

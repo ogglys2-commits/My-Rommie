@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Roomie - Finanzas y Mercado en Pareja</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#7EA172">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sage: { 50: '#F4F7F4', 100: '#E8F0E6', 500: '#7EA172', 600: '#68885E', 700: '#536E4B' },
+                        slateWarm: { 50: '#F8FAFC', 100: '#EDF2F7', 500: '#4A6B82', 600: '#3B576C', 700: '#2D4354' },
+                        creamBg: '#FAF9F6',
+                        coralAlert: '#E07A5F',
+                        coralSoft: '#FDF0ED',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #FAF9F6; font-family: system-ui, -apple-system, sans-serif; }
+        .modal-active { display: flex !important; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen pb-12">
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- MODAL COMPROBANTE -->
+    <div id="imageModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-4 relative shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-gray-100 p-1 rounded-full">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slateWarm-700 mb-3" id="modalTitle">Comprobante</h3>
+            <div class="flex justify-center items-center max-h-[70vh] overflow-hidden rounded-lg bg-gray-50">
+                <img id="modalImg" src="" alt="Comprobante" class="object-contain max-h-[70vh] w-auto">
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-sage-500 text-white p-2 rounded-xl shadow-md">
+                    <i data-lucide="heart-handshake" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-xl text-slateWarm-700 leading-none">My Roomie</h1>
+                    <span class="text-xs text-gray-400">Finanzas en Pareja</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Tasa BCV -->
+                <div class="hidden sm:flex items-center gap-2 bg-slateWarm-50 border border-slateWarm-100 px-3 py-1.5 rounded-xl text-xs font-medium text-slateWarm-600">
+                    <i data-lucide="dollar-sign" class="w-4 h-4 text-sage-600"></i>
+                    <span>Tasa BCV:</span>
+                    <input type="number" id="exchangeRate" value="36.50" step="0.1" class="w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
+                    <span class="text-gray-400">Bs/$</span>
+                </div>
+
+                <!-- SELECTOR DE USUARIO -->
+                <div class="flex items-center bg-gray-100 p-1 rounded-xl">
+                    <button id="btnUser1" onclick="switchUser('Danil')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm">Danil</button>
+                    <button id="btnUser2" onclick="switchUser('Ogglys')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500">Ogglys</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+
+        <!-- APORTE PROPORCIONAL DE INGRESOS Y GASTOS (MODELO EXCEL) -->
+        <section class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="calculator" class="w-5 h-5 text-sage-600"></i>
+                    <h2 class="font-bold text-slateWarm-700">Aporte Proporcional según Ingresos (Modelo Excel)</h2>
+                </div>
+                <span class="text-xs bg-sage-50 text-sage-700 px-2.5 py-1 rounded-lg font-semibold">Cálculo en Vivo</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                <!-- Danil -->
+                <div class="p-4 bg-slateWarm-50 rounded-xl border border-slateWarm-100">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-bold text-slateWarm-700">Danil</span>
+                        <span class="text-xs font-bold text-sage-600" id="propUser1Pct">50%</span>
+                    </div>
+                    <p class="text-lg font-bold text-slateWarm-700" id="propUser1Income">$0.00</p>
+                    <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser1Share">$0.00</span></p>
+                </div>
+
+                <!-- Ogglys -->
+                <div class="p-4 bg-slateWarm-50 rounded-xl border border-slateWarm-100">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-bold text-slateWarm-700">Ogglys</span>
+                        <span class="text-xs font-bold text-sage-600" id="propUser2Pct">50%</span>
+                    </div>
+                    <p class="text-lg font-bold text-slateWarm-700" id="propUser2Income">$0.00</p>
+                    <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser2Share">$0.00</span></p>
+                </div>
+
+                <!-- Fondo Total -->
+                <div class="p-4 bg-sage-50 rounded-xl border border-sage-100">
+                    <span class="text-xs font-bold text-sage-700">Fondo Total Combinado</span>
+                    <p class="text-2xl font-bold text-sage-700 mt-1" id="propTotalIncome">$0.00</p>
+                    <p class="text-[11px] text-sage-600 mt-1">Total Gastos Compartidos: <span class="font-bold" id="propTotalExpenses">$0.00</span></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- KPI RESUMEN GLOBAL -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ingresos Totales</p>
+                    <h3 class="text-2xl font-bold text-slateWarm-700 mt-1" id="kpiIncome">$0.00</h3>
+                    <p class="text-xs text-gray-400 mt-0.5" id="kpiIncomeBs">Bs. 0.00</p>
+                </div>
+                <div class="bg-sage-50 text-sage-600 p-3 rounded-2xl"><i data-lucide="trending-up" class="w-6 h-6"></i></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Gastos Totales</p>
+                    <h3 class="text-2xl font-bold text-coralAlert mt-1" id="kpiExpenses">$0.00</h3>
+                    <p class="text-xs text-gray-400 mt-0.5" id="kpiExpensesBs">Bs. 0.00</p>
+                </div>
+                <div class="bg-coralSoft text-coralAlert p-3 rounded-2xl"><i data-lucide="trending-down" class="w-6 h-6"></i></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Balance Disponible</p>
+                    <h3 class="text-2xl font-bold text-slateWarm-600 mt-1" id="kpiBalance">$0.00</h3>
+                    <p class="text-xs text-gray-400 mt-0.5" id="kpiBalanceBs">Bs. 0.00</p>
+                </div>
+                <div class="bg-slateWarm-50 text-slateWarm-600 p-3 rounded-2xl"><i data-lucide="wallet" class="w-6 h-6"></i></div>
+            </div>
+
+            <div class="bg-gradient-to-br from-slateWarm-500 to-slateWarm-700 text-white p-5 rounded-2xl shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-slateWarm-100 uppercase tracking-wider">Usuario Activo</p>
+                    <h3 class="text-2xl font-bold mt-1" id="activeUserLabel">Danil</h3>
+                    <span class="inline-block mt-1 bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">Perfil Seleccionado</span>
+                </div>
+                <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-sm"><i data-lucide="user" class="w-6 h-6 text-white"></i></div>
+            </div>
+        </div>
+
+        <!-- LISTA COMPLETA DE COMPRAS -->
+        <section class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="shopping-bag" class="w-5 h-5 text-sage-600"></i>
+                    <h2 class="font-bold text-slateWarm-700">Lista Completa de Compras para el Mercado</h2>
+                </div>
+                <button onclick="toggleShoppingList()" class="text-xs bg-sage-50 text-sage-700 px-3 py-1.5 rounded-xl font-bold hover:bg-sage-100 transition-all">
+                    🛒 Abrir/Ocultar Plantilla de Mercado
+                </button>
+            </div>
+
+            <div id="shoppingListContainer" class="hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 text-xs">
+                    
+                    <!-- VERDURAS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-sage-700 border-b pb-1 mb-2">🥬 VERDURAS</h3>
+                        <div class="grid grid-cols-2 gap-1">
+                            <label><input type="checkbox" value="Acelga"> Acelga</label>
+                            <label><input type="checkbox" value="Aguacate"> Aguacate</label>
+                            <label><input type="checkbox" value="Ají dulce"> Ají dulce</label>
+                            <label><input type="checkbox" value="Ajo"> Ajo</label>
+                            <label><input type="checkbox" value="Ajoporro"> Ajoporro</label>
+                            <label><input type="checkbox" value="Albahaca"> Albahaca</label>
+                            <label><input type="checkbox" value="Alcachofa"> Alcachofa</label>
+                            <label><input type="checkbox" value="Apio"> Apio</label>
+                            <label><input type="checkbox" value="Auyama"> Auyama</label>
+                            <label><input type="checkbox" value="Batata"> Batata</label>
+                            <label><input type="checkbox" value="Berenjena"> Berenjena</label>
+                            <label><input type="checkbox" value="Berro"> Berro</label>
+                            <label><input type="checkbox" value="Brócoli"> Brócoli</label>
+                            <label><input type="checkbox" value="Calabacín"> Calabacín</label>
+                            <label><input type="checkbox" value="Cebolla"> Cebolla</label>
+                            <label><input type="checkbox" value="Cebollín"> Cebollín</label>
+                            <label><input type="checkbox" value="Célery"> Célery</label>
+                            <label><input type="checkbox" value="Cilantro"> Cilantro</label>
+                            <label><input type="checkbox" value="Coliflor"> Coliflor</label>
+                            <label><input type="checkbox" value="Espárragos"> Espárragos</label>
+                            <label><input type="checkbox" value="Espinacas"> Espinacas</label>
+                            <label><input type="checkbox" value="Jengibre"> Jengibre</label>
+                            <label><input type="checkbox" value="Hongos"> Hongos</label>
+                            <label><input type="checkbox" value="Maíz"> Maíz</label>
+                            <label><input type="checkbox" value="Lechuga"> Lechuga</label>
+                            <label><input type="checkbox" value="Papa"> Papa</label>
+                            <label><input type="checkbox" value="Pepino"> Pepino</label>
+                            <label><input type="checkbox" value="Perejil"> Perejil</label>
+                            <label><input type="checkbox" value="Pimentón"> Pimentón</label>
+                            <label><input type="checkbox" value="Plátano"> Plátano</label>
+                            <label><input type="checkbox" value="Remolacha"> Remolacha</label>
+                            <label><input type="checkbox" value="Repollo"> Repollo</label>
+                            <label><input type="checkbox" value="Tomate"> Tomate</label>
+                            <label><input type="checkbox" value="Vainitas"> Vainitas</label>
+                            <label><input type="checkbox" value="Yuca"> Yuca</label>
+                            <label><input type="checkbox" value="Zanahoria"> Zanahoria</label>
+                        </div>
+                    </div>
+
+                    <!-- FRUTAS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-coralAlert border-b pb-1 mb-2">🍎 FRUTAS</h3>
+                        <div class="grid grid-cols-2 gap-1">
+                            <label><input type="checkbox" value="Cambur"> Cambur</label>
+                            <label><input type="checkbox" value="Coco"> Coco</label>
+                            <label><input type="checkbox" value="Durazno"> Durazno</label>
+                            <label><input type="checkbox" value="Fresas"> Fresas</label>
+                            <label><input type="checkbox" value="Guanábana"> Guanábana</label>
+                            <label><input type="checkbox" value="Guayaba"> Guayaba</label>
+                            <label><input type="checkbox" value="Kiwi"> Kiwi</label>
+                            <label><input type="checkbox" value="Lechosa"> Lechosa</label>
+                            <label><input type="checkbox" value="Limón"> Limón</label>
+                            <label><input type="checkbox" value="Mandarina"> Mandarina</label>
+                            <label><input type="checkbox" value="Mango"> Mango</label>
+                            <label><input type="checkbox" value="Manzana"> Manzana</label>
+                            <label><input type="checkbox" value="Melón"> Melón</label>
+                            <label><input type="checkbox" value="Moras"> Moras</label>
+                            <label><input type="checkbox" value="Naranja"> Naranja</label>
+                            <label><input type="checkbox" value="Parchita"> Parchita</label>
+                            <label><input type="checkbox" value="Patilla"> Patilla</label>
+                            <label><input type="checkbox" value="Pera"> Pera</label>
+                            <label><input type="checkbox" value="Piña"> Piña</label>
+                            <label><input type="checkbox" value="Uvas"> Uvas</label>
+                        </div>
+                    </div>
+
+                    <!-- ENLATADOS Y VARIADOS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-amber-700 border-b pb-1 mb-2">🥫 ENLATADOS & VARIOS</h3>
+                        <div class="grid grid-cols-2 gap-1">
+                            <label><input type="checkbox" value="Aceitunas"> Aceitunas</label>
+                            <label><input type="checkbox" value="Atún"> Atún</label>
+                            <label><input type="checkbox" value="Guisantes"> Guisantes</label>
+                            <label><input type="checkbox" value="Maíz dulce"> Maíz dulce</label>
+                            <label><input type="checkbox" value="Palmito"> Palmito</label>
+                            <label><input type="checkbox" value="Sardina"> Sardina</label>
+                            <label><input type="checkbox" value="Tomate pelado"> Tomate pelado</label>
+                            <label><input type="checkbox" value="Vegetales mixtos"> Vegetales mixtos</label>
+                            <label><input type="checkbox" value="Aceite de maíz"> Aceite de maíz</label>
+                            <label><input type="checkbox" value="Aceite de oliva"> Aceite de oliva</label>
+                            <label><input type="checkbox" value="Aceite de soya"> Aceite de soya</label>
+                            <label><input type="checkbox" value="Arroz blanco"> Arroz blanco</label>
+                            <label><input type="checkbox" value="Arroz integral"> Arroz integral</label>
+                            <label><input type="checkbox" value="Avena"> Avena</label>
+                            <label><input type="checkbox" value="Azúcar"> Azúcar</label>
+                            <label><input type="checkbox" value="Café"> Café</label>
+                            <label><input type="checkbox" value="Cereales"> Cereales</label>
+                            <label><input type="checkbox" value="Galletas"> Galletas</label>
+                            <label><input type="checkbox" value="Harina de maíz"> Harina de maíz</label>
+                            <label><input type="checkbox" value="Harina de trigo"> Harina de trigo</label>
+                            <label><input type="checkbox" value="Huevos"> Huevos</label>
+                            <label><input type="checkbox" value="Pastas"> Pastas</label>
+                            <label><input type="checkbox" value="Sal"> Sal</label>
+                        </div>
+                    </div>
+
+                    <!-- LÁCTEOS, CHARCUTERÍA Y CARNES -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-slateWarm-600 border-b pb-1 mb-2">🧀 LÁCTEOS, CHARCUTERÍA & CARNES</h3>
+                        <div class="grid grid-cols-2 gap-1">
+                            <label><input type="checkbox" value="Crema de leche"> Crema de leche</label>
+                            <label><input type="checkbox" value="Leche condensada"> Leche condensada</label>
+                            <label><input type="checkbox" value="Leche en polvo"> Leche en polvo</label>
+                            <label><input type="checkbox" value="Leche líquida"> Leche líquida</label>
+                            <label><input type="checkbox" value="Mantequilla"> Mantequilla</label>
+                            <label><input type="checkbox" value="Margarina"> Margarina</label>
+                            <label><input type="checkbox" value="Yogurt"> Yogurt</label>
+                            <label><input type="checkbox" value="Chorizo"> Chorizo</label>
+                            <label><input type="checkbox" value="Jamón de pavo"> Jamón de pavo</label>
+                            <label><input type="checkbox" value="Jamón de pierna"> Jamón de pierna</label>
+                            <label><input type="checkbox" value="Queso amarillo"> Queso amarillo</label>
+                            <label><input type="checkbox" value="Queso blanco"> Queso blanco</label>
+                            <label><input type="checkbox" value="Queso guayanés"> Queso guayanés</label>
+                            <label><input type="checkbox" value="Queso mozzarella"> Queso mozzarella</label>
+                            <label><input type="checkbox" value="Tocineta"> Tocineta</label>
+                            <label><input type="checkbox" value="Cochino"> Cochino</label>
+                            <label><input type="checkbox" value="Pavo"> Pavo</label>
+                            <label><input type="checkbox" value="Pescado"> Pescado</label>
+                            <label><input type="checkbox" value="Pollo"> Pollo</label>
+                            <label><input type="checkbox" value="Res"> Res</label>
+                        </div>
+                    </div>
+
+                    <!-- LIMPIEZA E HIGIENE -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-blue-600 border-b pb-1 mb-2">🧼 LIMPIEZA & HIGIENE</h3>
+                        <div class="grid grid-cols-2 gap-1">
+                            <label><input type="checkbox" value="Cloro"> Cloro</label>
+                            <label><input type="checkbox" value="Desengrasante"> Desengrasante</label>
+                            <label><input type="checkbox" value="Desinfectante"> Desinfectante</label>
+                            <label><input type="checkbox" value="Esponja"> Esponja</label>
+                            <label><input type="checkbox" value="Jabón de lavaplatos"> Jabón lavaplatos</label>
+                            <label><input type="checkbox" value="Jabón de ropa"> Jabón de ropa</label>
+                            <label><input type="checkbox" value="Suavizante"> Suavizante</label>
+                            <label><input type="checkbox" value="Papel higiénico"> Papel higiénico</label>
+                            <label><input type="checkbox" value="Servilletas"> Servilletas</label>
+                            <label><input type="checkbox" value="Acondicionador"> Acondicionador</label>
+                            <label><input type="checkbox" value="Champú"> Champú</label>
+                            <label><input type="checkbox" value="Cepillo dental"> Cepillo dental</label>
+                            <label><input type="checkbox" value="Crema dental"> Crema dental</label>
+                            <label><input type="checkbox" value="Desodorante"> Desodorante</label>
+                            <label><input type="checkbox" value="Jabón de baño"> Jabón de baño</label>
+                            <label><input type="checkbox" value="Toallas sanitarias"> Toallas sanitarias</label>
+                        </div>
+                    </div>
+
+                    <!-- BEBIDAS, DULCES & OTROS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-purple-600 border-b pb-1 mb-2">🥤 BEBIDAS & OTROS</h3>
+                        <div class="grid grid-cols-2 gap-1">
+                            <label><input type="checkbox" value="Agua mineral"> Agua mineral</label>
+                            <label><input type="checkbox" value="Bebidas hidratantes"> Hidratantes</label>
+                            <label><input type="checkbox" value="Jugo"> Jugo</label>
+                            <label><input type="checkbox" value="Refresco"> Refresco</label>
+                            <label><input type="checkbox" value="Chocolate"> Chocolate</label>
+                            <label><input type="checkbox" value="Arequipe"> Arequipe</label>
+                            <label><input type="checkbox" value="Bolsas para basura"> Bolsas basura</label>
+                            <label><input type="checkbox" value="Papel de aluminio"> Papel aluminio</label>
+                            <label><input type="checkbox" value="Comida para mascota"> Comida mascota</label>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t">
+                    <button onclick="clearShoppingList()" class="px-3 py-1.5 text-xs text-coralAlert font-bold underline">Limpiar Selección</button>
+                    <button onclick="convertListToExpense()" class="px-4 py-2 bg-sage-500 text-white rounded-xl text-xs font-bold shadow-md hover:bg-sage-600">
+                        ⚡ Cargar Ítems Seleccionados en el Formulario de Gastos
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- FORMULARIO DE REGISTRO E HISTORIAL -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- FORMULARIO PRINCIPAL MULTIMONEDA -->
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-xs">
+                <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center gap-2 text-sm">
+                    <i data-lucide="plus-circle" class="w-5 h-5 text-sage-600"></i> Registrar Movimiento
+                </h2>
+                <form id="txForm" onsubmit="handleTxSubmit(event)" class="space-y-3">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" id="btnTypeExpense" onclick="setTxType('expense')" class="py-2 font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert">💸 Gasto</button>
+                        <button type="button" id="btnTypeIncome" onclick="setTxType('income')" class="py-2 font-bold rounded-xl border border-gray-200 text-gray-500">💰 Ingreso</button>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">Pertenencia / Ámbito</label>
+                        <select id="txScope" class="w-full p-2 rounded-xl border font-medium">
+                            <option value="Pareja">👥 Fondo Pareja (Compartido)</option>
+                            <option value="Individual">👤 Individual (<span class="currentUserSpan">Danil</span>)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">Monto y Moneda</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <select id="txCurrency" class="col-span-1 p-2 rounded-xl border font-bold">
+                                <option value="USD">$ USD</option>
+                                <option value="BS">Bs. (VES)</option>
+                            </select>
+                            <input type="number" id="txAmount" placeholder="0.00" step="0.01" required class="col-span-2 p-2 rounded-xl border font-bold">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block font-semibold text-gray-600 mb-1">Semana del Mes</label>
+                            <select id="txWeek" class="w-full p-2 rounded-xl border font-medium">
+                                <option value="Semana 1">Semana 1</option>
+                                <option value="Semana 2">Semana 2</option>
+                                <option value="Semana 3">Semana 3</option>
+                                <option value="Semana 4">Semana 4</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-gray-600 mb-1">Fecha</label>
+                            <input type="date" id="txDate" required class="w-full p-2 rounded-xl border">
+                        </div>
+                    </div>
+
+                    <textarea id="txDesc" placeholder="Descripción de la compra o ingreso..." required class="w-full p-2.5 rounded-xl border h-20"></textarea>
+
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">Categoría</label>
+                        <select id="txCategory" class="w-full p-2 rounded-xl border font-medium">
+                            <option value="🛒 Mercado">🛒 Mercado / Alimentación</option>
+                            <option value="🏠 Alquiler">🏠 Alquiler / Vivienda</option>
+                            <option value="⚡ Servicios">⚡ Servicios (Luz, Agua)</option>
+                            <option value="📶 Internet">📶 Internet / Cable</option>
+                            <option value="🚗 Transporte">🚗 Transporte</option>
+                            <option value="📦 Otros">📦 Otros / Varios</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">Comprobante de Pago/Ingreso (Opcional)</label>
+                        <input type="file" id="txImage" accept="image/*" class="w-full text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:bg-sage-50 file:text-sage-700">
+                    </div>
+
+                    <button type="submit" class="w-full bg-sage-500 text-white font-bold py-2.5 rounded-xl shadow-md">Guardar Registro</button>
+                </form>
+            </div>
+
+            <!-- HISTORIAL DE MOVIMIENTOS -->
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2 text-xs flex flex-col justify-between">
+                <div>
+                    <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center justify-between text-sm">
+                        <span>Historial de Movimientos</span>
+                        <span class="text-xs text-gray-400 font-normal" id="txCount">0 Registros</span>
+                    </h2>
+
+                    <div class="overflow-x-auto max-h-[380px]">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 uppercase text-gray-400 font-semibold">
+                                <tr>
+                                    <th class="p-2.5">Concepto</th>
+                                    <th class="p-2.5">Usuario / Ámbito</th>
+                                    <th class="p-2.5">Monto Original</th>
+                                    <th class="p-2.5">Equiv. ($ USD)</th>
+                                    <th class="p-2.5 text-center">Comprobante</th>
+                                    <th class="p-2.5 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="txTableBody" class="divide-y font-medium"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t text-right">
+                    <button onclick="clearAllData()" class="text-xs text-coralAlert hover:underline font-semibold">Restablecer todos los datos</button>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- LÓGICA Y FUNCIONALIDADES -->
+    <script>
+        let activeUser = 'Danil';
+        let currentTxType = 'expense';
+        let user1Name = 'Danil';
+        let user2Name = 'Ogglys';
+        let transactions = JSON.parse(localStorage.getItem('mr_txs') || '[]');
+
+        function toggleShoppingList() {
+            document.getElementById('shoppingListContainer').classList.toggle('hidden');
+        }
+
+        function clearShoppingList() {
+            document.querySelectorAll('#shoppingListContainer input[type="checkbox"]').forEach(cb => cb.checked = false);
+        }
+
+        function convertListToExpense() {
+            const selected = [];
+            document.querySelectorAll('#shoppingListContainer input[type="checkbox"]:checked').forEach(cb => selected.push(cb.value));
+
+            if (selected.length === 0) {
+                showToast('Selecciona al menos un artículo de la lista', 'warning');
+                return;
+            }
+
+            document.getElementById('txDesc').value = `Mercado: ${selected.join(', ')}`;
+            document.getElementById('txCategory').value = '🛒 Mercado';
+            setTxType('expense');
+
+            showToast(`¡${selected.length} artículos agregados al formulario!`);
+            toggleShoppingList();
+            document.getElementById('txAmount').focus();
+        }
+
+        function switchUser(user) {
+            activeUser = user;
+            document.getElementById('activeUserLabel').innerText = user;
+            document.querySelectorAll('.currentUserSpan').forEach(el => el.innerText = user);
+
+            const btn1 = document.getElementById('btnUser1');
+            const btn2 = document.getElementById('btnUser2');
+
+            if (user === user1Name) {
+                btn1.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm";
+                btn2.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500";
+            } else {
+                btn2.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm";
+                btn1.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500";
+            }
+        }
+
+        function setTxType(type) {
+            currentTxType = type;
+            document.getElementById('btnTypeExpense').className = type === 'expense' ? 'py-2 font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert' : 'py-2 font-bold rounded-xl border border-gray-200 text-gray-500';
+            document.getElementById('btnTypeIncome').className = type === 'income' ? 'py-2 font-bold rounded-xl border bg-sage-50 text-sage-700 border-sage-500' : 'py-2 font-bold rounded-xl border border-gray-200 text-gray-500';
+        }
+
+        function handleTxSubmit(e) {
+            e.preventDefault();
+            const desc = document.getElementById('txDesc').value.trim();
+            const rawAmount = parseFloat(document.getElementById('txAmount').value);
+            const currency = document.getElementById('txCurrency').value;
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 36.5;
+            const date = document.getElementById('txDate').value;
+            const scope = document.getElementById('txScope').value;
+            const week = document.getElementById('txWeek').value;
+            const category = document.getElementById('txCategory').value;
+            const fileInput = document.getElementById('txImage');
+
+            if (!desc || isNaN(rawAmount) || rawAmount <= 0) return;
+
+            const amountUSD = currency === 'BS' ? (rawAmount / rate) : rawAmount;
+
+            const save = (imgData = null) => {
+                const tx = { id: Date.now(), user: activeUser, type: currentTxType, scope, week, desc, rawAmount, currency, amountUSD, date, category, img: imgData };
+                transactions.unshift(tx);
+                localStorage.setItem('mr_txs', JSON.stringify(transactions));
+                updateCalculations();
+                showToast(`Registrado: ${desc}`);
+                document.getElementById('txForm').reset();
+                document.getElementById('txDate').valueAsDate = new Date();
+            };
+
+            if (fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (evt) => save(evt.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                save(null);
+            }
+        }
+
+        function updateCalculations() {
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 36.5;
+
+            let totalIncome = 0;
+            let totalExpenses = 0;
+            let user1Income = 0;
+            let user2Income = 0;
+            let sharedExpenses = 0;
+
+            transactions.forEach(t => {
+                if (t.type === 'income') {
+                    totalIncome += t.amountUSD;
+                    if (t.user === user1Name) user1Income += t.amountUSD;
+                    if (t.user === user2Name) user2Income += t.amountUSD;
+                }
+                if (t.type === 'expense') {
+                    totalExpenses += t.amountUSD;
+                    if (t.scope === 'Pareja') sharedExpenses += t.amountUSD;
+                }
+            });
+
+            // REGLA PROPORCIONAL DE APORTES (EXCEL)
+            const totalPairIncome = user1Income + user2Income;
+            let u1Pct = totalPairIncome > 0 ? (user1Income / totalPairIncome) * 100 : 50;
+            let u2Pct = totalPairIncome > 0 ? (user2Income / totalPairIncome) * 100 : 50;
+
+            document.getElementById('propUser1Pct').innerText = `${u1Pct.toFixed(1)}%`;
+            document.getElementById('propUser1Income').innerText = `$${user1Income.toFixed(2)}`;
+            document.getElementById('propUser1Share').innerText = `$${(sharedExpenses * (u1Pct / 100)).toFixed(2)}`;
+
+            document.getElementById('propUser2Pct').innerText = `${u2Pct.toFixed(1)}%`;
+            document.getElementById('propUser2Income').innerText = `$${user2Income.toFixed(2)}`;
+            document.getElementById('propUser2Share').innerText = `$${(sharedExpenses * (u2Pct / 100)).toFixed(2)}`;
+
+            document.getElementById('propTotalIncome').innerText = `$${totalPairIncome.toFixed(2)}`;
+            document.getElementById('propTotalExpenses').innerText = `$${sharedExpenses.toFixed(2)}`;
+
+            const balance = totalIncome - totalExpenses;
+
+            document.getElementById('kpiIncome').innerText = `$${totalIncome.toFixed(2)}`;
+            document.getElementById('kpiIncomeBs').innerText = `Bs. ${(totalIncome * rate).toLocaleString('es-VE', {minimumFractionDigits: 2})}`;
+
+            document.getElementById('kpiExpenses').innerText = `$${totalExpenses.toFixed(2)}`;
+            document.getElementById('kpiExpensesBs').innerText = `Bs. ${(totalExpenses * rate).toLocaleString('es-VE', {minimumFractionDigits: 2})}`;
+
+            document.getElementById('kpiBalance').innerText = `$${balance.toFixed(2)}`;
+            document.getElementById('kpiBalanceBs').innerText = `Bs. ${(balance * rate).toLocaleString('es-VE', {minimumFractionDigits: 2})}`;
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('txTableBody');
+            document.getElementById('txCount').innerText = `${transactions.length} Registros`;
+
+            if (!transactions.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">Sin movimientos registrados.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = transactions.map(t => `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-2.5 font-bold text-slateWarm-700">${t.desc}<br><span class="text-[10px] text-gray-400 font-normal">${t.date} • ${t.category}</span></td>
+                    <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.scope === 'Pareja' ? 'bg-slateWarm-100 text-slateWarm-700' : 'bg-sage-100 text-sage-700'}">${t.user} (${t.scope})</span></td>
+                    <td class="p-2.5 font-semibold text-slateWarm-600">${t.currency === 'BS' ? 'Bs. ' + t.rawAmount.toFixed(2) : '$' + t.rawAmount.toFixed(2)}</td>
+                    <td class="p-2.5 font-bold ${t.type === 'income' ? 'text-sage-600' : 'text-coralAlert'}">${t.type === 'income' ? '+' : '-'}$${t.amountUSD.toFixed(2)}</td>
+                    <td class="p-2.5 text-center">${t.img ? `<button onclick="openModal('${t.img}', '${t.desc}')" class="text-slateWarm-600 underline">Ver Foto</button>` : '-'}</td>
+                    <td class="p-2.5 text-right"><button onclick="deleteTx(${t.id})" class="text-red-400 font-bold">✕</button></td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function deleteTx(id) {
+            transactions = transactions.filter(t => t.id !== id);
+            localStorage.setItem('mr_txs', JSON.stringify(transactions));
+            updateCalculations();
+        }
+
+        function clearAllData() {
+            if (confirm('¿Restablecer datos?')) {
+                transactions = [];
+                localStorage.removeItem('mr_txs');
+                updateCalculations();
+            }
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'bg-slateWarm-700 text-white px-4 py-2 rounded-xl text-xs shadow-lg';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function openModal(img, title) {
+            document.getElementById('modalImg').src = img;
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('imageModal').classList.add('modal-active');
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').classList.remove('modal-active');
+        }
+
+        window.onload = () => {
+            updateCalculations();
+            document.getElementById('txDate').valueAsDate = new Date();
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
