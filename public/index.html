@@ -1,125 +1,580 @@
-// Función para obtener tasas en vivo desde el servidor
-async function fetchLiveRates() {
-    try {
-        const response = await fetch('/api/rates/current');
-        const data = await response.json();
-        
-        if (data.success && data.rates) {
-            // Actualizar el campo de la tasa BCV con el valor real en vivo
-            const bcvInput = document.getElementById('exchangeRate');
-            if (bcvInput) {
-                bcvInput.value = data.rates.BCV_USD.toFixed(2);
-                updateAllCalculations(); // Recalcular automáticamente en $ y Bs.
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Roomie - Finanzas en Pareja</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#7EA172">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sage: { 50: '#F4F7F4', 100: '#E8F0E6', 500: '#7EA172', 600: '#68885E', 700: '#536E4B' },
+                        slateWarm: { 50: '#F8FAFC', 100: '#EDF2F7', 500: '#4A6B82', 600: '#3B576C', 700: '#2D4354' },
+                        creamBg: '#FAF9F6',
+                        coralAlert: '#E07A5F',
+                        coralSoft: '#FDF0ED',
+                    }
+                }
             }
-            showToast(`💱 Tasa BCV actualizada en vivo: ${data.rates.BCV_USD} Bs/$`);
         }
-    } catch (error) {
-        console.log("Usando tasa por defecto o guardada previamente.");
-    }
-}
+    </script>
+    <style>
+        body { background-color: #FAF9F6; font-family: system-ui, -apple-system, sans-serif; }
+        .modal-active { display: flex !important; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen pb-12">
 
-// Ejecutar al cargar la página y cada 5 minutos
-window.addEventListener('DOMContentLoaded', () => {
-    fetchLiveRates();
-    setInterval(fetchLiveRates, 300000); // 300,000 ms = 5 minutos
-});<!-- MÓDULO DE LISTA DE MERCADO REUTILIZABLE -->
-<div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-    <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-        <div class="flex items-center gap-2">
-            <i data-lucide="shopping-cart" class="w-5 h-5 text-sage-600"></i>
-            <h2 class="font-bold text-slateWarm-700">Lista de Compras de Mercado</h2>
-        </div>
-        <span class="text-xs bg-sage-50 text-sage-700 font-semibold px-2.5 py-1 rounded-lg" id="marketCheckCount">0 Seleccionados</span>
-    </div>
+    <!-- TOAST NOTIFICATIONS -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- Buscador / Agregar ítem no en lista -->
-    <div class="flex gap-2 mb-4">
-        <input type="text" id="customMarketItem" placeholder="➕ ¿Falta algo que no esté en la lista? Escríbelo aquí..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
-        <button onclick="addCustomMarketItem()" class="bg-sage-500 hover:bg-sage-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1">
-            <i data-lucide="plus" class="w-4 h-4"></i> Añadir
-        </button>
-    </div>
-
-    <!-- Categorías Rápidas con Checkboxes -->
-    <div class="space-y-4 max-h-[300px] overflow-y-auto pr-1" id="marketListContainer">
-        <!-- Generado dinámicamente -->
-    </div>
-
-    <!-- Botón para registrar la compra total de los ítems seleccionados -->
-    <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-        <span class="text-xs text-gray-500">Selecciona lo que vas a comprar para armar el gasto rápido.</span>
-        <button onclick="registerSelectedMarketItems()" class="bg-slateWarm-600 hover:bg-slateWarm-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-sm">
-            <i data-lucide="check-square" class="w-4 h-4"></i> Cargar a Gastos del Mes
-        </button>
-    </div>
-</div>// Lista base de artículos habituales
-const defaultMarketList = [
-    { category: "🥩 Proteínas y Carnes", items: ["Pollo (Entero/Pechuga)", "Carne molida / para mechar", "Chuleta / Cerdo", "Pescado", "Huevos"] },
-    { category: "🥬 Frutas y Verduras", items: ["Tomate", "Cebolla", "Papas", "Plátanos", "Aguacate", "Ajo", "Frutas variadas"] },
-    { category: "🌾 Víveres y Despensa", items: ["Harina PAN", "Arroz", "Pasta", "Aceite", "Café", "Azúcar / Endulzante", "Mano de queso / Queso duro", "Leche"] },
-    { category: "🧴 Limpieza e Higiene", items: ["Jabón de ropa", "Lavaplatos", "Papel higiénico", "Desinfectante", "Champú / Acondicionador"] }
-];
-
-let currentMarketItems = JSON.parse(localStorage.getItem('myroomie_market_items')) || defaultMarketList;
-
-function renderMarketList() {
-    const container = document.getElementById('marketListContainer');
-    if (!container) return;
-
-    container.innerHTML = currentMarketItems.map((cat, catIdx) => `
-        <div class="bg-gray-50/70 p-3 rounded-xl border border-gray-100">
-            <h4 class="font-bold text-xs text-slateWarm-700 mb-2">${cat.category}</h4>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                ${cat.items.map((item, itemIdx) => `
-                    <label class="flex items-center gap-2 text-xs text-gray-700 bg-white p-2 rounded-lg border border-gray-200 cursor-pointer hover:border-sage-500 transition-colors">
-                        <input type="checkbox" data-item="${item}" class="market-checkbox rounded text-sage-600 focus:ring-sage-500" onchange="updateMarketCount()">
-                        <span class="truncate">${item}</span>
-                    </label>
-                `).join('')}
+    <!-- MODAL COMPROBANTE -->
+    <div id="imageModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-4 relative shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-gray-100 p-1 rounded-full">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slateWarm-700 mb-3" id="modalTitle">Comprobante</h3>
+            <div class="flex justify-center items-center max-h-[70vh] overflow-hidden rounded-lg bg-gray-50">
+                <img id="modalImg" src="" alt="Comprobante" class="object-contain max-h-[70vh] w-auto">
             </div>
         </div>
-    `).join('');
+    </div>
 
-    lucide.createIcons();
-}
+    <!-- HEADER -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-sage-500 text-white p-2 rounded-xl shadow-md">
+                    <i data-lucide="heart-handshake" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-xl text-slateWarm-700 leading-none">My Roomie</h1>
+                    <span class="text-xs text-gray-400">Finanzas en Pareja • Danil & Ogglys</span>
+                </div>
+            </div>
 
-function updateMarketCount() {
-    const checked = document.querySelectorAll('.market-checkbox:checked').length;
-    document.getElementById('marketCheckCount').innerText = `${checked} Seleccionados`;
-}
+            <div class="flex items-center gap-3">
+                <!-- Tasa de Cambio Automática -->
+                <div class="hidden sm:flex items-center gap-2 bg-slateWarm-50 border border-slateWarm-100 px-3 py-1.5 rounded-xl text-xs font-medium text-slateWarm-600">
+                    <i data-lucide="dollar-sign" class="w-4 h-4 text-sage-600"></i>
+                    <span>Tasa BCV:</span>
+                    <input type="number" id="exchangeRate" value="36.50" step="0.1" class="w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
+                    <span class="text-gray-400">Bs/$</span>
+                </div>
 
-function addCustomMarketItem() {
-    const input = document.getElementById('customMarketItem');
-    const val = input.value.trim();
-    if (!val) return;
+                <!-- Selector de Usuarios -->
+                <div class="flex items-center bg-gray-100 p-1 rounded-xl">
+                    <button id="btnUser1" onclick="switchUser('Danil')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm">Danil</button>
+                    <button id="btnUser2" onclick="switchUser('Ogglys')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500">Ogglys</button>
+                </div>
+            </div>
+        </div>
+    </header>
 
-    // Agregar a la categoría "Otros / Varios"
-    let otrosCat = currentMarketItems.find(c => c.category.includes("Otros"));
-    if (!otrosCat) {
-        otrosCat = { category: "📦 Personalizados / Varios", items: [] };
-        currentMarketItems.push(otrosCat);
-    }
-    otrosCat.items.push(val);
-    
-    localStorage.setItem('myroomie_market_items', JSON.stringify(currentMarketItems));
-    input.value = '';
-    renderMarketList();
-    showToast(`" ${val} " agregado a la lista de mercado`);
-}
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
 
-function registerSelectedMarketItems() {
-    const selected = Array.from(document.querySelectorAll('.market-checkbox:checked')).map(cb => cb.getAttribute('data-item'));
-    if (selected.length === 0) {
-        showToast('Selecciona al menos un artículo de la lista', 'warning');
-        return;
-    }
+        <!-- APORTE PROPORCIONAL POR INGRESOS -->
+        <section class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="calculator" class="w-5 h-5 text-sage-600"></i>
+                    <h2 class="font-bold text-slateWarm-700">Aporte Proporcional por Ingresos (Modelo Excel)</h2>
+                </div>
+                <span class="text-xs bg-sage-50 text-sage-700 px-2.5 py-1 rounded-lg font-semibold">Cálculo Automático</span>
+            </div>
 
-    const description = `Mercado (${selected.length} ítems: ${selected.slice(0, 3).join(', ')}${selected.length > 3 ? '...' : ''})`;
-    
-    // Auto-llenar el formulario de gastos con el concepto armado
-    document.getElementById('txDescription').value = description;
-    document.getElementById('txCategory').value = '🛒 Mercado';
-    document.getElementById('txAmount').focus();
-    
-    showToast('Ítems cargados en el formulario. Ingresa el monto total pagado.');
-}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                <div class="p-4 bg-slateWarm-50 rounded-xl border border-slateWarm-100">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-bold text-slateWarm-700">Danil</span>
+                        <span class="text-xs font-bold text-sage-600" id="propUser1Pct">50%</span>
+                    </div>
+                    <p class="text-lg font-bold text-slateWarm-700" id="propUser1Income">$0.00</p>
+                    <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser1Share">$0.00</span></p>
+                </div>
+
+                <div class="p-4 bg-slateWarm-50 rounded-xl border border-slateWarm-100">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-bold text-slateWarm-700">Ogglys</span>
+                        <span class="text-xs font-bold text-sage-600" id="propUser2Pct">50%</span>
+                    </div>
+                    <p class="text-lg font-bold text-slateWarm-700" id="propUser2Income">$0.00</p>
+                    <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser2Share">$0.00</span></p>
+                </div>
+
+                <div class="p-4 bg-sage-50 rounded-xl border border-sage-100">
+                    <span class="text-xs font-bold text-sage-700">Fondo Total Combinado</span>
+                    <p class="text-2xl font-bold text-sage-700 mt-1" id="propTotalIncome">$0.00</p>
+                    <p class="text-[11px] text-sage-600 mt-1">Gastos Compartidos en Pareja: <span class="font-bold" id="propTotalExpenses">$0.00</span></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- KPI RESUMEN DE BALANCE -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ingresos Totales</p>
+                    <h3 class="text-2xl font-bold text-slateWarm-700 mt-1" id="kpiIncome">$0.00</h3>
+                    <p class="text-xs text-gray-400 mt-0.5" id="kpiIncomeBs">Bs. 0.00</p>
+                </div>
+                <div class="bg-sage-50 text-sage-600 p-3 rounded-2xl"><i data-lucide="trending-up" class="w-6 h-6"></i></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Gastos Totales</p>
+                    <h3 class="text-2xl font-bold text-coralAlert mt-1" id="kpiExpenses">$0.00</h3>
+                    <p class="text-xs text-gray-400 mt-0.5" id="kpiExpensesBs">Bs. 0.00</p>
+                </div>
+                <div class="bg-coralSoft text-coralAlert p-3 rounded-2xl"><i data-lucide="trending-down" class="w-6 h-6"></i></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Balance Disponible</p>
+                    <h3 class="text-2xl font-bold text-slateWarm-600 mt-1" id="kpiBalance">$0.00</h3>
+                    <p class="text-xs text-gray-400 mt-0.5" id="kpiBalanceBs">Bs. 0.00</p>
+                </div>
+                <div class="bg-slateWarm-50 text-slateWarm-600 p-3 rounded-2xl"><i data-lucide="wallet" class="w-6 h-6"></i></div>
+            </div>
+
+            <div class="bg-gradient-to-br from-slateWarm-500 to-slateWarm-700 text-white p-5 rounded-2xl shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-slateWarm-100 uppercase tracking-wider">Usuario Activo</p>
+                    <h3 class="text-2xl font-bold mt-1" id="activeUserLabel">Danil</h3>
+                    <span class="inline-block mt-1 bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">Perfil Seleccionado</span>
+                </div>
+                <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-sm"><i data-lucide="user" class="w-6 h-6 text-white"></i></div>
+            </div>
+        </div>
+
+        <!-- MÓDULO DE LISTA DE MERCADO CON CHECKBOXES -->
+        <section class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="shopping-cart" class="w-5 h-5 text-sage-600"></i>
+                    <h2 class="font-bold text-slateWarm-700">Lista de Compras de Mercado</h2>
+                </div>
+                <span class="text-xs bg-sage-50 text-sage-700 font-semibold px-2.5 py-1 rounded-lg" id="marketCheckCount">0 Seleccionados</span>
+            </div>
+
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="customMarketItem" placeholder="➕ ¿Falta algo que no esté en la lista? Escríbelo aquí..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
+                <button type="button" onclick="addCustomMarketItem()" class="bg-sage-500 hover:bg-sage-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Añadir
+                </button>
+            </div>
+
+            <div class="space-y-4 max-h-[300px] overflow-y-auto pr-1" id="marketListContainer"></div>
+
+            <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                <span class="text-xs text-gray-500">Selecciona los productos para armar la compra.</span>
+                <button type="button" onclick="registerSelectedMarketItems()" class="bg-slateWarm-600 hover:bg-slateWarm-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-sm">
+                    <i data-lucide="check-square" class="w-4 h-4"></i> Cargar a Formulario de Gastos
+                </button>
+            </div>
+        </section>
+
+        <!-- FORMULARIO DE REGISTRO E HISTORIAL -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- FORMULARIO PRINCIPAL MULTIMONEDA -->
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-xs">
+                <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center gap-2 text-sm">
+                    <i data-lucide="plus-circle" class="w-5 h-5 text-sage-600"></i> Registrar Movimiento
+                </h2>
+                <form id="txForm" onsubmit="handleTxSubmit(event)" class="space-y-3">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" id="btnTypeExpense" onclick="setTxType('expense')" class="py-2 font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert">💸 Gasto</button>
+                        <button type="button" id="btnTypeIncome" onclick="setTxType('income')" class="py-2 font-bold rounded-xl border border-gray-200 text-gray-500">💰 Ingreso</button>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">Pertenencia / Ámbito</label>
+                        <select id="txScope" class="w-full p-2 rounded-xl border font-medium">
+                            <option value="Pareja">👥 Fondo Pareja (Compartido)</option>
+                            <option value="Individual">👤 Individual (<span class="currentUserSpan">Danil</span>)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">Monto y Moneda</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <select id="txCurrency" onchange="updateConvertedPreview()" class="col-span-1 p-2 rounded-xl border font-bold">
+                                <option value="USD">$ USD</option>
+                                <option value="BS">Bs. (VES)</option>
+                            </select>
+                            <input type="number" id="txAmount" placeholder="0.00" step="0.01" required class="col-span-2 p-2 rounded-xl border font-bold">
+                        </div>
+                        <p class="text-[10px] text-gray-400 mt-1" id="currencyConvertedPreview">Monto a registrar en USD: $0.00</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block font-semibold text-gray-600 mb-1">Semana del Mes</label>
+                            <select id="txWeek" class="w-full p-2 rounded-xl border font-medium">
+                                <option value="Semana 1">Semana 1</option>
+                                <option value="Semana 2">Semana 2</option>
+                                <option value="Semana 3">Semana 3</option>
+                                <option value="Semana 4">Semana 4</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-gray-600 mb-1">Fecha</label>
+                            <input type="date" id="txDate" required class="w-full p-2 rounded-xl border">
+                        </div>
+                    </div>
+
+                    <input type="text" id="txDesc" placeholder="Descripción (ej. Mercado o Alquiler)" required class="w-full p-2.5 rounded-xl border">
+
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">Categoría</label>
+                        <select id="txCategory" class="w-full p-2 rounded-xl border font-medium">
+                            <option value="🛒 Mercado">🛒 Mercado / Alimentación</option>
+                            <option value="🏠 Alquiler">🏠 Alquiler / Vivienda</option>
+                            <option value="⚡ Servicios">⚡ Servicios (Luz, Agua)</option>
+                            <option value="📶 Internet">📶 Internet / Cable</option>
+                            <option value="🚗 Transporte">🚗 Transporte</option>
+                            <option value="📦 Otros">📦 Otros / Varios</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">Comprobante (Opcional)</label>
+                        <input type="file" id="txImage" accept="image/*" class="w-full text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:bg-sage-50 file:text-sage-700">
+                    </div>
+
+                    <button type="submit" class="w-full bg-sage-500 text-white font-bold py-2.5 rounded-xl shadow-md">Guardar Registro</button>
+                </form>
+            </div>
+
+            <!-- HISTORIAL DE MOVIMIENTOS COMPLETO -->
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2 text-xs flex flex-col justify-between">
+                <div>
+                    <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center justify-between text-sm">
+                        <span>Historial de Movimientos</span>
+                        <span class="text-xs text-gray-400 font-normal" id="txCount">0 Registros</span>
+                    </h2>
+
+                    <div class="overflow-x-auto max-h-[350px]">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 uppercase text-gray-400 font-semibold">
+                                <tr>
+                                    <th class="p-2.5">Concepto</th>
+                                    <th class="p-2.5">Usuario / Ámbito</th>
+                                    <th class="p-2.5">Monto Original</th>
+                                    <th class="p-2.5">Equiv. ($ USD)</th>
+                                    <th class="p-2.5 text-center">Comprobante</th>
+                                    <th class="p-2.5 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="txTableBody" class="divide-y font-medium"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t text-right">
+                    <button onclick="clearAllData()" class="text-xs text-coralAlert hover:underline font-semibold">Restablecer todos los datos</button>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- JS Y LÓGICA INTEGRADAS -->
+    <script>
+        let activeUser = 'Danil';
+        let currentTxType = 'expense';
+        let user1Name = 'Danil';
+        let user2Name = 'Ogglys';
+        let transactions = JSON.parse(localStorage.getItem('mr_txs') || '[]');
+
+        const defaultMarketList = [
+            { category: "🥩 Proteínas y Carnes", items: ["Pollo (Entero/Pechuga)", "Carne molida / para mechar", "Chuleta / Cerdo", "Pescado", "Huevos"] },
+            { category: "🥬 Frutas y Verduras", items: ["Tomate", "Cebolla", "Papas", "Plátanos", "Aguacate", "Ajo", "Frutas variadas"] },
+            { category: "🌾 Víveres y Despensa", items: ["Harina PAN", "Arroz", "Pasta", "Aceite", "Café", "Azúcar / Endulzante", "Queso", "Leche"] },
+            { category: "🧴 Limpieza e Higiene", items: ["Jabón de ropa", "Lavaplatos", "Papel higiénico", "Desinfectante", "Champú"] }
+        ];
+
+        let currentMarketItems = JSON.parse(localStorage.getItem('myroomie_market_items')) || defaultMarketList;
+
+        async function fetchLiveRates() {
+            try {
+                const res = await fetch('/api/rates/current');
+                const data = await res.json();
+                if (data.success && data.rates) {
+                    document.getElementById('exchangeRate').value = data.rates.BCV_USD.toFixed(2);
+                    updateCalculations();
+                }
+            } catch (err) {
+                console.log("Servidor offline o usando tasa por defecto.");
+            }
+        }
+
+        function renderMarketList() {
+            const container = document.getElementById('marketListContainer');
+            if (!container) return;
+
+            container.innerHTML = currentMarketItems.map((cat, catIdx) => `
+                <div class="bg-gray-50/70 p-3 rounded-xl border border-gray-100">
+                    <h4 class="font-bold text-xs text-slateWarm-700 mb-2">${cat.category}</h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        ${cat.items.map((item, itemIdx) => `
+                            <label class="flex items-center gap-2 text-xs text-gray-700 bg-white p-2 rounded-lg border border-gray-200 cursor-pointer hover:border-sage-500 transition-colors">
+                                <input type="checkbox" data-item="${item}" class="market-checkbox rounded text-sage-600 focus:ring-sage-500" onchange="updateMarketCount()">
+                                <span class="truncate">${item}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function updateMarketCount() {
+            const checked = document.querySelectorAll('.market-checkbox:checked').length;
+            document.getElementById('marketCheckCount').innerText = `${checked} Seleccionados`;
+        }
+
+        function addCustomMarketItem() {
+            const input = document.getElementById('customMarketItem');
+            const val = input.value.trim();
+            if (!val) return;
+
+            let otrosCat = currentMarketItems.find(c => c.category.includes("Otros") || c.category.includes("Personalizados"));
+            if (!otrosCat) {
+                otrosCat = { category: "📦 Personalizados / Varios", items: [] };
+                currentMarketItems.push(otrosCat);
+            }
+            otrosCat.items.push(val);
+            localStorage.setItem('myroomie_market_items', JSON.stringify(currentMarketItems));
+            input.value = '';
+            renderMarketList();
+            showToast(`" ${val} " agregado a la lista de mercado`);
+        }
+
+        function registerSelectedMarketItems() {
+            const selected = Array.from(document.querySelectorAll('.market-checkbox:checked')).map(cb => cb.getAttribute('data-item'));
+            if (selected.length === 0) {
+                showToast('Selecciona al menos un producto de la lista', 'warning');
+                return;
+            }
+
+            const description = `Mercado (${selected.length} ítems: ${selected.slice(0, 3).join(', ')}${selected.length > 3 ? '...' : ''})`;
+            document.getElementById('txDesc').value = description;
+            document.getElementById('txCategory').value = '🛒 Mercado';
+            document.getElementById('txAmount').focus();
+            showToast('Ítems cargados en el formulario');
+        }
+
+        function switchUser(user) {
+            activeUser = user;
+            document.getElementById('activeUserLabel').innerText = user;
+            document.querySelectorAll('.currentUserSpan').forEach(el => el.innerText = user);
+
+            const btn1 = document.getElementById('btnUser1');
+            const btn2 = document.getElementById('btnUser2');
+
+            if (user === user1Name) {
+                btn1.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm";
+                btn2.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500";
+            } else {
+                btn2.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm";
+                btn1.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500";
+            }
+        }
+
+        function setTxType(type) {
+            currentTxType = type;
+            document.getElementById('btnTypeExpense').className = type === 'expense' ? 'py-2 font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert' : 'py-2 font-bold rounded-xl border border-gray-200 text-gray-500';
+            document.getElementById('btnTypeIncome').className = type === 'income' ? 'py-2 font-bold rounded-xl border bg-sage-50 text-sage-700 border-sage-500' : 'py-2 font-bold rounded-xl border border-gray-200 text-gray-500';
+        }
+
+        function updateConvertedPreview() {
+            const amount = parseFloat(document.getElementById('txAmount').value) || 0;
+            const curr = document.getElementById('txCurrency').value;
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 36.5;
+            const preview = document.getElementById('currencyConvertedPreview');
+
+            if (curr === 'BS') {
+                preview.innerText = `Equivalente en USD: $${(amount / rate).toFixed(2)} (Tasa: ${rate} Bs/$)`;
+            } else {
+                preview.innerText = `Equivalente en Bs: Bs. ${(amount * rate).toFixed(2)} (Tasa: ${rate} Bs/$)`;
+            }
+        }
+
+        function handleTxSubmit(e) {
+            e.preventDefault();
+            const desc = document.getElementById('txDesc').value.trim();
+            const rawAmount = parseFloat(document.getElementById('txAmount').value);
+            const currency = document.getElementById('txCurrency').value;
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 36.5;
+            const date = document.getElementById('txDate').value;
+            const scope = document.getElementById('txScope').value;
+            const week = document.getElementById('txWeek').value;
+            const category = document.getElementById('txCategory').value;
+            const fileInput = document.getElementById('txImage');
+
+            if (!desc || isNaN(rawAmount) || rawAmount <= 0) return;
+
+            const amountUSD = currency === 'BS' ? (rawAmount / rate) : rawAmount;
+
+            const save = (imgData = null) => {
+                const tx = {
+                    id: Date.now(),
+                    user: activeUser,
+                    type: currentTxType,
+                    scope: scope,
+                    week: week,
+                    desc: desc,
+                    rawAmount: rawAmount,
+                    currency: currency,
+                    amountUSD: amountUSD,
+                    date: date,
+                    category: category,
+                    img: imgData
+                };
+                transactions.unshift(tx);
+                localStorage.setItem('mr_txs', JSON.stringify(transactions));
+                updateCalculations();
+                showToast(`Registrado: ${desc} (${currency === 'BS' ? 'Bs.' + rawAmount : '$' + rawAmount})`);
+                document.getElementById('txForm').reset();
+                document.getElementById('txDate').valueAsDate = new Date();
+                updateConvertedPreview();
+            };
+
+            if (fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (evt) => save(evt.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                save(null);
+            }
+        }
+
+        function updateCalculations() {
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 36.5;
+
+            let totalIncome = 0, totalExpenses = 0, user1Income = 0, user2Income = 0, sharedExpenses = 0;
+
+            transactions.forEach(t => {
+                if (t.type === 'income') {
+                    totalIncome += t.amountUSD;
+                    if (t.user === user1Name) user1Income += t.amountUSD;
+                    if (t.user === user2Name) user2Income += t.amountUSD;
+                }
+                if (t.type === 'expense') {
+                    totalExpenses += t.amountUSD;
+                    if (t.scope === 'Pareja') sharedExpenses += t.amountUSD;
+                }
+            });
+
+            const totalPairIncome = user1Income + user2Income;
+            let u1Pct = totalPairIncome > 0 ? (user1Income / totalPairIncome) * 100 : 50;
+            let u2Pct = totalPairIncome > 0 ? (user2Income / totalPairIncome) * 100 : 50;
+
+            document.getElementById('propUser1Pct').innerText = `${u1Pct.toFixed(1)}%`;
+            document.getElementById('propUser1Income').innerText = `$${user1Income.toFixed(2)}`;
+            document.getElementById('propUser1Share').innerText = `$${(sharedExpenses * (u1Pct / 100)).toFixed(2)}`;
+
+            document.getElementById('propUser2Pct').innerText = `${u2Pct.toFixed(1)}%`;
+            document.getElementById('propUser2Income').innerText = `$${user2Income.toFixed(2)}`;
+            document.getElementById('propUser2Share').innerText = `$${(sharedExpenses * (u2Pct / 100)).toFixed(2)}`;
+
+            document.getElementById('propTotalIncome').innerText = `$${totalPairIncome.toFixed(2)}`;
+            document.getElementById('propTotalExpenses').innerText = `$${sharedExpenses.toFixed(2)}`;
+
+            const balance = totalIncome - totalExpenses;
+
+            document.getElementById('kpiIncome').innerText = `$${totalIncome.toFixed(2)}`;
+            document.getElementById('kpiIncomeBs').innerText = `Bs. ${(totalIncome * rate).toLocaleString('es-VE', {minimumFractionDigits: 2})}`;
+
+            document.getElementById('kpiExpenses').innerText = `$${totalExpenses.toFixed(2)}`;
+            document.getElementById('kpiExpensesBs').innerText = `Bs. ${(totalExpenses * rate).toLocaleString('es-VE', {minimumFractionDigits: 2})}`;
+
+            document.getElementById('kpiBalance').innerText = `$${balance.toFixed(2)}`;
+            document.getElementById('kpiBalanceBs').innerText = `Bs. ${(balance * rate).toLocaleString('es-VE', {minimumFractionDigits: 2})}`;
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('txTableBody');
+            document.getElementById('txCount').innerText = `${transactions.length} Registros`;
+
+            if (!transactions.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">Sin movimientos registrados.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = transactions.map(t => `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-2.5 font-bold text-slateWarm-700">${t.desc}<br><span class="text-[10px] text-gray-400 font-normal">${t.date} • ${t.category}</span></td>
+                    <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.scope === 'Pareja' ? 'bg-slateWarm-100 text-slateWarm-700' : 'bg-sage-100 text-sage-700'}">${t.user} (${t.scope})</span></td>
+                    <td class="p-2.5 font-semibold text-slateWarm-600">${t.currency === 'BS' ? 'Bs. ' + t.rawAmount.toFixed(2) : '$' + t.rawAmount.toFixed(2)}</td>
+                    <td class="p-2.5 font-bold ${t.type === 'income' ? 'text-sage-600' : 'text-coralAlert'}">${t.type === 'income' ? '+' : '-'}$${t.amountUSD.toFixed(2)}</td>
+                    <td class="p-2.5 text-center">
+                        ${t.img ? `<button onclick="openModal('${t.img}', '${t.desc}')" class="text-slateWarm-600 underline">Ver Foto</button>` : '-'}
+                    </td>
+                    <td class="p-2.5 text-right"><button onclick="deleteTx(${t.id})" class="text-red-400 font-bold">✕</button></td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function deleteTx(id) {
+            transactions = transactions.filter(t => t.id !== id);
+            localStorage.setItem('mr_txs', JSON.stringify(transactions));
+            updateCalculations();
+        }
+
+        function clearAllData() {
+            if (confirm('¿Borrar todos los movimientos registrados?')) {
+                transactions = [];
+                localStorage.removeItem('mr_txs');
+                updateCalculations();
+            }
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'bg-slateWarm-700 text-white px-4 py-2 rounded-xl text-xs shadow-lg';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function openModal(img, title) {
+            document.getElementById('modalImg').src = img;
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('imageModal').classList.add('modal-active');
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').classList.remove('modal-active');
+        }
+
+        window.onload = () => {
+            fetchLiveRates();
+            renderMarketList();
+            updateCalculations();
+            document.getElementById('txDate').valueAsDate = new Date();
+            document.getElementById('txAmount').addEventListener('input', updateConvertedPreview);
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
