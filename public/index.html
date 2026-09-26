@@ -40,7 +40,7 @@
     <!-- MODAL COMPROBANTE -->
     <div id="imageModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-xl w-full p-4 relative shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-gray-100 p-1 rounded-full">
+            <button onclick="closeModal('imageModal')" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-gray-100 p-1 rounded-full">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
             <h3 class="text-lg font-bold text-slateWarm-700 mb-3" id="modalTitle">Comprobante</h3>
@@ -50,25 +50,53 @@
         </div>
     </div>
 
-    <!-- HEADER -->
+    <!-- HEADER CON MENÚ DE MÓDULOS -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            
+            <!-- Logo & Menú Desplegable de Módulos -->
             <div class="flex items-center gap-3">
-                <div class="bg-sage-500 text-white p-2 rounded-xl shadow-md">
-                    <i data-lucide="heart-handshake" class="w-6 h-6"></i>
+                <div class="relative">
+                    <button onclick="toggleModuleMenu()" class="bg-sage-500 hover:bg-sage-600 text-white p-2.5 rounded-xl shadow-md flex items-center gap-1.5 transition-all">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <!-- Dropdown de Módulos -->
+                    <div id="moduleDropdown" class="hidden absolute left-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 p-2 text-xs space-y-1">
+                        <div class="px-3 py-1.5 font-bold text-gray-400 uppercase text-[10px] tracking-wider">Navegación de Módulos</div>
+                        <a href="#mod-dashboard" onclick="toggleModuleMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
+                            <i data-lucide="layout-dashboard" class="w-4 h-4 text-sage-600"></i> Dashboard General
+                        </a>
+                        <a href="#mod-proportional" onclick="toggleModuleMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
+                            <i data-lucide="calculator" class="w-4 h-4 text-sage-600"></i> Regla de Aportes Excel
+                        </a>
+                        <a href="#mod-market" onclick="toggleModuleMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
+                            <i data-lucide="shopping-cart" class="w-4 h-4 text-sage-600"></i> Lista de Mercado
+                        </a>
+                        <a href="#mod-transactions" onclick="toggleModuleMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
+                            <i data-lucide="receipt" class="w-4 h-4 text-sage-600"></i> Registro e Historial
+                        </a>
+                        <a href="#mod-analytics" onclick="toggleModuleMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
+                            <i data-lucide="bar-chart-3" class="w-4 h-4 text-sage-600"></i> Gráficas y Calendario
+                        </a>
+                    </div>
                 </div>
+
                 <div>
                     <h1 class="font-bold text-xl text-slateWarm-700 leading-none">My Roomie</h1>
                     <span class="text-xs text-gray-400">Finanzas en Pareja • Danil & Ogglys</span>
                 </div>
             </div>
 
+            <!-- Tasa y Usuarios -->
             <div class="flex items-center gap-3">
-                <!-- Tasa de Cambio Automática -->
-                <div class="hidden sm:flex items-center gap-2 bg-slateWarm-50 border border-slateWarm-100 px-3 py-1.5 rounded-xl text-xs font-medium text-slateWarm-600">
+                <!-- Tasa de Cambio Automática Actualizada -->
+                <div class="flex items-center gap-2 bg-slateWarm-50 border border-slateWarm-100 px-3 py-1.5 rounded-xl text-xs font-medium text-slateWarm-600">
                     <i data-lucide="dollar-sign" class="w-4 h-4 text-sage-600"></i>
                     <span>Tasa BCV:</span>
-                    <input type="number" id="exchangeRate" value="36.50" step="0.1" class="w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
+                    <input type="number" id="exchangeRate" value="36.50" step="0.01" class="w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
+                    <button onclick="fetchLiveRates()" title="Actualizar Tasa en Vivo" class="text-sage-600 hover:text-sage-700 p-0.5">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    </button>
                     <span class="text-gray-400">Bs/$</span>
                 </div>
 
@@ -83,8 +111,47 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
 
-        <!-- APORTE PROPORCIONAL POR INGRESOS -->
-        <section class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <!-- MÓDULO 1: DASHBOARD DE BALANCES GENERALES -->
+        <section id="mod-dashboard" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ingresos Totales</p>
+                    <h3 class="text-2xl font-bold text-slateWarm-700 mt-1" id="kpiIncome">$0.00</h3>
+                    <p class="text-xs text-gray-400 mt-0.5" id="kpiIncomeBs">Bs. 0.00</p>
+                </div>
+                <div class="bg-sage-50 text-sage-600 p-3 rounded-2xl"><i data-lucide="trending-up" class="w-6 h-6"></i></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Gastos Totales</p>
+                    <h3 class="text-2xl font-bold text-coralAlert mt-1" id="kpiExpenses">$0.00</h3>
+                    <p class="text-xs text-gray-400 mt-0.5" id="kpiExpensesBs">Bs. 0.00</p>
+                </div>
+                <div class="bg-coralSoft text-coralAlert p-3 rounded-2xl"><i data-lucide="trending-down" class="w-6 h-6"></i></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Balance Disponible</p>
+                    <h3 class="text-2xl font-bold text-slateWarm-600 mt-1" id="kpiBalance">$0.00</h3>
+                    <p class="text-xs text-gray-400 mt-0.5" id="kpiBalanceBs">Bs. 0.00</p>
+                </div>
+                <div class="bg-slateWarm-50 text-slateWarm-600 p-3 rounded-2xl"><i data-lucide="wallet" class="w-6 h-6"></i></div>
+            </div>
+
+            <div class="bg-gradient-to-br from-slateWarm-500 to-slateWarm-700 text-white p-5 rounded-2xl shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-slateWarm-100 uppercase tracking-wider">Perfil Activo</p>
+                    <h3 class="text-2xl font-bold mt-1" id="activeUserLabel">Danil</h3>
+                    <span class="inline-block mt-1 bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">Espacio Compartido</span>
+                </div>
+                <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-sm"><i data-lucide="user" class="w-6 h-6 text-white"></i></div>
+            </div>
+        </section>
+
+        <!-- MÓDULO 2: APORTE PROPORCIONAL POR INGRESOS -->
+        <section id="mod-proportional" class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <div class="flex items-center gap-2">
                     <i data-lucide="calculator" class="w-5 h-5 text-sage-600"></i>
@@ -120,47 +187,8 @@
             </div>
         </section>
 
-        <!-- KPI RESUMEN DE BALANCE -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ingresos Totales</p>
-                    <h3 class="text-2xl font-bold text-slateWarm-700 mt-1" id="kpiIncome">$0.00</h3>
-                    <p class="text-xs text-gray-400 mt-0.5" id="kpiIncomeBs">Bs. 0.00</p>
-                </div>
-                <div class="bg-sage-50 text-sage-600 p-3 rounded-2xl"><i data-lucide="trending-up" class="w-6 h-6"></i></div>
-            </div>
-
-            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Gastos Totales</p>
-                    <h3 class="text-2xl font-bold text-coralAlert mt-1" id="kpiExpenses">$0.00</h3>
-                    <p class="text-xs text-gray-400 mt-0.5" id="kpiExpensesBs">Bs. 0.00</p>
-                </div>
-                <div class="bg-coralSoft text-coralAlert p-3 rounded-2xl"><i data-lucide="trending-down" class="w-6 h-6"></i></div>
-            </div>
-
-            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Balance Disponible</p>
-                    <h3 class="text-2xl font-bold text-slateWarm-600 mt-1" id="kpiBalance">$0.00</h3>
-                    <p class="text-xs text-gray-400 mt-0.5" id="kpiBalanceBs">Bs. 0.00</p>
-                </div>
-                <div class="bg-slateWarm-50 text-slateWarm-600 p-3 rounded-2xl"><i data-lucide="wallet" class="w-6 h-6"></i></div>
-            </div>
-
-            <div class="bg-gradient-to-br from-slateWarm-500 to-slateWarm-700 text-white p-5 rounded-2xl shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-slateWarm-100 uppercase tracking-wider">Usuario Activo</p>
-                    <h3 class="text-2xl font-bold mt-1" id="activeUserLabel">Danil</h3>
-                    <span class="inline-block mt-1 bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">Perfil Seleccionado</span>
-                </div>
-                <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-sm"><i data-lucide="user" class="w-6 h-6 text-white"></i></div>
-            </div>
-        </div>
-
-        <!-- MÓDULO DE LISTA DE MERCADO CON CHECKBOXES -->
-        <section class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <!-- MÓDULO 3: LISTA DE COMPRAS DE MERCADO -->
+        <section id="mod-market" class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <div class="flex items-center gap-2">
                     <i data-lucide="shopping-cart" class="w-5 h-5 text-sage-600"></i>
@@ -181,13 +209,13 @@
             <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
                 <span class="text-xs text-gray-500">Selecciona los productos para armar la compra.</span>
                 <button type="button" onclick="registerSelectedMarketItems()" class="bg-slateWarm-600 hover:bg-slateWarm-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-sm">
-                    <i data-lucide="check-square" class="w-4 h-4"></i> Cargar a Formulario de Gastos
+                    <i data-lucide="check-square" class="w-4 h-4"></i> Cargar a Gastos del Mes
                 </button>
             </div>
         </section>
 
-        <!-- FORMULARIO DE REGISTRO E HISTORIAL -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- MÓDULO 4: FORMULARIO DE REGISTRO E HISTORIAL -->
+        <section id="mod-transactions" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             <!-- FORMULARIO PRINCIPAL MULTIMONEDA -->
             <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-xs">
@@ -289,17 +317,56 @@
                 </div>
             </div>
 
-        </div>
+        </section>
+
+        <!-- MÓDULO 5: ANALÍTICA Y CALENDARIO -->
+        <section id="mod-analytics" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+                    <i data-lucide="pie-chart" class="w-5 h-5 text-slateWarm-500"></i>
+                    <h2 class="font-bold text-slateWarm-700">Gastos por Categoría</h2>
+                </div>
+                <div class="relative h-60 flex items-center justify-center">
+                    <canvas id="chartDistribution"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-sage-600"></i>
+                    <h2 class="font-bold text-slateWarm-700">Distribución por Semanas</h2>
+                </div>
+                <div class="relative h-60">
+                    <canvas id="chartWeeklyHabits"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-5 h-5 text-coralAlert"></i>
+                        <h2 class="font-bold text-slateWarm-700">Calendario Financiero</h2>
+                    </div>
+                    <span class="text-xs font-semibold text-sage-600 bg-sage-50 px-2 py-0.5 rounded-md">Mes Actual</span>
+                </div>
+                <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-gray-400 mb-2">
+                    <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+                </div>
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
+            </div>
+        </section>
 
     </main>
 
-    <!-- JS Y LÓGICA INTEGRADAS -->
+    <!-- LÓGICA Y SCRIPTS INTEGRADORAS -->
     <script>
         let activeUser = 'Danil';
         let currentTxType = 'expense';
         let user1Name = 'Danil';
         let user2Name = 'Ogglys';
         let transactions = JSON.parse(localStorage.getItem('mr_txs') || '[]');
+        let chartDistInstance = null;
+        let chartHabitsInstance = null;
 
         const defaultMarketList = [
             { category: "🥩 Proteínas y Carnes", items: ["Pollo (Entero/Pechuga)", "Carne molida / para mechar", "Chuleta / Cerdo", "Pescado", "Huevos"] },
@@ -310,16 +377,37 @@
 
         let currentMarketItems = JSON.parse(localStorage.getItem('myroomie_market_items')) || defaultMarketList;
 
+        function toggleModuleMenu() {
+            const dropdown = document.getElementById('moduleDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
         async function fetchLiveRates() {
             try {
+                // Intento 1: API Servidor Backend
                 const res = await fetch('/api/rates/current');
                 const data = await res.json();
-                if (data.success && data.rates) {
+                if (data.success && data.rates && data.rates.BCV_USD) {
                     document.getElementById('exchangeRate').value = data.rates.BCV_USD.toFixed(2);
                     updateCalculations();
+                    showToast('Tasa BCV actualizada en vivo');
+                    return;
                 }
             } catch (err) {
-                console.log("Servidor offline o usando tasa por defecto.");
+                console.log("Servidor interno no respondió tasa, intentando API de respaldo externa...");
+            }
+
+            try {
+                // Intento 2: API de respaldo externa si está corriendo estático
+                const fallbackRes = await fetch('https://open.er-api.com/v6/latest/USD');
+                const fallbackData = await fallbackRes.json();
+                if (fallbackData && fallbackData.rates && fallbackData.rates.VES) {
+                    document.getElementById('exchangeRate').value = fallbackData.rates.VES.toFixed(2);
+                    updateCalculations();
+                    showToast('Tasa de divisas obtenida en vivo');
+                }
+            } catch (err2) {
+                console.log("Usando tasa manual predeterminada.");
             }
         }
 
@@ -362,13 +450,13 @@
             localStorage.setItem('myroomie_market_items', JSON.stringify(currentMarketItems));
             input.value = '';
             renderMarketList();
-            showToast(`" ${val} " agregado a la lista de mercado`);
+            showToast(`" ${val} " agregado a la lista`);
         }
 
         function registerSelectedMarketItems() {
             const selected = Array.from(document.querySelectorAll('.market-checkbox:checked')).map(cb => cb.getAttribute('data-item'));
             if (selected.length === 0) {
-                showToast('Selecciona al menos un producto de la lista', 'warning');
+                showToast('Selecciona al menos un producto', 'warning');
                 return;
             }
 
@@ -508,6 +596,8 @@
             document.getElementById('kpiBalanceBs').innerText = `Bs. ${(balance * rate).toLocaleString('es-VE', {minimumFractionDigits: 2})}`;
 
             renderTable();
+            renderCharts();
+            renderCalendar();
         }
 
         function renderTable() {
@@ -526,12 +616,87 @@
                     <td class="p-2.5 font-semibold text-slateWarm-600">${t.currency === 'BS' ? 'Bs. ' + t.rawAmount.toFixed(2) : '$' + t.rawAmount.toFixed(2)}</td>
                     <td class="p-2.5 font-bold ${t.type === 'income' ? 'text-sage-600' : 'text-coralAlert'}">${t.type === 'income' ? '+' : '-'}$${t.amountUSD.toFixed(2)}</td>
                     <td class="p-2.5 text-center">
-                        ${t.img ? `<button onclick="openModal('${t.img}', '${t.desc}')" class="text-slateWarm-600 underline">Ver Foto</button>` : '-'}
+                        ${t.img ? `<button onclick="openModal('${t.img}', '${t.desc}')" class="text-slateWarm-600 underline font-semibold">Ver Foto</button>` : '-'}
                     </td>
                     <td class="p-2.5 text-right"><button onclick="deleteTx(${t.id})" class="text-red-400 font-bold">✕</button></td>
                 </tr>
             `).join('');
             lucide.createIcons();
+        }
+
+        function renderCharts() {
+            let catTotals = {};
+            transactions.filter(t => t.type === 'expense').forEach(t => {
+                catTotals[t.category] = (catTotals[t.category] || 0) + t.amountUSD;
+            });
+
+            const ctxDist = document.getElementById('chartDistribution').getContext('2d');
+            if (chartDistInstance) chartDistInstance.destroy();
+
+            chartDistInstance = new Chart(ctxDist, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(catTotals).length ? Object.keys(catTotals) : ['Sin Gastos'],
+                    datasets: [{
+                        data: Object.values(catTotals).length ? Object.values(catTotals) : [1],
+                        backgroundColor: ['#7EA172', '#4A6B82', '#E07A5F', '#E6B89C', '#84A59D', '#F28482'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
+            });
+
+            let weekTotals = { 'Semana 1': 0, 'Semana 2': 0, 'Semana 3': 0, 'Semana 4': 0 };
+            transactions.filter(t => t.type === 'expense').forEach(t => {
+                const w = t.week || 'Semana 1';
+                if (weekTotals[w] !== undefined) weekTotals[w] += t.amountUSD;
+            });
+
+            const ctxHabits = document.getElementById('chartWeeklyHabits').getContext('2d');
+            if (chartHabitsInstance) chartHabitsInstance.destroy();
+
+            chartHabitsInstance = new Chart(ctxHabits, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(weekTotals),
+                    datasets: [{
+                        label: 'Gasto por Semana ($)',
+                        data: Object.values(weekTotals),
+                        backgroundColor: '#4A6B82',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { grid: { color: '#f3f4f6' } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDayIndex = new Date(year, month, 1).getDay();
+
+            for (let i = 0; i < firstDayIndex; i++) grid.innerHTML += `<div class="h-8"></div>`;
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                const dayExpenses = transactions.filter(t => t.type === 'expense' && t.date === dateStr);
+                const hasMarket = dayExpenses.some(t => t.category.includes('Mercado'));
+
+                let bgClass = "bg-gray-50 text-gray-700";
+                if (hasMarket) bgClass = "bg-sage-100 text-sage-700 font-bold border border-sage-500";
+                else if (dayExpenses.length > 0) bgClass = "bg-coralSoft text-coralAlert font-bold border border-coralAlert";
+
+                grid.innerHTML += `<div class="h-8 flex flex-col items-center justify-center rounded-lg text-xs ${bgClass}">${day}</div>`;
+            }
         }
 
         function deleteTx(id) {
@@ -548,10 +713,11 @@
             }
         }
 
-        function showToast(msg) {
+        function showToast(msg, type = 'info') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
-            toast.className = 'bg-slateWarm-700 text-white px-4 py-2 rounded-xl text-xs shadow-lg';
+            let bg = type === 'warning' ? 'bg-amber-600 text-white' : 'bg-slateWarm-700 text-white';
+            toast.className = `${bg} px-4 py-2 rounded-xl text-xs shadow-lg font-semibold`;
             toast.innerText = msg;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
@@ -563,8 +729,8 @@
             document.getElementById('imageModal').classList.add('modal-active');
         }
 
-        function closeModal() {
-            document.getElementById('imageModal').classList.remove('modal-active');
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('modal-active');
         }
 
         window.onload = () => {
