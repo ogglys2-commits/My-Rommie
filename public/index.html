@@ -52,12 +52,13 @@
         </div>
     </div>
 
-    <!-- HEADER -->
+    <!-- HEADER ADAPTADO PARA ESCRITORIO Y MÓVIL -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-0 sm:h-16 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-0 sm:h-16 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
             
+            <!-- Marca y Estado del Usuario -->
             <div class="flex items-center justify-between w-full sm:w-auto">
-                <div class="flex items-center gap-2.5">
+                <div class="flex items-center gap-3">
                     <div class="bg-sage-500 text-white p-2 rounded-xl shadow-sm">
                         <i data-lucide="heart-handshake" class="w-5 h-5"></i>
                     </div>
@@ -67,28 +68,60 @@
                     </div>
                 </div>
 
-                <div class="flex items-center bg-gray-100 p-0.5 rounded-xl sm:hidden">
-                    <button id="btnUser1Mob" onclick="switchUser('Danil')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slateWarm-700 shadow-sm">Danil</button>
-                    <button id="btnUser2Mob" onclick="switchUser('Ogglys')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-500">Ogglys</button>
+                <!-- Perfil Activo en Móvil -->
+                <div class="flex items-center gap-2 sm:hidden">
+                    <div class="flex items-center bg-gray-100 p-0.5 rounded-xl">
+                        <button id="btnUser1Mob" onclick="switchUser('Danil')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slateWarm-700 shadow-sm">Danil</button>
+                        <button id="btnUser2Mob" onclick="switchUser('Ogglys')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-500">Ogglys</button>
+                    </div>
+                    <button onclick="logout()" title="Cerrar Sesión" class="p-1.5 text-gray-400 hover:text-coralAlert bg-gray-50 rounded-lg">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-1 sm:pt-0 border-t sm:border-0 border-gray-100">
-                <div class="flex items-center gap-1.5 bg-slateWarm-50 border border-slateWarm-100 px-2.5 py-1 rounded-xl text-xs font-medium text-slateWarm-600 w-full sm:w-auto justify-between sm:justify-start">
-                    <div class="flex items-center gap-1">
-                        <i data-lucide="dollar-sign" class="w-3.5 h-3.5 text-sage-600"></i>
-                        <span class="text-[11px] sm:text-xs font-bold">BCV:</span>
-                    </div>
-                    <input type="number" id="exchangeRate" value="36.50" step="0.01" class="w-14 sm:w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 text-xs focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
-                    <button onclick="fetchLiveRates()" title="Actualizar Tasa en Vivo" class="text-sage-600 hover:text-sage-700 p-0.5">
+            <!-- Navegación Superior para COMPUTADORA -->
+            <nav class="hidden md:flex items-center gap-1 bg-gray-100 p-1 rounded-xl text-xs font-bold">
+                <button onclick="showTab('mod-dashboard')" id="top-nav-mod-dashboard" class="top-nav-btn px-3 py-1.5 rounded-lg bg-white text-slateWarm-700 shadow-sm flex items-center gap-1.5">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Inicio
+                </button>
+                <button onclick="showTab('mod-proportional')" id="top-nav-mod-proportional" class="top-nav-btn px-3 py-1.5 rounded-lg text-gray-500 hover:text-slateWarm-700 flex items-center gap-1.5">
+                    <i data-lucide="calculator" class="w-4 h-4"></i> Aportes
+                </button>
+                <button onclick="showTab('mod-market')" id="top-nav-mod-market" class="top-nav-btn px-3 py-1.5 rounded-lg text-gray-500 hover:text-slateWarm-700 flex items-center gap-1.5">
+                    <i data-lucide="shopping-cart" class="w-4 h-4"></i> Mercado
+                </button>
+                <button onclick="showTab('mod-transactions')" id="top-nav-mod-transactions" class="top-nav-btn px-3 py-1.5 rounded-lg text-gray-500 hover:text-slateWarm-700 flex items-center gap-1.5">
+                    <i data-lucide="receipt" class="w-4 h-4"></i> Registro
+                </button>
+                <button onclick="showTab('mod-analytics')" id="top-nav-mod-analytics" class="top-nav-btn px-3 py-1.5 rounded-lg text-gray-500 hover:text-slateWarm-700 flex items-center gap-1.5">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Gráficas
+                </button>
+            </nav>
+
+            <!-- Tasa BCV, Usuarios y Cerrar Sesión en Computadora -->
+            <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-0 border-gray-100">
+                <div class="flex items-center gap-1.5 bg-slateWarm-50 border border-slateWarm-100 px-3 py-1 rounded-xl text-xs font-medium text-slateWarm-600">
+                    <i data-lucide="dollar-sign" class="w-3.5 h-3.5 text-sage-600"></i>
+                    <span class="text-xs font-bold">Tasa BCV:</span>
+                    <input type="number" id="exchangeRate" value="36.50" step="0.01" class="w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 text-xs focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
+                    <button onclick="fetchLiveRates()" title="Actualizar Tasa BCV" class="text-sage-600 hover:text-sage-700 p-0.5">
                         <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
                     </button>
-                    <span class="text-gray-400 text-[10px] sm:text-xs">Bs/$</span>
+                    <span class="text-gray-400 text-xs">Bs/$</span>
                 </div>
 
-                <div class="hidden sm:flex items-center bg-gray-100 p-1 rounded-xl">
-                    <button id="btnUser1" onclick="switchUser('Danil')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm">Danil</button>
-                    <button id="btnUser2" onclick="switchUser('Ogglys')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500">Ogglys</button>
+                <div class="hidden sm:flex items-center gap-2">
+                    <div class="flex items-center bg-gray-100 p-1 rounded-xl">
+                        <button id="btnUser1" onclick="switchUser('Danil')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm">Danil</button>
+                        <button id="btnUser2" onclick="switchUser('Ogglys')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500">Ogglys</button>
+                    </div>
+
+                    <!-- Botón Cerrar Sesión -->
+                    <button onclick="logout()" title="Cerrar Sesión" class="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-coralAlert/30 bg-coralSoft text-coralAlert hover:bg-coralAlert hover:text-white text-xs font-bold transition-all">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                        <span class="hidden lg:inline">Salir</span>
+                    </button>
                 </div>
             </div>
 
@@ -97,7 +130,7 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
 
-        <!-- INTERFAZ 1: PANEL GENERAL (SIN GRÁFICAS NI CALENDARIO) -->
+        <!-- INTERFAZ 1: PANEL GENERAL -->
         <section id="mod-dashboard" class="tab-content active space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
@@ -339,7 +372,7 @@
             </div>
         </section>
 
-        <!-- INTERFAZ 5: GRÁFICAS Y CALENDARIO (ÚNICA PANTALLA DONDE EXISTEN) -->
+        <!-- INTERFAZ 5: GRÁFICAS -->
         <section id="mod-analytics" class="tab-content">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
@@ -380,8 +413,8 @@
 
     </main>
 
-    <!-- NAVEGACIÓN INFERIOR FIJA (BOTTOM NAV BAR) -->
-    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 px-2 py-1.5 shadow-lg">
+    <!-- NAVEGACIÓN INFERIOR PARA TELÉFONOS (BOTTOM NAV BAR) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 px-2 py-1.5 shadow-lg">
         <div class="flex justify-around items-center text-[10px] font-bold">
             <button onclick="showTab('mod-dashboard')" id="nav-mod-dashboard" class="nav-btn flex flex-col items-center gap-0.5 text-sage-600">
                 <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
@@ -425,7 +458,7 @@
 
         let currentMarketItems = JSON.parse(localStorage.getItem('myroomie_market_items')) || defaultMarketList;
 
-        // CAMBIO DE PESTAÑA / AISLAMIENTO STRICTO
+        // CAMBIO DE PESTAÑA / NAVEGACIÓN DUAL (COMPUTADORA Y MÓVIL)
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -436,6 +469,7 @@
                 selected.classList.add('active');
             }
 
+            // Actualizar estado botones móvil
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('text-sage-600');
                 btn.classList.add('text-gray-400');
@@ -444,6 +478,17 @@
             if (activeNav) {
                 activeNav.classList.remove('text-gray-400');
                 activeNav.classList.add('text-sage-600');
+            }
+
+            // Actualizar estado botones computadora
+            document.querySelectorAll('.top-nav-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-slateWarm-700', 'shadow-sm');
+                btn.classList.add('text-gray-500');
+            });
+            const activeTopNav = document.getElementById(`top-${tabId}`);
+            if (activeTopNav) {
+                activeTopNav.classList.remove('text-gray-500');
+                activeTopNav.classList.add('bg-white', 'text-slateWarm-700', 'shadow-sm');
             }
 
             const titles = {
@@ -455,7 +500,6 @@
             };
             document.getElementById('currentTabTitle').innerText = titles[tabId] || 'My Roomie';
 
-            // DIBUJAR GRÁFICAS Y CALENDARIO ÚNICAMENTE SI LA PESTAÑA ACTIVA ES "GRÁFICAS"
             if (tabId === 'mod-analytics') {
                 setTimeout(() => {
                     renderCharts();
@@ -464,31 +508,42 @@
             }
         }
 
+        // CONSULTA DE TASA BCV DIRECTA
         async function fetchLiveRates() {
             const rateInput = document.getElementById('exchangeRate');
+            
+            // 1. Consulta directa a la API de Dólar Oficial en Venezuela
             try {
-                const res = await fetch('/api/rates/current');
+                const res = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
                 const data = await res.json();
-                if (data.success && data.rates && data.rates.BCV_USD) {
-                    rateInput.value = parseFloat(data.rates.BCV_USD).toFixed(2);
+                if (data && data.promedio) {
+                    rateInput.value = parseFloat(data.promedio).toFixed(2);
                     updateCalculations();
-                    showToast('Tasa BCV actualizada en vivo');
+                    showToast('Tasa BCV cargada en vivo');
                     return;
                 }
             } catch (err) {
-                console.log("Servidor interno no respondió tasa, buscando respaldo...");
+                console.log("Revisando API de respaldo interna...");
             }
 
+            // 2. Respaldo
             try {
-                const fallbackRes = await fetch('https://open.er-api.com/v6/latest/USD');
+                const fallbackRes = await fetch('/api/rates/current');
                 const fallbackData = await fallbackRes.json();
-                if (fallbackData && fallbackData.rates && fallbackData.rates.VES) {
-                    rateInput.value = parseFloat(fallbackData.rates.VES).toFixed(2);
+                if (fallbackData.success && fallbackData.rates && fallbackData.rates.BCV_USD) {
+                    rateInput.value = parseFloat(fallbackData.rates.BCV_USD).toFixed(2);
                     updateCalculations();
-                    showToast('Tasa de divisas obtenida en vivo');
+                    showToast('Tasa BCV del servidor cargada');
                 }
             } catch (err2) {
                 console.log("Usando tasa manual.");
+            }
+        }
+
+        function logout() {
+            if (confirm('¿Deseas cerrar sesión en My Roomie?')) {
+                showToast('Sesión cerrada correctamente');
+                setTimeout(() => location.reload(), 800);
             }
         }
 
