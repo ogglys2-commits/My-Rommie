@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Roomie - Finanzas para Parejas</title>
+    <title>My Roomie - Finanzas en Pareja</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#7EA172">
     <!-- Tailwind CSS CDN -->
@@ -33,7 +33,7 @@
 </head>
 <body class="text-slate-800 antialiased min-h-screen pb-24">
 
-    <!-- TOAST NOTIFICATIONS -->
+    <!-- NOTIFICACIONES TOAST -->
     <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- MODAL FOTO COMPROBANTE -->
@@ -49,23 +49,35 @@
         </div>
     </div>
 
-    <!-- HEADER SUPERIOR -->
+    <!-- HEADER SUPERIOR CON MENÚ DE LOGO Y CERRAR SESIÓN -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
-            <!-- LOGO Y TÍTULOS ALINEADOS -->
-            <div class="flex items-center gap-2">
-                <div class="bg-sage-500 text-white p-2 rounded-xl shadow-md shrink-0">
+        <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-2">
+            
+            <!-- LOGO CON MENÚ DESPLEGABLE DE INTERFACES -->
+            <div class="relative flex items-center gap-2">
+                <button onclick="toggleLogoMenu()" class="bg-sage-500 text-white p-2 rounded-xl shadow-md hover:bg-sage-600 transition-all flex items-center gap-1">
                     <i data-lucide="heart-handshake" class="w-5 h-5"></i>
-                </div>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </button>
                 <div class="flex flex-col justify-center leading-tight">
                     <h1 class="font-bold text-base text-slateWarm-700">My Roomie</h1>
-                    <span class="text-[11px] text-gray-400 font-medium truncate max-w-[120px] sm:max-w-none" id="headerPairName">Danil & Ogglys</span>
+                    <span class="text-[11px] text-gray-400 font-medium" id="headerPairName">Danil & Ogglys</span>
+                </div>
+
+                <!-- MENÚ FLOTANTE DEL LOGO -->
+                <div id="logoMenu" class="hidden absolute top-12 left-0 bg-white border border-gray-200 rounded-2xl shadow-xl w-64 py-2 z-50 text-xs font-bold">
+                    <div class="px-3 py-1.5 border-b text-[10px] text-gray-400 uppercase">Seleccionar Interfaz</div>
+                    <button onclick="showModule('dashboard'); toggleLogoMenu()" class="w-full text-left px-4 py-2 hover:bg-sage-50 flex items-center gap-2 text-slateWarm-700"><i data-lucide="calculator" class="w-4 h-4 text-sage-600"></i> 1. Aporte Proporcional</button>
+                    <button onclick="showModule('market'); toggleLogoMenu()" class="w-full text-left px-4 py-2 hover:bg-sage-50 flex items-center gap-2 text-slateWarm-700"><i data-lucide="shopping-bag" class="w-4 h-4 text-sage-600"></i> 2. Lista de Mercado</button>
+                    <button onclick="showModule('credits'); toggleLogoMenu()" class="w-full text-left px-4 py-2 hover:bg-sage-50 flex items-center gap-2 text-slateWarm-700"><i data-lucide="credit-card" class="w-4 h-4 text-coralAlert"></i> 3. Créditos & Amortización</button>
+                    <button onclick="showModule('transactions'); toggleLogoMenu()" class="w-full text-left px-4 py-2 hover:bg-sage-50 flex items-center gap-2 text-slateWarm-700"><i data-lucide="receipt" class="w-4 h-4 text-sage-600"></i> 4. Registro y Calendario</button>
+                    <button onclick="showModule('analytics'); toggleLogoMenu()" class="w-full text-left px-4 py-2 hover:bg-sage-50 flex items-center gap-2 text-slateWarm-700"><i data-lucide="bar-chart-3" class="w-4 h-4 text-slateWarm-500"></i> 5. Historial y Gráficas</button>
                 </div>
             </div>
 
-            <!-- TASA BCV Y PERFILES -->
+            <!-- TASA BCV, MONEDAS Y CERRAR SESIÓN -->
             <div class="flex items-center gap-2">
-                <!-- Tasa BCV -->
+                <!-- Tasa BCV / Promedio -->
                 <div class="flex items-center gap-1 bg-slateWarm-50 border border-slateWarm-100 px-2 py-1 rounded-xl text-xs font-medium text-slateWarm-600">
                     <i data-lucide="dollar-sign" class="w-3.5 h-3.5 text-sage-600"></i>
                     <input type="number" id="exchangeRate" value="855.66" step="0.5" class="w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
@@ -74,23 +86,28 @@
 
                 <!-- SELECTOR DE PERFILES -->
                 <div class="flex items-center bg-gray-100 p-1 rounded-xl text-xs font-bold">
-                    <button id="btnUser1" onclick="switchUser('Danil')" class="px-2.5 py-1 rounded-lg bg-white text-slateWarm-700 shadow-sm">Danil</button>
-                    <button id="btnUser2" onclick="switchUser('Ogglys')" class="px-2.5 py-1 rounded-lg text-gray-500">Ogglys</button>
+                    <button id="btnUser1" onclick="switchUser('Danil')" class="px-2 py-1 rounded-lg bg-white text-slateWarm-700 shadow-sm">Danil</button>
+                    <button id="btnUser2" onclick="switchUser('Ogglys')" class="px-2 py-1 rounded-lg text-gray-500">Ogglys</button>
                 </div>
+
+                <!-- BOTÓN SALIR / CERRAR SESIÓN -->
+                <button onclick="handleLogout()" class="p-2 text-gray-400 hover:text-coralAlert rounded-xl hover:bg-red-50 transition-all" title="Cerrar Sesión">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
             </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 pt-4 space-y-6">
 
-        <!-- MÓDULO 1: DASHBOARD & APORTE PROPORCIONAL -->
+        <!-- INTERFAZ 1: APORTE PROPORCIONAL Y BALANCES -->
         <div id="module-dashboard" class="space-y-6">
             
-            <!-- APORTE PROPORCIONAL MODELO EXCEL -->
+            <!-- APORTE PROPORCIONAL SEGÚN INGRESOS -->
             <section class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b pb-3">
                     <h2 class="font-bold text-slateWarm-700 text-sm flex items-center gap-2">
-                        <i data-lucide="calculator" class="w-4 h-4 text-sage-600"></i> Aporte Proporcional según Ingresos (Modelo Excel)
+                        <i data-lucide="calculator" class="w-4 h-4 text-sage-600"></i> Aporte Proporcional según Ingresos (Modelo Exacto)
                     </h2>
                     <span class="text-[10px] bg-sage-50 text-sage-700 px-2 py-0.5 rounded-lg font-semibold">Cálculo Automático</span>
                 </div>
@@ -122,7 +139,7 @@
                 </div>
             </section>
 
-            <!-- KPIS PRINCIPALES MULTIMONEDA -->
+            <!-- KPIS MULTIMONEDA EN TIEMPO REAL -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div class="bg-white p-4 rounded-2xl border shadow-sm flex items-center justify-between">
                     <div>
@@ -153,7 +170,7 @@
             </div>
         </div>
 
-        <!-- MÓDULO 2: LISTA COMPLETA DE MERCADO -->
+        <!-- INTERFAZ 2: LISTA DE MERCADO Y REABASTECIMIENTO PREDICTIVO -->
         <div id="module-market" class="hidden bg-white p-5 rounded-2xl border shadow-sm space-y-4">
             <div class="flex items-center justify-between border-b pb-3">
                 <h2 class="font-bold text-slateWarm-700 text-sm flex items-center gap-2">
@@ -251,20 +268,20 @@
             </button>
         </div>
 
-        <!-- MÓDULO 3: CRÉDITOS Y PLAN DE PAGOS -->
+        <!-- INTERFAZ 3: CRÉDITOS Y PLAN DE AMORTIZACIÓN PROPORCIONAL -->
         <div id="module-credits" class="hidden space-y-6">
             <section class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
                 <div class="border-b pb-3">
                     <h2 class="font-bold text-slateWarm-700 text-sm flex items-center gap-2">
-                        <i data-lucide="credit-card" class="w-4 h-4 text-coralAlert"></i> Gestión de Créditos y Cuotas
+                        <i data-lucide="credit-card" class="w-4 h-4 text-coralAlert"></i> Gestión de Créditos y Plan de Pagos
                     </h2>
-                    <p class="text-xs text-gray-400">Registra deudas u obligaciones compartidas para llevar el control de cuotas y abonos.</p>
+                    <p class="text-xs text-gray-400">Calcula la capacidad real de pago según balance e ingresos de cada uno.</p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <form onsubmit="handleCreditSubmit(event)" class="space-y-3 bg-gray-50 p-4 rounded-xl text-xs border">
                         <h3 class="font-bold text-slateWarm-700">Nuevo Préstamo / Crédito</h3>
-                        <input type="text" id="creditOrigin" placeholder="Origen (ej. Banco, Vehículo, Tienda)" required class="w-full p-2 rounded-xl border">
+                        <input type="text" id="creditOrigin" placeholder="Origen (ej. Banco, Vehículo, Préstamo)" required class="w-full p-2 rounded-xl border">
                         <div class="grid grid-cols-2 gap-2">
                             <input type="number" id="creditAmount" placeholder="Monto Total ($)" step="0.01" required class="w-full p-2 rounded-xl border font-bold">
                             <input type="number" id="creditInstallments" placeholder="Nº Cuotas" required class="w-full p-2 rounded-xl border font-bold">
@@ -289,9 +306,9 @@
             </section>
         </div>
 
-        <!-- MÓDULO 4: REGISTRO DE MOVIMIENTOS & HISTORIAL -->
+        <!-- INTERFAZ 4: REGISTRO DE MOVIMIENTOS Y CALENDARIO -->
         <div id="module-transactions" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- FORMULARIO MOVIMIENTOS -->
+            <!-- FORMULARIO MOVIMIENTOS CON SOPORTE 4 MONEDAS -->
             <div class="bg-white p-5 rounded-2xl border shadow-sm text-xs space-y-3">
                 <h2 class="font-bold text-slateWarm-700 border-b pb-2 text-sm flex items-center gap-2">
                     <i data-lucide="plus-circle" class="w-4 h-4 text-sage-600"></i> Registrar Movimiento
@@ -310,10 +327,13 @@
                         </select>
                     </div>
 
+                    <!-- SOPORTE PARA 4 MONEDAS: USD, BS, EUR, USDT -->
                     <div class="grid grid-cols-3 gap-2">
                         <select id="txCurrency" class="col-span-1 p-2 rounded-xl border font-bold">
                             <option value="USD">$ USD</option>
                             <option value="BS">Bs. (VES)</option>
+                            <option value="EUR">€ EUR</option>
+                            <option value="USDT">₮ USDT</option>
                         </select>
                         <input type="number" id="txAmount" placeholder="0.00" step="0.01" required class="col-span-2 p-2 rounded-xl border font-bold">
                     </div>
@@ -322,7 +342,7 @@
                     <textarea id="txDesc" placeholder="Descripción del gasto o ingreso..." required class="w-full p-2 rounded-xl border h-16"></textarea>
 
                     <div>
-                        <label class="block font-semibold text-gray-600 mb-1">Comprobante (Opcional)</label>
+                        <label class="block font-semibold text-gray-600 mb-1">Comprobante / Factura (Opcional)</label>
                         <input type="file" id="txImage" accept="image/*" class="w-full text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:bg-sage-50 file:text-sage-700">
                     </div>
 
@@ -351,10 +371,10 @@
             </div>
         </div>
 
-        <!-- MÓDULO 5: GRÁFICAS -->
+        <!-- INTERFAZ 5: HISTORIAL COMPLETO, REPORTES Y GRÁFICAS -->
         <div id="module-analytics" class="hidden bg-white p-5 rounded-2xl border shadow-sm">
             <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b text-sm flex items-center gap-2">
-                <i data-lucide="pie-chart" class="w-4 h-4 text-slateWarm-500"></i> Distribución Financiera
+                <i data-lucide="pie-chart" class="w-4 h-4 text-slateWarm-500"></i> Distribución Financiera & Reportes
             </h2>
             <div class="relative h-60 flex items-center justify-center max-w-md mx-auto">
                 <canvas id="chartDistribution"></canvas>
@@ -363,7 +383,7 @@
 
     </main>
 
-    <!-- BARRA NAVEGACIÓN INFERIOR FIJA (BOTTOM NAV BAR) -->
+    <!-- BARRA DE NAVEGACIÓN INFERIOR FIJA (BOTTOM NAV BAR) -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg px-2 py-2">
         <div class="max-w-md mx-auto flex justify-around items-center text-[10px] font-bold">
             <button onclick="showModule('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 text-sage-600 font-extrabold">
@@ -389,7 +409,7 @@
         </div>
     </nav>
 
-    <!-- SCRIPT PRINCIPAL -->
+    <!-- LÓGICA JAVASCRIP INTEGRADA -->
     <script>
         let user1Name = 'Danil';
         let user2Name = 'Ogglys';
@@ -399,6 +419,17 @@
         let transactions = JSON.parse(localStorage.getItem('mr_txs') || '[]');
         let credits = JSON.parse(localStorage.getItem('mr_credits') || '[]');
         let chartInstance = null;
+
+        function toggleLogoMenu() {
+            document.getElementById('logoMenu').classList.toggle('hidden');
+        }
+
+        function handleLogout() {
+            if (confirm('¿Deseas cerrar sesión?')) {
+                localStorage.removeItem('myroomie_token');
+                window.location.href = '/index.html';
+            }
+        }
 
         function showModule(mod) {
             ['dashboard', 'market', 'credits', 'transactions', 'analytics'].forEach(m => {
@@ -421,8 +452,8 @@
         function switchUser(user) {
             activeUser = user;
             document.querySelectorAll('.currentUserSpan').forEach(el => el.innerText = user);
-            document.getElementById('btnUser1').className = user === user1Name ? "px-2.5 py-1 rounded-lg bg-white text-slateWarm-700 shadow-sm font-bold" : "px-2.5 py-1 rounded-lg text-gray-500 font-bold";
-            document.getElementById('btnUser2').className = user === user2Name ? "px-2.5 py-1 rounded-lg bg-white text-slateWarm-700 shadow-sm font-bold" : "px-2.5 py-1 rounded-lg text-gray-500 font-bold";
+            document.getElementById('btnUser1').className = user === user1Name ? "px-2 py-1 rounded-lg bg-white text-slateWarm-700 shadow-sm font-bold" : "px-2 py-1 rounded-lg text-gray-500 font-bold";
+            document.getElementById('btnUser2').className = user === user2Name ? "px-2 py-1 rounded-lg bg-white text-slateWarm-700 shadow-sm font-bold" : "px-2 py-1 rounded-lg text-gray-500 font-bold";
         }
 
         // CRÉDITOS
@@ -532,7 +563,8 @@
 
             if (!desc || isNaN(rawAmount)) return;
 
-            const amountUSD = currency === 'BS' ? (rawAmount / rate) : rawAmount;
+            let amountUSD = rawAmount;
+            if (currency === 'BS') amountUSD = rawAmount / rate;
 
             const save = (imgData = null) => {
                 transactions.unshift({
@@ -586,8 +618,8 @@
             });
 
             const totPairInc = u1Inc + u2Inc;
-            const u1Pct = totPairInc > 0 ? (u1Inc / totPairInc) * 100 : 50;
-            const u2Pct = totPairInc > 0 ? (u2Inc / totPairInc) * 100 : 50;
+            const u1Pct = totPairInc > 0 ? (u1Inc / totPairInc) * 100 : 36.8;
+            const u2Pct = totPairInc > 0 ? (u2Inc / totPairInc) * 100 : 63.2;
 
             document.getElementById('propUser1Pct').innerText = `${u1Pct.toFixed(1)}%`;
             document.getElementById('propUser1Income').innerText = `$${u1Inc.toFixed(2)}`;
@@ -624,7 +656,7 @@
                 <tr class="hover:bg-gray-50">
                     <td class="p-2 font-bold text-slateWarm-700">${t.desc}<br><span class="text-[10px] text-gray-400 font-normal">${t.date}</span></td>
                     <td class="p-2"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${t.scope === 'Pareja' ? 'bg-slateWarm-100 text-slateWarm-700' : 'bg-sage-100 text-sage-700'}">${t.user}</span></td>
-                    <td class="p-2 font-semibold text-slateWarm-600">${t.currency === 'BS' ? 'Bs. ' + t.rawAmount.toFixed(2) : '$' + t.rawAmount.toFixed(2)}</td>
+                    <td class="p-2 font-semibold text-slateWarm-600">${t.currency} ${t.rawAmount.toFixed(2)}</td>
                     <td class="p-2 font-bold ${t.type === 'income' ? 'text-sage-600' : 'text-coralAlert'}">${t.type === 'income' ? '+' : '-'}$${t.amountUSD.toFixed(2)}</td>
                     <td class="p-2 text-center">${t.img ? `<button onclick="openModal('${t.img}', '${t.desc}')" class="text-slateWarm-600 underline font-semibold">Ver</button>` : '-'}</td>
                     <td class="p-2 text-right"><button onclick="deleteTx(${t.id})" class="text-red-400 font-bold">✕</button></td>
