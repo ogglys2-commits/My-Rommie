@@ -1,159 +1,79 @@
 const Pair = require('../models/Pair');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const mailer = require('../config/mailer');
 
-// 1. REGISTRO DE PAREJA
+// Registrar Pareja
 exports.registerPair = async (req, res) => {
-  try {
-    const { pairId, email, user1, user2, password } = req.body;
-
-    if (!pairId || !email || !user1 || !user2 || !password) {
-      return res.status(400).json({ msg: 'Por favor completa todos los campos requeridos.' });
-    }
-
-    // Verificar si ya existe el ID de pareja o el correo
-    let pairExists = await Pair.findOne({ $or: [{ pairId }, { email }] });
-    if (pairExists) {
-      return res.status(400).json({ msg: 'El ID de Pareja o el Correo Electrónico ya están registrados.' });
-    }
-
-    // Definir si es el primer usuario en el sistema para asignarle ROL ADMIN automáticamente
-    const totalPairs = await Pair.countDocuments();
-    const role = totalPairs === 0 ? 'admin' : 'user';
-
-    const newPair = new Pair({
-      pairId,
-      email,
-      user1,
-      user2,
-      password, // En producción se recomienda encriptar con bcrypt
-      role
-    });
-
-    await newPair.save();
-
-    // Intentar enviar correo de bienvenida (sin tumbar la respuesta si falla la red)
     try {
-      await mailer.sendWelcomeEmail(email, pairId, user1, user2);
-    } catch (mailErr) {
-      console.log('⚠️ No se pudo enviar el correo de bienvenida:', mailErr.message);
-    }
+        const { pairId, email, user1, user2, password } = req.body;
+        
+        const existingPair = await Pair.findOne({ $or: [{ pairId }, { email }] });
+        if (existingPair) {
+            return res.status(400).json({ msg: 'El ID de pareja o el correo electrónico ya está registrado.' });
+        }
 
-    res.status(201).json({
-      msg: 'Pareja registrada con éxito.',
-      pair: {
-        pairId: newPair.pairId,
-        email: newPair.email,
-        user1: newPair.user1,
-        user2: newPair.user2,
-        role: newPair.role
-      }
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: 'Error al registrar la pareja en el servidor.' });
-  }
+        const count = await Pair.countDocuments();
+        const role = count === 0 ? 'admin' : 'user';
+
+        const pair = new Pair({ pairId, email, user1, user2, password, role });
+        await pair.save();
+
+        res.status(201).json({ msg: 'Pareja registrada con éxito' });
+    } catch (err) {
+        res.status(500).json({ msg: 'Error al registrar la pareja', error: err.message });
+    }
 };
 
-// 2. INICIO DE SESIÓN
+// Iniciar Sesión Pareja
 exports.loginPair = async (req, res) => {
-  try {
-    const { pairId, password } = req.body;
+    try {
+        const { pairId, password } = req.body;
+        const pair = await Pair.findOne({ pairId });
 
-    const pair = await Pair.findOne({ pairId: pairId.toLowerCase() });
-    if (!pair) {
-      return res.status(404).json({ msg: 'Pareja no encontrada.' });
+        if (!pair || pair.password !== password) {
+            return res.status(400).json({ msg: 'Credenciales inválidas' });
+        }
+
+        const token = jwt.sign(
+            { id: pair._id, pairId: pair.pairId, role: pair.role },
+            process.env.JWT_SECRET || 'secreto_myroomie',
+            { expiresIn: '30d' }
+        );
+
+        res.json({ token, pair: { id: pair._id, pairId: pair.pairId, user1: pair.user1, user2: pair.user2, role: pair.role } });
+    } catch (err) {
+        res.status(500).json({ msg: 'Error al iniciar sesión', error: err.message });
     }
-
-    if (pair.password !== password) {
-      return res.status(400).json({ msg: 'Contraseña incorrecta.' });
-    }
-
-    // Generar Token JWT con rol
-    const token = jwt.sign(
-      { id: pair._id, pairId: pair.pairId, role: pair.role },
-      process.env.JWT_SECRET || 'secreto_super_seguro',
-      { expiresIn: '7d' }
-    );
-
-    res.json({
-      msg: 'Inicio de sesión exitoso',
-      token,
-      pair: {
-        pairId: pair.pairId,
-        email: pair.email,
-        user1: pair.user1,
-        user2: pair.user2,
-        role: pair.role
-      }
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: 'Error al iniciar sesión.' });
-  }
 };
 
-// 3. SOLICITAR RECUPERACIÓN DE CONTRASEÑA
-exports.forgotPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-    const pair = await Pair.findOne({ email: email.toLowerCase() });
+// Login Directo con Clave Maestra de Administrador
+exports.adminLogin = async (req, res) => {
+    try {
+        const { adminUser, adminPassword } = req.body;
 
-    if (!pair) {
-      return res.status(404).json({ msg: 'No existe ninguna cuenta asociada a este correo.' });
+        const envUser = process.env.ADMIN_USER || 'admin';
+        const envPass = process.env.ADMIN_PASSWORD || 'admin123';
+
+        if (adminUser === envUser && adminPassword === envPass) {
+            const token = jwt.sign(
+                { role: 'admin', isMasterAdmin: true },
+                process.env.JWT_SECRET || 'secreto_myroomie',
+                { expiresIn: '1d' }
+            );
+            return res.json({ token, msg: 'Autenticación exitosa' });
+        }
+
+        res.status(401).json({ msg: 'Usuario o Clave Maestra incorrectos' });
+    } catch (err) {
+        res.status(500).json({ msg: 'Error en la autenticación admin' });
     }
-
-    // Generar token aleatorio
-    const resetToken = crypto.randomBytes(20).toString('hex');
-    pair.resetPasswordToken = resetToken;
-    pair.resetPasswordExpires = Date.now() + 3600000; // 1 hora de validez
-
-    await pair.save();
-
-    await mailer.sendResetPasswordEmail(pair.email, pair.pairId, resetToken);
-
-    res.json({ msg: 'Correo de recuperación enviado exitosamente.' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: 'Error al procesar la solicitud de contraseña.' });
-  }
 };
 
-// 4. RESTABLECER CONTRASEÑA CON TOKEN
-exports.resetPassword = async (req, res) => {
-  try {
-    const { token, pairId, newPassword } = req.body;
-
-    const pair = await Pair.findOne({
-      pairId: pairId.toLowerCase(),
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }
-    });
-
-    if (!pair) {
-      return res.status(400).json({ msg: 'El enlace de recuperación es inválido o ha expirado.' });
+// Obtener todas las parejas para el Panel Admin
+exports.getAllPairs = async (req, res) => {
+    try {
+        const pairs = await Pair.find({}, '-password').sort({ createdAt: -1 });
+        res.json(pairs);
+    } catch (err) {
+        res.status(500).json({ msg: 'Error al obtener lista de parejas' });
     }
-
-    pair.password = newPassword;
-    pair.resetPasswordToken = null;
-    pair.resetPasswordExpires = null;
-    await pair.save();
-
-    res.json({ msg: 'Contraseña actualizada con éxito. Ya puedes iniciar sesión.' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: 'Error al restablecer la contraseña.' });
-  }
-};
-
-// 5. OBTENER TODAS LAS PAREJAS (PANEL ADMIN)
-exports.getAllPairsAdmin = async (req, res) => {
-  try {
-    const pairs = await Pair.find({}, '-password').sort({ createdAt: -1 });
-    res.json(pairs);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: 'Error al obtener la lista de parejas.' });
-  }
 };

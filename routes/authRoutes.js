@@ -4,10 +4,7 @@ const authController = require('../controllers/authController');
 
 router.post('/register', authController.registerPair);
 router.post('/login', authController.loginPair);
-router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password', authController.resetPassword);
-
-// Ruta para el Panel de Administración Interno
-router.get('/admin/pairs', authController.getAllPairsAdmin);
+router.post('/admin-login', authController.adminLogin);
+router.get('/admin/pairs', authController.getAllPairs);
 
 module.exports = router;

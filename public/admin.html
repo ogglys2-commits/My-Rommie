@@ -29,7 +29,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg">My Roomie Admin</h1>
-                    <p class="text-xs text-gray-400" id="adminUserLabel">Control de Usuarios y Soporte</p>
+                    <p class="text-xs text-gray-400">Control de Usuarios y Soporte</p>
                 </div>
             </div>
             <button onclick="logoutAdmin()" class="bg-red-500/80 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-xl font-semibold transition-all">
@@ -53,7 +53,7 @@
             <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                 <div>
                     <p class="text-xs text-gray-400 uppercase font-semibold">Administradores</p>
-                    <h3 class="text-2xl font-bold text-slateWarm-700 mt-1" id="totalAdmins">0</h3>
+                    <h3 class="text-2xl font-bold text-slateWarm-700 mt-1" id="totalAdmins">1</h3>
                 </div>
                 <div class="bg-blue-50 text-blue-600 p-3 rounded-2xl"><i data-lucide="user-check" class="w-6 h-6"></i></div>
             </div>
@@ -61,7 +61,7 @@
             <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                 <div>
                     <p class="text-xs text-gray-400 uppercase font-semibold">Estado del Sistema</p>
-                    <h3 class="text-xs font-bold text-green-600 mt-1">Conectado (Modo Seguro)</h3>
+                    <h3 class="text-xs font-bold text-green-600 mt-1">Conectado (Clave Maestra)</h3>
                 </div>
                 <div class="bg-green-50 text-green-600 p-3 rounded-2xl"><i data-lucide="shield" class="w-6 h-6"></i></div>
             </div>
@@ -93,41 +93,33 @@
     </main>
 
     <script>
-        // VERIFICACIÓN DE SEGURIDAD AL CARGAR LA PÁGINA
-        const savedPair = JSON.parse(localStorage.getItem('myroomie_pair') || '{}');
-        const token = localStorage.getItem('myroomie_token');
+        const adminToken = localStorage.getItem('myroomie_admin_token');
 
-        if (!token || savedPair.role !== 'admin') {
-            alert("Acceso denegado: Esta área requiere permisos de Administrador.");
+        if (!adminToken) {
+            alert("Acceso denegado: Requiere autenticación de Administradora.");
             window.location.href = '/';
-        } else {
-            document.getElementById('adminUserLabel').innerText = `Sesión iniciada como: ${savedPair.pairId} (Admin)`;
         }
 
         let allPairs = [];
 
         async function loadAdminData() {
             try {
-                const res = await fetch('/api/auth/admin/pairs', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!res.ok) throw new Error("No autorizado");
+                const res = await fetch('/api/auth/admin/pairs');
+                if (!res.ok) throw new Error("Error en la consulta");
                 
                 allPairs = await res.json();
                 renderAdminTable(allPairs);
             } catch (err) {
-                alert("Sesión expirada o no autorizada.");
-                window.location.href = '/';
+                alert("Error al cargar la lista de parejas.");
             }
         }
 
         function renderAdminTable(data) {
             const tbody = document.getElementById('adminTableBody');
             document.getElementById('totalPairs').innerText = data.length;
-            document.getElementById('totalAdmins').innerText = data.filter(p => p.role === 'admin').length;
 
             if (!data.length) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">No hay parejas registradas.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">No hay parejas registradas aún.</td></tr>`;
                 return;
             }
 
@@ -135,7 +127,7 @@
                 <tr class="hover:bg-gray-50">
                     <td class="p-3 font-bold text-slateWarm-700">${p.pairId}</td>
                     <td class="p-3 text-gray-600">${p.user1} & ${p.user2}</td>
-                    <td class="p-3 font-semibold text-sage-600">${p.email}</td>
+                    <td class="p-3 font-semibold text-sage-600">${p.email || 'Sin correo registrado'}</td>
                     <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${p.role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}">${p.role}</span></td>
                     <td class="p-3 text-right">
                         <button onclick="sendRecoveryMail('${p.email}')" class="bg-sage-500 hover:bg-sage-600 text-white font-bold px-3 py-1 rounded-lg text-[10px] transition-all">
@@ -149,11 +141,12 @@
 
         function filterPairs() {
             const query = document.getElementById('adminSearch').value.toLowerCase();
-            const filtered = allPairs.filter(p => p.pairId.toLowerCase().includes(query) || p.email.toLowerCase().includes(query));
+            const filtered = allPairs.filter(p => p.pairId.toLowerCase().includes(query) || (p.email && p.email.toLowerCase().includes(query)));
             renderAdminTable(filtered);
         }
 
         async function sendRecoveryMail(email) {
+            if (!email) return alert("Esta pareja no tiene correo registrado.");
             if (confirm(`¿Enviar correo de recuperación a ${email}?`)) {
                 try {
                     const res = await fetch('/api/auth/forgot-password', {
@@ -164,13 +157,13 @@
                     const data = await res.json();
                     alert(data.msg);
                 } catch (err) {
-                    alert("Error al solicitar envío de correo");
+                    alert("Error al enviar el correo");
                 }
             }
         }
 
         function logoutAdmin() {
-            localStorage.clear();
+            localStorage.removeItem('myroomie_admin_token');
             window.location.href = '/';
         }
 
