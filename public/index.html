@@ -34,7 +34,7 @@
         .tab-content.active { display: block; }
     </style>
 </head>
-<body class="text-slate-800 antialiased min-h-screen pb-12">
+<body class="text-slate-800 antialiased min-h-screen pb-20 sm:pb-12">
 
     <!-- TOAST NOTIFICATIONS -->
     <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
@@ -52,66 +52,55 @@
         </div>
     </div>
 
-    <!-- HEADER CON MENÚ DE MÓDULOS -->
+    <!-- HEADER LIMPIO ADAPTADO -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-0 sm:h-16 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
             
-            <!-- Logo & Menú Desplegable de Módulos -->
-            <div class="flex items-center gap-3">
-                <div class="relative">
-                    <button onclick="toggleModuleMenu()" class="bg-sage-500 hover:bg-sage-600 text-white p-2.5 rounded-xl shadow-md flex items-center gap-1.5 transition-all">
-                        <i data-lucide="menu" class="w-5 h-5"></i>
-                    </button>
-                    <!-- Dropdown de Módulos / Cambiador de Vistas -->
-                    <div id="moduleDropdown" class="hidden absolute left-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 p-2 text-xs space-y-1">
-                        <div class="px-3 py-1.5 font-bold text-gray-400 uppercase text-[10px] tracking-wider">Selecciona la Interfaz</div>
-                        <button onclick="showTab('mod-dashboard')" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
-                            <i data-lucide="layout-dashboard" class="w-4 h-4 text-sage-600"></i> Panel de Control General
-                        </button>
-                        <button onclick="showTab('mod-proportional')" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
-                            <i data-lucide="calculator" class="w-4 h-4 text-sage-600"></i> Regla de Aportes Excel
-                        </button>
-                        <button onclick="showTab('mod-market')" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
-                            <i data-lucide="shopping-cart" class="w-4 h-4 text-sage-600"></i> Lista de Mercado
-                        </button>
-                        <button onclick="showTab('mod-transactions')" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
-                            <i data-lucide="receipt" class="w-4 h-4 text-sage-600"></i> Registro e Historial
-                        </button>
-                        <button onclick="showTab('mod-analytics')" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
-                            <i data-lucide="bar-chart-3" class="w-4 h-4 text-sage-600"></i> Gráficas y Calendario
-                        </button>
+            <!-- Logo y Título -->
+            <div class="flex items-center justify-between w-full sm:w-auto">
+                <div class="flex items-center gap-2.5">
+                    <div class="bg-sage-500 text-white p-2 rounded-xl shadow-sm">
+                        <i data-lucide="heart-handshake" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg sm:text-xl text-slateWarm-700 leading-none">My Roomie</h1>
+                        <span class="text-[10px] sm:text-xs text-gray-400 block mt-0.5" id="currentTabTitle">Panel General</span>
                     </div>
                 </div>
 
-                <div>
-                    <h1 class="font-bold text-xl text-slateWarm-700 leading-none">My Roomie</h1>
-                    <span class="text-xs text-gray-400" id="currentTabTitle">Panel General</span>
+                <!-- Botones Perfil Activo Móvil -->
+                <div class="flex items-center bg-gray-100 p-0.5 rounded-xl sm:hidden">
+                    <button id="btnUser1Mob" onclick="switchUser('Danil')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slateWarm-700 shadow-sm">Danil</button>
+                    <button id="btnUser2Mob" onclick="switchUser('Ogglys')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-500">Ogglys</button>
                 </div>
             </div>
 
-            <!-- Tasa y Usuarios -->
-            <div class="flex items-center gap-3">
-                <div class="flex items-center gap-2 bg-slateWarm-50 border border-slateWarm-100 px-3 py-1.5 rounded-xl text-xs font-medium text-slateWarm-600">
-                    <i data-lucide="dollar-sign" class="w-4 h-4 text-sage-600"></i>
-                    <span>Tasa BCV:</span>
-                    <input type="number" id="exchangeRate" value="36.50" step="0.01" class="w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
+            <!-- Tasa BCV y Perfiles Desktop -->
+            <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-1 sm:pt-0 border-t sm:border-0 border-gray-100">
+                <div class="flex items-center gap-1.5 bg-slateWarm-50 border border-slateWarm-100 px-2.5 py-1 rounded-xl text-xs font-medium text-slateWarm-600 w-full sm:w-auto justify-between sm:justify-start">
+                    <div class="flex items-center gap-1">
+                        <i data-lucide="dollar-sign" class="w-3.5 h-3.5 text-sage-600"></i>
+                        <span class="text-[11px] sm:text-xs font-bold">BCV:</span>
+                    </div>
+                    <input type="number" id="exchangeRate" value="36.50" step="0.01" class="w-14 sm:w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 text-xs focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
                     <button onclick="fetchLiveRates()" title="Actualizar Tasa en Vivo" class="text-sage-600 hover:text-sage-700 p-0.5">
                         <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
                     </button>
-                    <span class="text-gray-400">Bs/$</span>
+                    <span class="text-gray-400 text-[10px] sm:text-xs">Bs/$</span>
                 </div>
 
-                <div class="flex items-center bg-gray-100 p-1 rounded-xl">
+                <div class="hidden sm:flex items-center bg-gray-100 p-1 rounded-xl">
                     <button id="btnUser1" onclick="switchUser('Danil')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm">Danil</button>
                     <button id="btnUser2" onclick="switchUser('Ogglys')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500">Ogglys</button>
                 </div>
             </div>
+
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
 
-        <!-- VISTA 1: DASHBOARD GENERAL -->
+        <!-- INTERFAZ 1: PANEL GENERAL DE CONTROL (SIN GRÁFICAS) -->
         <section id="mod-dashboard" class="tab-content active space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
@@ -151,27 +140,27 @@
                 </div>
             </div>
 
-            <!-- Accesos Rápidos a Módulos -->
+            <!-- Botones de Acceso Rápido en Escritorio -->
             <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                 <h3 class="font-bold text-slateWarm-700 mb-4 text-sm">Módulos de Trabajo</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                    <button onclick="showTab('mod-proportional')" class="p-4 rounded-xl bg-slateWarm-50 hover:bg-slateWarm-100 border border-slateWarm-100 text-left transition-all">
-                        <i data-lucide="calculator" class="w-6 h-6 text-sage-600 mb-2"></i>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                    <button onclick="showTab('mod-proportional')" class="p-3.5 rounded-xl bg-slateWarm-50 hover:bg-slateWarm-100 border border-slateWarm-100 text-left transition-all">
+                        <i data-lucide="calculator" class="w-5 h-5 text-sage-600 mb-1.5"></i>
                         <h4 class="font-bold text-slateWarm-700">Regla de Aportes</h4>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Proporciones según ingresos</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Proporciones ingresos</p>
                     </button>
-                    <button onclick="showTab('mod-market')" class="p-4 rounded-xl bg-sage-50 hover:bg-sage-100 border border-sage-100 text-left transition-all">
-                        <i data-lucide="shopping-cart" class="w-6 h-6 text-sage-600 mb-2"></i>
-                        <h4 class="font-bold text-slateWarm-700">Lista de Mercado</h4>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Checklist interactivo</p>
+                    <button onclick="showTab('mod-market')" class="p-3.5 rounded-xl bg-sage-50 hover:bg-sage-100 border border-sage-100 text-left transition-all">
+                        <i data-lucide="shopping-cart" class="w-5 h-5 text-sage-600 mb-1.5"></i>
+                        <h4 class="font-bold text-slateWarm-700">Lista Mercado</h4>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Checklist compras</p>
                     </button>
-                    <button onclick="showTab('mod-transactions')" class="p-4 rounded-xl bg-slateWarm-50 hover:bg-slateWarm-100 border border-slateWarm-100 text-left transition-all">
-                        <i data-lucide="receipt" class="w-6 h-6 text-slateWarm-600 mb-2"></i>
+                    <button onclick="showTab('mod-transactions')" class="p-3.5 rounded-xl bg-slateWarm-50 hover:bg-slateWarm-100 border border-slateWarm-100 text-left transition-all">
+                        <i data-lucide="receipt" class="w-5 h-5 text-slateWarm-600 mb-1.5"></i>
                         <h4 class="font-bold text-slateWarm-700">Registrar Gastos</h4>
                         <p class="text-[10px] text-gray-400 mt-0.5">Formulario e historial</p>
                     </button>
-                    <button onclick="showTab('mod-analytics')" class="p-4 rounded-xl bg-coralSoft hover:bg-coralSoft/80 border border-coralAlert/20 text-left transition-all">
-                        <i data-lucide="bar-chart-3" class="w-6 h-6 text-coralAlert mb-2"></i>
+                    <button onclick="showTab('mod-analytics')" class="p-3.5 rounded-xl bg-coralSoft hover:bg-coralSoft/80 border border-coralAlert/20 text-left transition-all">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-coralAlert mb-1.5"></i>
                         <h4 class="font-bold text-slateWarm-700">Gráficas</h4>
                         <p class="text-[10px] text-gray-400 mt-0.5">Calendario y analítica</p>
                     </button>
@@ -179,17 +168,17 @@
             </div>
         </section>
 
-        <!-- VISTA 2: APORTE PROPORCIONAL POR INGRESOS -->
+        <!-- INTERFAZ 2: REGLA DE APORTES PROPORCIONALES -->
         <section id="mod-proportional" class="tab-content bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <div class="flex items-center gap-2">
                     <i data-lucide="calculator" class="w-5 h-5 text-sage-600"></i>
-                    <h2 class="font-bold text-slateWarm-700">Aporte Proporcional por Ingresos (Modelo Excel)</h2>
+                    <h2 class="font-bold text-slateWarm-700 text-sm">Aporte Proporcional por Ingresos (Modelo Excel)</h2>
                 </div>
-                <span class="text-xs bg-sage-50 text-sage-700 px-2.5 py-1 rounded-lg font-semibold">Cálculo Automático</span>
+                <span class="text-[10px] bg-sage-50 text-sage-700 px-2 py-1 rounded-lg font-semibold">Cálculo Automático</span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                 <div class="p-4 bg-slateWarm-50 rounded-xl border border-slateWarm-100">
                     <div class="flex justify-between items-center mb-1">
                         <span class="text-xs font-bold text-slateWarm-700">Danil</span>
@@ -216,34 +205,43 @@
             </div>
         </section>
 
-        <!-- VISTA 3: LISTA DE COMPRAS DE MERCADO -->
+        <!-- INTERFAZ 3: LISTA DE MERCADO Y ESTIMACIÓN -->
         <section id="mod-market" class="tab-content bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <div class="flex items-center gap-2">
                     <i data-lucide="shopping-cart" class="w-5 h-5 text-sage-600"></i>
-                    <h2 class="font-bold text-slateWarm-700">Lista de Compras de Mercado</h2>
+                    <h2 class="font-bold text-slateWarm-700 text-sm">Lista de Compras de Mercado</h2>
                 </div>
-                <span class="text-xs bg-sage-50 text-sage-700 font-semibold px-2.5 py-1 rounded-lg" id="marketCheckCount">0 Seleccionados</span>
+                <span class="text-xs bg-sage-50 text-sage-700 font-semibold px-2 py-1 rounded-lg" id="marketCheckCount">0 Seleccionados</span>
+            </div>
+
+            <!-- Panel de Estimación de Frecuencia de Mercado -->
+            <div id="marketEstimateAlert" class="mb-4 p-3 bg-slateWarm-50 border border-slateWarm-100 rounded-xl text-xs flex items-center justify-between text-slateWarm-700">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="clock" class="w-4 h-4 text-sage-600"></i>
+                    <span>Estimación de recompra habitual: <strong id="marketEstimateDays">Cada 15 días aprox.</strong></span>
+                </div>
+                <span class="text-[10px] bg-white px-2 py-0.5 rounded border text-gray-500" id="marketLastDate">Última compra: Sin registros</span>
             </div>
 
             <div class="flex gap-2 mb-4">
-                <input type="text" id="customMarketItem" placeholder="➕ ¿Falta algo que no esté en la lista? Escríbelo aquí..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
-                <button type="button" onclick="addCustomMarketItem()" class="bg-sage-500 hover:bg-sage-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1">
+                <input type="text" id="customMarketItem" placeholder="➕ ¿Falta algo? Escríbelo aquí..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
+                <button type="button" onclick="addCustomMarketItem()" class="bg-sage-500 hover:bg-sage-600 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1">
                     <i data-lucide="plus" class="w-4 h-4"></i> Añadir
                 </button>
             </div>
 
-            <div class="space-y-4 max-h-[400px] overflow-y-auto pr-1" id="marketListContainer"></div>
+            <div class="space-y-4 max-h-[380px] overflow-y-auto pr-1" id="marketListContainer"></div>
 
-            <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-                <span class="text-xs text-gray-500">Selecciona los productos para armar la compra.</span>
-                <button type="button" onclick="registerSelectedMarketItems()" class="bg-slateWarm-600 hover:bg-slateWarm-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-sm">
+            <div class="mt-4 pt-3 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-2">
+                <span class="text-[11px] text-gray-500">Selecciona los productos y envíalos a registro.</span>
+                <button type="button" onclick="registerSelectedMarketItems()" class="w-full sm:w-auto bg-slateWarm-600 hover:bg-slateWarm-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm">
                     <i data-lucide="check-square" class="w-4 h-4"></i> Cargar a Formulario de Gastos
                 </button>
             </div>
         </section>
 
-        <!-- VISTA 4: FORMULARIO DE REGISTRO E HISTORIAL -->
+        <!-- INTERFAZ 4: REGISTRO DE MOVIMIENTOS E HISTORIAL -->
         <section id="mod-transactions" class="tab-content">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Formulario -->
@@ -348,7 +346,7 @@
             </div>
         </section>
 
-        <!-- VISTA 5: ANALÍTICA Y CALENDARIO -->
+        <!-- INTERFAZ 5: GRÁFICAS Y CALENDARIO (ÚNICO LUGAR DONDE EXISTEN) -->
         <section id="mod-analytics" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                 <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
@@ -387,6 +385,32 @@
 
     </main>
 
+    <!-- NAVEGACIÓN INFERIOR FIJA PARA TELÉFONOS (BOTTOM NAV BAR) -->
+    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 px-2 py-1.5 shadow-lg">
+        <div class="flex justify-around items-center text-[10px] font-bold">
+            <button onclick="showTab('mod-dashboard')" id="nav-mod-dashboard" class="nav-btn flex flex-col items-center gap-0.5 text-sage-600">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span>Inicio</span>
+            </button>
+            <button onclick="showTab('mod-proportional')" id="nav-mod-proportional" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
+                <i data-lucide="calculator" class="w-5 h-5"></i>
+                <span>Aportes</span>
+            </button>
+            <button onclick="showTab('mod-market')" id="nav-mod-market" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
+                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                <span>Mercado</span>
+            </button>
+            <button onclick="showTab('mod-transactions')" id="nav-mod-transactions" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
+                <i data-lucide="receipt" class="w-5 h-5"></i>
+                <span>Registro</span>
+            </button>
+            <button onclick="showTab('mod-analytics')" id="nav-mod-analytics" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
+                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                <span>Gráficas</span>
+            </button>
+        </div>
+    </nav>
+
     <!-- SCRIPTS Y LÓGICA DE NAVEGACIÓN -->
     <script>
         let activeUser = 'Danil';
@@ -406,14 +430,22 @@
 
         let currentMarketItems = JSON.parse(localStorage.getItem('myroomie_market_items')) || defaultMarketList;
 
-        // FUNCIÓN PARA MOSTRAR UNA SOLA INTERFAZ
+        // CAMBIO DINÁMICO DE PESTAÑA/INTERFAZ
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             const selected = document.getElementById(tabId);
             if (selected) selected.classList.add('active');
 
-            const dropdown = document.getElementById('moduleDropdown');
-            if (dropdown) dropdown.classList.add('hidden');
+            // Actualizar estilo en la barra inferior móvil
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-sage-600');
+                btn.classList.add('text-gray-400');
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-gray-400');
+                activeNav.classList.add('text-sage-600');
+            }
 
             const titles = {
                 'mod-dashboard': 'Panel General',
@@ -429,16 +461,13 @@
             }
         }
 
-        function toggleModuleMenu() {
-            document.getElementById('moduleDropdown').classList.toggle('hidden');
-        }
-
         async function fetchLiveRates() {
+            const rateInput = document.getElementById('exchangeRate');
             try {
                 const res = await fetch('/api/rates/current');
                 const data = await res.json();
                 if (data.success && data.rates && data.rates.BCV_USD) {
-                    document.getElementById('exchangeRate').value = data.rates.BCV_USD.toFixed(2);
+                    rateInput.value = parseFloat(data.rates.BCV_USD).toFixed(2);
                     updateCalculations();
                     showToast('Tasa BCV actualizada en vivo');
                     return;
@@ -451,7 +480,7 @@
                 const fallbackRes = await fetch('https://open.er-api.com/v6/latest/USD');
                 const fallbackData = await fallbackRes.json();
                 if (fallbackData && fallbackData.rates && fallbackData.rates.VES) {
-                    document.getElementById('exchangeRate').value = fallbackData.rates.VES.toFixed(2);
+                    rateInput.value = parseFloat(fallbackData.rates.VES).toFixed(2);
                     updateCalculations();
                     showToast('Tasa de divisas obtenida en vivo');
                 }
@@ -478,6 +507,7 @@
                 </div>
             `).join('');
             lucide.createIcons();
+            calculateMarketEstimate();
         }
 
         function updateMarketCount() {
@@ -517,6 +547,20 @@
             showToast('Ítems cargados en el formulario');
         }
 
+        function calculateMarketEstimate() {
+            const marketTx = transactions.filter(t => t.type === 'expense' && t.category.includes('Mercado'));
+            if (marketTx.length > 0) {
+                const lastDate = marketTx[0].date;
+                document.getElementById('marketLastDate').innerText = `Última compra: ${lastDate}`;
+                if (marketTx.length > 1) {
+                    const d1 = new Date(marketTx[0].date);
+                    const d2 = new Date(marketTx[1].date);
+                    const diffDays = Math.abs(Math.round((d1 - d2) / (1000 * 60 * 60 * 24)));
+                    document.getElementById('marketEstimateDays').innerText = `Frecuencia: cada ${diffDays} días aprox.`;
+                }
+            }
+        }
+
         function switchUser(user) {
             activeUser = user;
             document.getElementById('activeUserLabel').innerText = user;
@@ -524,14 +568,16 @@
 
             const btn1 = document.getElementById('btnUser1');
             const btn2 = document.getElementById('btnUser2');
+            const btn1Mob = document.getElementById('btnUser1Mob');
+            const btn2Mob = document.getElementById('btnUser2Mob');
 
-            if (user === user1Name) {
-                btn1.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm";
-                btn2.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500";
-            } else {
-                btn2.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm";
-                btn1.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500";
-            }
+            const isU1 = user === user1Name;
+
+            if (btn1) btn1.className = isU1 ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm" : "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500";
+            if (btn2) btn2.className = !isU1 ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm" : "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500";
+
+            if (btn1Mob) btn1Mob.className = isU1 ? "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slateWarm-700 shadow-sm" : "px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-500";
+            if (btn2Mob) btn2Mob.className = !isU1 ? "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slateWarm-700 shadow-sm" : "px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-500";
         }
 
         function setTxType(type) {
@@ -647,6 +693,7 @@
 
             renderTable();
             renderCalendar();
+            calculateMarketEstimate();
         }
 
         function renderTable() {
