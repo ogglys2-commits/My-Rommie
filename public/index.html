@@ -30,6 +30,8 @@
     <style>
         body { background-color: #FAF9F6; font-family: system-ui, -apple-system, sans-serif; }
         .modal-active { display: flex !important; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen pb-12">
@@ -60,36 +62,35 @@
                     <button onclick="toggleModuleMenu()" class="bg-sage-500 hover:bg-sage-600 text-white p-2.5 rounded-xl shadow-md flex items-center gap-1.5 transition-all">
                         <i data-lucide="menu" class="w-5 h-5"></i>
                     </button>
-                    <!-- Dropdown de Módulos -->
-                    <div id="moduleDropdown" class="hidden absolute left-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 p-2 text-xs space-y-1">
-                        <div class="px-3 py-1.5 font-bold text-gray-400 uppercase text-[10px] tracking-wider">Navegación de Módulos</div>
-                        <a href="#mod-dashboard" onclick="toggleModuleMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
-                            <i data-lucide="layout-dashboard" class="w-4 h-4 text-sage-600"></i> Dashboard General
-                        </a>
-                        <a href="#mod-proportional" onclick="toggleModuleMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
+                    <!-- Dropdown de Módulos / Cambiador de Vistas -->
+                    <div id="moduleDropdown" class="hidden absolute left-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 p-2 text-xs space-y-1">
+                        <div class="px-3 py-1.5 font-bold text-gray-400 uppercase text-[10px] tracking-wider">Selecciona la Interfaz</div>
+                        <button onclick="showTab('mod-dashboard')" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
+                            <i data-lucide="layout-dashboard" class="w-4 h-4 text-sage-600"></i> Panel de Control General
+                        </button>
+                        <button onclick="showTab('mod-proportional')" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
                             <i data-lucide="calculator" class="w-4 h-4 text-sage-600"></i> Regla de Aportes Excel
-                        </a>
-                        <a href="#mod-market" onclick="toggleModuleMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
+                        </button>
+                        <button onclick="showTab('mod-market')" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
                             <i data-lucide="shopping-cart" class="w-4 h-4 text-sage-600"></i> Lista de Mercado
-                        </a>
-                        <a href="#mod-transactions" onclick="toggleModuleMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
+                        </button>
+                        <button onclick="showTab('mod-transactions')" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
                             <i data-lucide="receipt" class="w-4 h-4 text-sage-600"></i> Registro e Historial
-                        </a>
-                        <a href="#mod-analytics" onclick="toggleModuleMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
+                        </button>
+                        <button onclick="showTab('mod-analytics')" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 font-bold text-slateWarm-700">
                             <i data-lucide="bar-chart-3" class="w-4 h-4 text-sage-600"></i> Gráficas y Calendario
-                        </a>
+                        </button>
                     </div>
                 </div>
 
                 <div>
                     <h1 class="font-bold text-xl text-slateWarm-700 leading-none">My Roomie</h1>
-                    <span class="text-xs text-gray-400">Finanzas en Pareja • Danil & Ogglys</span>
+                    <span class="text-xs text-gray-400" id="currentTabTitle">Panel General</span>
                 </div>
             </div>
 
             <!-- Tasa y Usuarios -->
             <div class="flex items-center gap-3">
-                <!-- Tasa de Cambio Automática Actualizada -->
                 <div class="flex items-center gap-2 bg-slateWarm-50 border border-slateWarm-100 px-3 py-1.5 rounded-xl text-xs font-medium text-slateWarm-600">
                     <i data-lucide="dollar-sign" class="w-4 h-4 text-sage-600"></i>
                     <span>Tasa BCV:</span>
@@ -100,7 +101,6 @@
                     <span class="text-gray-400">Bs/$</span>
                 </div>
 
-                <!-- Selector de Usuarios -->
                 <div class="flex items-center bg-gray-100 p-1 rounded-xl">
                     <button id="btnUser1" onclick="switchUser('Danil')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm">Danil</button>
                     <button id="btnUser2" onclick="switchUser('Ogglys')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500">Ogglys</button>
@@ -109,49 +109,78 @@
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
 
-        <!-- MÓDULO 1: DASHBOARD DE BALANCES GENERALES -->
-        <section id="mod-dashboard" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ingresos Totales</p>
-                    <h3 class="text-2xl font-bold text-slateWarm-700 mt-1" id="kpiIncome">$0.00</h3>
-                    <p class="text-xs text-gray-400 mt-0.5" id="kpiIncomeBs">Bs. 0.00</p>
+        <!-- VISTA 1: DASHBOARD GENERAL -->
+        <section id="mod-dashboard" class="tab-content active space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ingresos Totales</p>
+                        <h3 class="text-2xl font-bold text-slateWarm-700 mt-1" id="kpiIncome">$0.00</h3>
+                        <p class="text-xs text-gray-400 mt-0.5" id="kpiIncomeBs">Bs. 0.00</p>
+                    </div>
+                    <div class="bg-sage-50 text-sage-600 p-3 rounded-2xl"><i data-lucide="trending-up" class="w-6 h-6"></i></div>
                 </div>
-                <div class="bg-sage-50 text-sage-600 p-3 rounded-2xl"><i data-lucide="trending-up" class="w-6 h-6"></i></div>
+
+                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Gastos Totales</p>
+                        <h3 class="text-2xl font-bold text-coralAlert mt-1" id="kpiExpenses">$0.00</h3>
+                        <p class="text-xs text-gray-400 mt-0.5" id="kpiExpensesBs">Bs. 0.00</p>
+                    </div>
+                    <div class="bg-coralSoft text-coralAlert p-3 rounded-2xl"><i data-lucide="trending-down" class="w-6 h-6"></i></div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Balance Disponible</p>
+                        <h3 class="text-2xl font-bold text-slateWarm-600 mt-1" id="kpiBalance">$0.00</h3>
+                        <p class="text-xs text-gray-400 mt-0.5" id="kpiBalanceBs">Bs. 0.00</p>
+                    </div>
+                    <div class="bg-slateWarm-50 text-slateWarm-600 p-3 rounded-2xl"><i data-lucide="wallet" class="w-6 h-6"></i></div>
+                </div>
+
+                <div class="bg-gradient-to-br from-slateWarm-500 to-slateWarm-700 text-white p-5 rounded-2xl shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slateWarm-100 uppercase tracking-wider">Perfil Activo</p>
+                        <h3 class="text-2xl font-bold mt-1" id="activeUserLabel">Danil</h3>
+                        <span class="inline-block mt-1 bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">Espacio Compartido</span>
+                    </div>
+                    <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-sm"><i data-lucide="user" class="w-6 h-6 text-white"></i></div>
+                </div>
             </div>
 
-            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Gastos Totales</p>
-                    <h3 class="text-2xl font-bold text-coralAlert mt-1" id="kpiExpenses">$0.00</h3>
-                    <p class="text-xs text-gray-400 mt-0.5" id="kpiExpensesBs">Bs. 0.00</p>
+            <!-- Accesos Rápidos a Módulos -->
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <h3 class="font-bold text-slateWarm-700 mb-4 text-sm">Módulos de Trabajo</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                    <button onclick="showTab('mod-proportional')" class="p-4 rounded-xl bg-slateWarm-50 hover:bg-slateWarm-100 border border-slateWarm-100 text-left transition-all">
+                        <i data-lucide="calculator" class="w-6 h-6 text-sage-600 mb-2"></i>
+                        <h4 class="font-bold text-slateWarm-700">Regla de Aportes</h4>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Proporciones según ingresos</p>
+                    </button>
+                    <button onclick="showTab('mod-market')" class="p-4 rounded-xl bg-sage-50 hover:bg-sage-100 border border-sage-100 text-left transition-all">
+                        <i data-lucide="shopping-cart" class="w-6 h-6 text-sage-600 mb-2"></i>
+                        <h4 class="font-bold text-slateWarm-700">Lista de Mercado</h4>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Checklist interactivo</p>
+                    </button>
+                    <button onclick="showTab('mod-transactions')" class="p-4 rounded-xl bg-slateWarm-50 hover:bg-slateWarm-100 border border-slateWarm-100 text-left transition-all">
+                        <i data-lucide="receipt" class="w-6 h-6 text-slateWarm-600 mb-2"></i>
+                        <h4 class="font-bold text-slateWarm-700">Registrar Gastos</h4>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Formulario e historial</p>
+                    </button>
+                    <button onclick="showTab('mod-analytics')" class="p-4 rounded-xl bg-coralSoft hover:bg-coralSoft/80 border border-coralAlert/20 text-left transition-all">
+                        <i data-lucide="bar-chart-3" class="w-6 h-6 text-coralAlert mb-2"></i>
+                        <h4 class="font-bold text-slateWarm-700">Gráficas</h4>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Calendario y analítica</p>
+                    </button>
                 </div>
-                <div class="bg-coralSoft text-coralAlert p-3 rounded-2xl"><i data-lucide="trending-down" class="w-6 h-6"></i></div>
-            </div>
-
-            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Balance Disponible</p>
-                    <h3 class="text-2xl font-bold text-slateWarm-600 mt-1" id="kpiBalance">$0.00</h3>
-                    <p class="text-xs text-gray-400 mt-0.5" id="kpiBalanceBs">Bs. 0.00</p>
-                </div>
-                <div class="bg-slateWarm-50 text-slateWarm-600 p-3 rounded-2xl"><i data-lucide="wallet" class="w-6 h-6"></i></div>
-            </div>
-
-            <div class="bg-gradient-to-br from-slateWarm-500 to-slateWarm-700 text-white p-5 rounded-2xl shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-slateWarm-100 uppercase tracking-wider">Perfil Activo</p>
-                    <h3 class="text-2xl font-bold mt-1" id="activeUserLabel">Danil</h3>
-                    <span class="inline-block mt-1 bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">Espacio Compartido</span>
-                </div>
-                <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-sm"><i data-lucide="user" class="w-6 h-6 text-white"></i></div>
             </div>
         </section>
 
-        <!-- MÓDULO 2: APORTE PROPORCIONAL POR INGRESOS -->
-        <section id="mod-proportional" class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <!-- VISTA 2: APORTE PROPORCIONAL POR INGRESOS -->
+        <section id="mod-proportional" class="tab-content bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <div class="flex items-center gap-2">
                     <i data-lucide="calculator" class="w-5 h-5 text-sage-600"></i>
@@ -187,8 +216,8 @@
             </div>
         </section>
 
-        <!-- MÓDULO 3: LISTA DE COMPRAS DE MERCADO -->
-        <section id="mod-market" class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <!-- VISTA 3: LISTA DE COMPRAS DE MERCADO -->
+        <section id="mod-market" class="tab-content bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <div class="flex items-center gap-2">
                     <i data-lucide="shopping-cart" class="w-5 h-5 text-sage-600"></i>
@@ -204,123 +233,123 @@
                 </button>
             </div>
 
-            <div class="space-y-4 max-h-[300px] overflow-y-auto pr-1" id="marketListContainer"></div>
+            <div class="space-y-4 max-h-[400px] overflow-y-auto pr-1" id="marketListContainer"></div>
 
             <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
                 <span class="text-xs text-gray-500">Selecciona los productos para armar la compra.</span>
                 <button type="button" onclick="registerSelectedMarketItems()" class="bg-slateWarm-600 hover:bg-slateWarm-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-sm">
-                    <i data-lucide="check-square" class="w-4 h-4"></i> Cargar a Gastos del Mes
+                    <i data-lucide="check-square" class="w-4 h-4"></i> Cargar a Formulario de Gastos
                 </button>
             </div>
         </section>
 
-        <!-- MÓDULO 4: FORMULARIO DE REGISTRO E HISTORIAL -->
-        <section id="mod-transactions" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            <!-- FORMULARIO PRINCIPAL MULTIMONEDA -->
-            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-xs">
-                <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center gap-2 text-sm">
-                    <i data-lucide="plus-circle" class="w-5 h-5 text-sage-600"></i> Registrar Movimiento
-                </h2>
-                <form id="txForm" onsubmit="handleTxSubmit(event)" class="space-y-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button" id="btnTypeExpense" onclick="setTxType('expense')" class="py-2 font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert">💸 Gasto</button>
-                        <button type="button" id="btnTypeIncome" onclick="setTxType('income')" class="py-2 font-bold rounded-xl border border-gray-200 text-gray-500">💰 Ingreso</button>
-                    </div>
-
-                    <div>
-                        <label class="block font-semibold text-gray-600 mb-1">Pertenencia / Ámbito</label>
-                        <select id="txScope" class="w-full p-2 rounded-xl border font-medium">
-                            <option value="Pareja">👥 Fondo Pareja (Compartido)</option>
-                            <option value="Individual">👤 Individual (<span class="currentUserSpan">Danil</span>)</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block font-semibold text-gray-600 mb-1">Monto y Moneda</label>
-                        <div class="grid grid-cols-3 gap-2">
-                            <select id="txCurrency" onchange="updateConvertedPreview()" class="col-span-1 p-2 rounded-xl border font-bold">
-                                <option value="USD">$ USD</option>
-                                <option value="BS">Bs. (VES)</option>
-                            </select>
-                            <input type="number" id="txAmount" placeholder="0.00" step="0.01" required class="col-span-2 p-2 rounded-xl border font-bold">
-                        </div>
-                        <p class="text-[10px] text-gray-400 mt-1" id="currencyConvertedPreview">Monto a registrar en USD: $0.00</p>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block font-semibold text-gray-600 mb-1">Semana del Mes</label>
-                            <select id="txWeek" class="w-full p-2 rounded-xl border font-medium">
-                                <option value="Semana 1">Semana 1</option>
-                                <option value="Semana 2">Semana 2</option>
-                                <option value="Semana 3">Semana 3</option>
-                                <option value="Semana 4">Semana 4</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-semibold text-gray-600 mb-1">Fecha</label>
-                            <input type="date" id="txDate" required class="w-full p-2 rounded-xl border">
-                        </div>
-                    </div>
-
-                    <input type="text" id="txDesc" placeholder="Descripción (ej. Mercado o Alquiler)" required class="w-full p-2.5 rounded-xl border">
-
-                    <div>
-                        <label class="block font-semibold text-gray-600 mb-1">Categoría</label>
-                        <select id="txCategory" class="w-full p-2 rounded-xl border font-medium">
-                            <option value="🛒 Mercado">🛒 Mercado / Alimentación</option>
-                            <option value="🏠 Alquiler">🏠 Alquiler / Vivienda</option>
-                            <option value="⚡ Servicios">⚡ Servicios (Luz, Agua)</option>
-                            <option value="📶 Internet">📶 Internet / Cable</option>
-                            <option value="🚗 Transporte">🚗 Transporte</option>
-                            <option value="📦 Otros">📦 Otros / Varios</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block font-semibold text-gray-600 mb-1">Comprobante (Opcional)</label>
-                        <input type="file" id="txImage" accept="image/*" class="w-full text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:bg-sage-50 file:text-sage-700">
-                    </div>
-
-                    <button type="submit" class="w-full bg-sage-500 text-white font-bold py-2.5 rounded-xl shadow-md">Guardar Registro</button>
-                </form>
-            </div>
-
-            <!-- HISTORIAL DE MOVIMIENTOS COMPLETO -->
-            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2 text-xs flex flex-col justify-between">
-                <div>
-                    <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center justify-between text-sm">
-                        <span>Historial de Movimientos</span>
-                        <span class="text-xs text-gray-400 font-normal" id="txCount">0 Registros</span>
+        <!-- VISTA 4: FORMULARIO DE REGISTRO E HISTORIAL -->
+        <section id="mod-transactions" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Formulario -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-xs">
+                    <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center gap-2 text-sm">
+                        <i data-lucide="plus-circle" class="w-5 h-5 text-sage-600"></i> Registrar Movimiento
                     </h2>
+                    <form id="txForm" onsubmit="handleTxSubmit(event)" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" id="btnTypeExpense" onclick="setTxType('expense')" class="py-2 font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert">💸 Gasto</button>
+                            <button type="button" id="btnTypeIncome" onclick="setTxType('income')" class="py-2 font-bold rounded-xl border border-gray-200 text-gray-500">💰 Ingreso</button>
+                        </div>
 
-                    <div class="overflow-x-auto max-h-[350px]">
-                        <table class="w-full text-left">
-                            <thead class="bg-gray-50 uppercase text-gray-400 font-semibold">
-                                <tr>
-                                    <th class="p-2.5">Concepto</th>
-                                    <th class="p-2.5">Usuario / Ámbito</th>
-                                    <th class="p-2.5">Monto Original</th>
-                                    <th class="p-2.5">Equiv. ($ USD)</th>
-                                    <th class="p-2.5 text-center">Comprobante</th>
-                                    <th class="p-2.5 text-right">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="txTableBody" class="divide-y font-medium"></tbody>
-                        </table>
+                        <div>
+                            <label class="block font-semibold text-gray-600 mb-1">Pertenencia / Ámbito</label>
+                            <select id="txScope" class="w-full p-2 rounded-xl border font-medium">
+                                <option value="Pareja">👥 Fondo Pareja (Compartido)</option>
+                                <option value="Individual">👤 Individual (<span class="currentUserSpan">Danil</span>)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-gray-600 mb-1">Monto y Moneda</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <select id="txCurrency" onchange="updateConvertedPreview()" class="col-span-1 p-2 rounded-xl border font-bold">
+                                    <option value="USD">$ USD</option>
+                                    <option value="BS">Bs. (VES)</option>
+                                </select>
+                                <input type="number" id="txAmount" placeholder="0.00" step="0.01" required class="col-span-2 p-2 rounded-xl border font-bold">
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-1" id="currencyConvertedPreview">Monto a registrar en USD: $0.00</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block font-semibold text-gray-600 mb-1">Semana del Mes</label>
+                                <select id="txWeek" class="w-full p-2 rounded-xl border font-medium">
+                                    <option value="Semana 1">Semana 1</option>
+                                    <option value="Semana 2">Semana 2</option>
+                                    <option value="Semana 3">Semana 3</option>
+                                    <option value="Semana 4">Semana 4</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-gray-600 mb-1">Fecha</label>
+                                <input type="date" id="txDate" required class="w-full p-2 rounded-xl border">
+                            </div>
+                        </div>
+
+                        <input type="text" id="txDesc" placeholder="Descripción (ej. Mercado o Alquiler)" required class="w-full p-2.5 rounded-xl border">
+
+                        <div>
+                            <label class="block font-semibold text-gray-600 mb-1">Categoría</label>
+                            <select id="txCategory" class="w-full p-2 rounded-xl border font-medium">
+                                <option value="🛒 Mercado">🛒 Mercado / Alimentación</option>
+                                <option value="🏠 Alquiler">🏠 Alquiler / Vivienda</option>
+                                <option value="⚡ Servicios">⚡ Servicios (Luz, Agua)</option>
+                                <option value="📶 Internet">📶 Internet / Cable</option>
+                                <option value="🚗 Transporte">🚗 Transporte</option>
+                                <option value="📦 Otros">📦 Otros / Varios</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-gray-600 mb-1">Comprobante (Opcional)</label>
+                            <input type="file" id="txImage" accept="image/*" class="w-full text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:bg-sage-50 file:text-sage-700">
+                        </div>
+
+                        <button type="submit" class="w-full bg-sage-500 text-white font-bold py-2.5 rounded-xl shadow-md">Guardar Registro</button>
+                    </form>
+                </div>
+
+                <!-- Historial -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2 text-xs flex flex-col justify-between">
+                    <div>
+                        <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center justify-between text-sm">
+                            <span>Historial de Movimientos</span>
+                            <span class="text-xs text-gray-400 font-normal" id="txCount">0 Registros</span>
+                        </h2>
+
+                        <div class="overflow-x-auto max-h-[350px]">
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-50 uppercase text-gray-400 font-semibold">
+                                    <tr>
+                                        <th class="p-2.5">Concepto</th>
+                                        <th class="p-2.5">Usuario / Ámbito</th>
+                                        <th class="p-2.5">Monto Original</th>
+                                        <th class="p-2.5">Equiv. ($ USD)</th>
+                                        <th class="p-2.5 text-center">Comprobante</th>
+                                        <th class="p-2.5 text-right">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="txTableBody" class="divide-y font-medium"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t text-right">
+                        <button onclick="clearAllData()" class="text-xs text-coralAlert hover:underline font-semibold">Restablecer todos los datos</button>
                     </div>
                 </div>
-
-                <div class="mt-4 pt-3 border-t text-right">
-                    <button onclick="clearAllData()" class="text-xs text-coralAlert hover:underline font-semibold">Restablecer todos los datos</button>
-                </div>
             </div>
-
         </section>
 
-        <!-- MÓDULO 5: ANALÍTICA Y CALENDARIO -->
-        <section id="mod-analytics" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- VISTA 5: ANALÍTICA Y CALENDARIO -->
+        <section id="mod-analytics" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                 <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
                     <i data-lucide="pie-chart" class="w-5 h-5 text-slateWarm-500"></i>
@@ -358,7 +387,7 @@
 
     </main>
 
-    <!-- LÓGICA Y SCRIPTS INTEGRADORAS -->
+    <!-- SCRIPTS Y LÓGICA DE NAVEGACIÓN -->
     <script>
         let activeUser = 'Danil';
         let currentTxType = 'expense';
@@ -377,14 +406,35 @@
 
         let currentMarketItems = JSON.parse(localStorage.getItem('myroomie_market_items')) || defaultMarketList;
 
-        function toggleModuleMenu() {
+        // FUNCIÓN PARA MOSTRAR UNA SOLA INTERFAZ
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            const selected = document.getElementById(tabId);
+            if (selected) selected.classList.add('active');
+
             const dropdown = document.getElementById('moduleDropdown');
-            dropdown.classList.toggle('hidden');
+            if (dropdown) dropdown.classList.add('hidden');
+
+            const titles = {
+                'mod-dashboard': 'Panel General',
+                'mod-proportional': 'Regla de Aportes Excel',
+                'mod-market': 'Lista de Mercado',
+                'mod-transactions': 'Registro e Historial',
+                'mod-analytics': 'Gráficas y Calendario'
+            };
+            document.getElementById('currentTabTitle').innerText = titles[tabId] || 'My Roomie';
+
+            if (tabId === 'mod-analytics') {
+                setTimeout(() => renderCharts(), 100);
+            }
+        }
+
+        function toggleModuleMenu() {
+            document.getElementById('moduleDropdown').classList.toggle('hidden');
         }
 
         async function fetchLiveRates() {
             try {
-                // Intento 1: API Servidor Backend
                 const res = await fetch('/api/rates/current');
                 const data = await res.json();
                 if (data.success && data.rates && data.rates.BCV_USD) {
@@ -394,11 +444,10 @@
                     return;
                 }
             } catch (err) {
-                console.log("Servidor interno no respondió tasa, intentando API de respaldo externa...");
+                console.log("Servidor interno no respondió tasa, buscando respaldo...");
             }
 
             try {
-                // Intento 2: API de respaldo externa si está corriendo estático
                 const fallbackRes = await fetch('https://open.er-api.com/v6/latest/USD');
                 const fallbackData = await fallbackRes.json();
                 if (fallbackData && fallbackData.rates && fallbackData.rates.VES) {
@@ -407,7 +456,7 @@
                     showToast('Tasa de divisas obtenida en vivo');
                 }
             } catch (err2) {
-                console.log("Usando tasa manual predeterminada.");
+                console.log("Usando tasa manual.");
             }
         }
 
@@ -463,6 +512,7 @@
             const description = `Mercado (${selected.length} ítems: ${selected.slice(0, 3).join(', ')}${selected.length > 3 ? '...' : ''})`;
             document.getElementById('txDesc').value = description;
             document.getElementById('txCategory').value = '🛒 Mercado';
+            showTab('mod-transactions');
             document.getElementById('txAmount').focus();
             showToast('Ítems cargados en el formulario');
         }
@@ -537,7 +587,7 @@
                 transactions.unshift(tx);
                 localStorage.setItem('mr_txs', JSON.stringify(transactions));
                 updateCalculations();
-                showToast(`Registrado: ${desc} (${currency === 'BS' ? 'Bs.' + rawAmount : '$' + rawAmount})`);
+                showToast(`Registrado: ${desc}`);
                 document.getElementById('txForm').reset();
                 document.getElementById('txDate').valueAsDate = new Date();
                 updateConvertedPreview();
@@ -596,7 +646,6 @@
             document.getElementById('kpiBalanceBs').innerText = `Bs. ${(balance * rate).toLocaleString('es-VE', {minimumFractionDigits: 2})}`;
 
             renderTable();
-            renderCharts();
             renderCalendar();
         }
 
@@ -625,15 +674,17 @@
         }
 
         function renderCharts() {
+            const canvasDist = document.getElementById('chartDistribution');
+            const canvasHabits = document.getElementById('chartWeeklyHabits');
+            if (!canvasDist || !canvasHabits) return;
+
             let catTotals = {};
             transactions.filter(t => t.type === 'expense').forEach(t => {
                 catTotals[t.category] = (catTotals[t.category] || 0) + t.amountUSD;
             });
 
-            const ctxDist = document.getElementById('chartDistribution').getContext('2d');
             if (chartDistInstance) chartDistInstance.destroy();
-
-            chartDistInstance = new Chart(ctxDist, {
+            chartDistInstance = new Chart(canvasDist.getContext('2d'), {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(catTotals).length ? Object.keys(catTotals) : ['Sin Gastos'],
@@ -652,10 +703,8 @@
                 if (weekTotals[w] !== undefined) weekTotals[w] += t.amountUSD;
             });
 
-            const ctxHabits = document.getElementById('chartWeeklyHabits').getContext('2d');
             if (chartHabitsInstance) chartHabitsInstance.destroy();
-
-            chartHabitsInstance = new Chart(ctxHabits, {
+            chartHabitsInstance = new Chart(canvasHabits.getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: Object.keys(weekTotals),
@@ -677,6 +726,7 @@
 
         function renderCalendar() {
             const grid = document.getElementById('calendarGrid');
+            if (!grid) return;
             grid.innerHTML = '';
             const now = new Date();
             const year = now.getFullYear();
