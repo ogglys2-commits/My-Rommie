@@ -8,6 +8,8 @@
     <meta name="theme-color" content="#7EA172">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
@@ -35,10 +37,10 @@
     <!-- TOAST NOTIFICATIONS -->
     <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- MODAL COMPROBANTE -->
+    <!-- MODAL FOTO COMPROBANTE -->
     <div id="imageModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-xl w-full p-4 relative shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-gray-100 p-1 rounded-full">
+            <button onclick="closeModal('imageModal')" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-gray-100 p-1 rounded-full">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
             <h3 class="text-lg font-bold text-slateWarm-700 mb-3" id="modalTitle">Comprobante</h3>
@@ -48,337 +50,530 @@
         </div>
     </div>
 
-    <!-- HEADER SUPERIOR -->
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="bg-sage-500 text-white p-2 rounded-xl shadow-md">
-                    <i data-lucide="heart-handshake" class="w-6 h-6"></i>
+    <!-- 1. VISTA DE AUTENTICACIÓN / LOGIN (PÚBLICA) -->
+    <div id="authView" class="min-h-screen bg-slateWarm-700 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 relative">
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <div class="bg-sage-500 text-white p-3 rounded-2xl shadow-md">
+                    <i data-lucide="heart-handshake" class="w-8 h-8"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg text-slateWarm-700 leading-none">My Roomie</h1>
-                    <span class="text-xs text-gray-400">Danil & Ogglys</span>
+                    <h1 class="font-bold text-2xl text-slateWarm-700 leading-tight">My Roomie</h1>
+                    <p class="text-xs text-gray-400 font-medium">Gestión Financiera para Parejas</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3">
-                <!-- Tasa BCV Actualizada -->
-                <div class="flex items-center gap-2 bg-slateWarm-50 border px-3 py-1.5 rounded-xl text-xs">
-                    <i data-lucide="dollar-sign" class="w-4 h-4 text-sage-600"></i>
-                    <span class="hidden sm:inline font-semibold">Tasa BCV:</span>
-                    <input type="number" id="exchangeRate" value="857.00" step="0.5" class="w-20 bg-white border border-gray-300 rounded text-center font-bold text-slateWarm-700 focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
-                    <span class="text-gray-400">Bs/$</span>
+            <div class="bg-gray-100 p-1 rounded-2xl flex gap-1 mb-6 text-xs font-bold">
+                <button id="tabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2.5 rounded-xl bg-white shadow-sm text-slateWarm-700 transition-all">Iniciar Sesión</button>
+                <button id="tabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2.5 rounded-xl text-gray-400 hover:text-slateWarm-700 transition-all">Registrar Pareja</button>
+            </div>
+
+            <!-- FORMULARIO LOGIN -->
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">ID de Pareja</label>
+                    <input type="text" id="loginPairId" required placeholder="Ej: casa-alana" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Contraseña</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
+                </div>
+                <button type="submit" class="w-full bg-sage-500 hover:bg-sage-600 text-white font-bold py-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="log-in" class="w-4 h-4"></i> Ingresar a Nuestro Espacio
+                </button>
+            </form>
+
+            <!-- FORMULARIO REGISTRO -->
+            <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-3 hidden">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">ID Único de Pareja</label>
+                    <input type="text" id="regPairId" required placeholder="Ej: casa-alana" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Correo Electrónico</label>
+                    <input type="email" id="regEmail" required placeholder="ejemplo@correo.com" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nombre Pareja 1</label>
+                        <input type="text" id="regUser1" required placeholder="Danil" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nombre Pareja 2</label>
+                        <input type="text" id="regUser2" required placeholder="Ogglys" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Contraseña Compartida</label>
+                    <input type="password" id="regPassword" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
+                </div>
+                <button type="submit" class="w-full bg-sage-500 hover:bg-sage-600 text-white font-bold py-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> Crear Espacio de Pareja
+                </button>
+            </form>
+            <div id="authMsg" class="mt-3 text-center text-xs font-bold hidden"></div>
+        </div>
+    </div>
+
+    <!-- 2. VISTA PRINCIPAL DEL APLICATIVO (PRIVADA) -->
+    <div id="appView" class="hidden">
+        
+        <!-- HEADER SUPERIOR -->
+        <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="bg-sage-500 text-white p-2 rounded-xl shadow-md">
+                        <i data-lucide="heart-handshake" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg text-slateWarm-700 leading-none">My Roomie</h1>
+                        <span class="text-xs text-gray-400" id="headerPairName">Espacio Activo</span>
+                    </div>
                 </div>
 
-                <!-- SELECTOR DE PERFILES -->
-                <div class="flex items-center bg-gray-100 p-1 rounded-xl text-xs font-bold">
-                    <button id="btnUser1" onclick="switchUser('Danil')" class="px-3 py-1.5 rounded-lg bg-white text-slateWarm-700 shadow-sm">Danil</button>
-                    <button id="btnUser2" onclick="switchUser('Ogglys')" class="px-3 py-1.5 rounded-lg text-gray-500">Ogglys</button>
+                <div class="flex items-center gap-3">
+                    <!-- Tasa BCV Actualizada -->
+                    <div class="flex items-center gap-2 bg-slateWarm-50 border border-slateWarm-100 px-3 py-1.5 rounded-xl text-xs font-medium text-slateWarm-600">
+                        <i data-lucide="dollar-sign" class="w-4 h-4 text-sage-600"></i>
+                        <span class="hidden sm:inline font-bold">Tasa BCV:</span>
+                        <input type="number" id="exchangeRate" value="857.01" step="0.5" class="w-20 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
+                        <button onclick="fetchLiveRates()" title="Actualizar Tasa BCV" class="text-sage-600 hover:text-sage-700 p-0.5">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <span class="text-gray-400">Bs/$</span>
+                    </div>
+
+                    <!-- PERFILES EN PAREJA -->
+                    <div class="flex items-center bg-gray-100 p-1 rounded-xl text-xs font-bold">
+                        <button id="btnUser1" onclick="switchUser(user1Name)" class="px-3 py-1.5 rounded-lg bg-white text-slateWarm-700 shadow-sm"></button>
+                        <button id="btnUser2" onclick="switchUser(user2Name)" class="px-3 py-1.5 rounded-lg text-gray-500"></button>
+                    </div>
+
+                    <button onclick="logout()" title="Cerrar Sesión" class="text-xs bg-red-50 text-red-600 p-2 rounded-xl font-bold">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </button>
                 </div>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <main class="max-w-7xl mx-auto px-4 pt-6 space-y-6">
+        <main class="max-w-7xl mx-auto px-4 pt-6 space-y-6">
 
-        <!-- MENÚ DE NAVEGACIÓN MÓDULOS -->
-        <div class="flex bg-white p-1.5 rounded-2xl border shadow-sm gap-1 overflow-x-auto text-xs font-bold">
-            <button onclick="showModule('dashboard')" id="nav-dashboard" class="flex-1 min-w-[100px] py-2.5 rounded-xl bg-sage-500 text-white shadow-sm flex items-center justify-center gap-1.5">
-                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
-            </button>
-            <button onclick="showModule('market')" id="nav-market" class="flex-1 min-w-[100px] py-2.5 rounded-xl text-gray-500 hover:bg-gray-50 flex items-center justify-center gap-1.5">
-                <i data-lucide="shopping-cart" class="w-4 h-4"></i> Mercado
-            </button>
-            <button onclick="showModule('credits')" id="nav-credits" class="flex-1 min-w-[100px] py-2.5 rounded-xl text-gray-500 hover:bg-gray-50 flex items-center justify-center gap-1.5">
-                <i data-lucide="credit-card" class="w-4 h-4"></i> Créditos
-            </button>
-            <button onclick="showModule('transactions')" id="nav-transactions" class="flex-1 min-w-[100px] py-2.5 rounded-xl text-gray-500 hover:bg-gray-50 flex items-center justify-center gap-1.5">
-                <i data-lucide="receipt" class="w-4 h-4"></i> Movimientos
-            </button>
-        </div>
+            <!-- BARRA DE NAVEGACIÓN MÓDULOS -->
+            <div class="flex bg-white p-1.5 rounded-2xl border shadow-sm gap-1 overflow-x-auto text-xs font-bold">
+                <button onclick="showModule('dashboard')" id="nav-dashboard" class="flex-1 min-w-[100px] py-2.5 rounded-xl bg-sage-500 text-white shadow-sm flex items-center justify-center gap-1.5">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                </button>
+                <button onclick="showModule('market')" id="nav-market" class="flex-1 min-w-[100px] py-2.5 rounded-xl text-gray-500 hover:bg-gray-50 flex items-center justify-center gap-1.5">
+                    <i data-lucide="shopping-cart" class="w-4 h-4"></i> Mercado
+                </button>
+                <button onclick="showModule('credits')" id="nav-credits" class="flex-1 min-w-[100px] py-2.5 rounded-xl text-gray-500 hover:bg-gray-50 flex items-center justify-center gap-1.5">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i> Créditos
+                </button>
+                <button onclick="showModule('transactions')" id="nav-transactions" class="flex-1 min-w-[100px] py-2.5 rounded-xl text-gray-500 hover:bg-gray-50 flex items-center justify-center gap-1.5">
+                    <i data-lucide="receipt" class="w-4 h-4"></i> Movimientos
+                </button>
+                <button onclick="showModule('analytics')" id="nav-analytics" class="flex-1 min-w-[100px] py-2.5 rounded-xl text-gray-500 hover:bg-gray-50 flex items-center justify-center gap-1.5">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Gráficas
+                </button>
+            </div>
 
-        <!-- MÓDULO 1: DASHBOARD & APORTE PROPORCIONAL -->
-        <div id="module-dashboard" class="space-y-6">
-            
-            <!-- APORTE PROPORCIONAL MODELO EXCEL -->
-            <section class="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
+            <!-- MÓDULO 1: DASHBOARD & CÁLCULO PROPORCIONAL -->
+            <div id="module-dashboard" class="space-y-6">
+                
+                <!-- APORTE PROPORCIONAL MODELO EXCEL -->
+                <section class="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b pb-3">
+                        <h2 class="font-bold text-slateWarm-700 flex items-center gap-2">
+                            <i data-lucide="calculator" class="w-5 h-5 text-sage-600"></i> Aporte Proporcional según Ingresos (Modelo Excel)
+                        </h2>
+                        <span class="text-xs bg-sage-50 text-sage-700 px-2.5 py-1 rounded-lg font-semibold">Cálculo Automático</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-4 bg-slateWarm-50 rounded-2xl border">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs font-bold text-slateWarm-700" id="propUser1Name">User 1</span>
+                                <span class="text-xs font-bold text-sage-600" id="propUser1Pct">50%</span>
+                            </div>
+                            <p class="text-xl font-bold text-slateWarm-700" id="propUser1Income">$0.00</p>
+                            <p class="text-xs text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser1Share">$0.00</span></p>
+                        </div>
+
+                        <div class="p-4 bg-slateWarm-50 rounded-2xl border">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs font-bold text-slateWarm-700" id="propUser2Name">User 2</span>
+                                <span class="text-xs font-bold text-sage-600" id="propUser2Pct">50%</span>
+                            </div>
+                            <p class="text-xl font-bold text-slateWarm-700" id="propUser2Income">$0.00</p>
+                            <p class="text-xs text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser2Share">$0.00</span></p>
+                        </div>
+
+                        <div class="p-4 bg-sage-50 rounded-2xl border border-sage-100">
+                            <span class="text-xs font-bold text-sage-700">Fondo Total Combinado</span>
+                            <p class="text-2xl font-bold text-sage-700 mt-1" id="propTotalIncome">$0.00</p>
+                            <p class="text-xs text-sage-600 mt-1">Gastos Compartidos: <span class="font-bold" id="propTotalExpenses">$0.00</span></p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- KPIS PRINCIPALES -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-gray-400 uppercase">Ingresos Totales</p>
+                            <h3 class="text-2xl font-bold text-slateWarm-700 mt-1" id="kpiIncome">$0.00</h3>
+                            <p class="text-xs text-gray-400 mt-0.5" id="kpiIncomeBs">Bs. 0,00</p>
+                        </div>
+                        <div class="bg-sage-50 text-sage-600 p-3 rounded-2xl"><i data-lucide="trending-up" class="w-6 h-6"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-gray-400 uppercase">Gastos Totales</p>
+                            <h3 class="text-2xl font-bold text-coralAlert mt-1" id="kpiExpenses">$0.00</h3>
+                            <p class="text-xs text-gray-400 mt-0.5" id="kpiExpensesBs">Bs. 0,00</p>
+                        </div>
+                        <div class="bg-coralSoft text-coralAlert p-3 rounded-2xl"><i data-lucide="trending-down" class="w-6 h-6"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-gray-400 uppercase">Balance Disponible</p>
+                            <h3 class="text-2xl font-bold text-slateWarm-600 mt-1" id="kpiBalance">$0.00</h3>
+                            <p class="text-xs text-gray-400 mt-0.5" id="kpiBalanceBs">Bs. 0,00</p>
+                        </div>
+                        <div class="bg-slateWarm-50 text-slateWarm-600 p-3 rounded-2xl"><i data-lucide="wallet" class="w-6 h-6"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO 2: LISTA DE MERCADO INTERACTIVA COMPLETA -->
+            <div id="module-market" class="hidden bg-white p-6 rounded-2xl border shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b pb-3">
                     <h2 class="font-bold text-slateWarm-700 flex items-center gap-2">
-                        <i data-lucide="calculator" class="w-5 h-5 text-sage-600"></i> Aporte Proporcional según Ingresos (Modelo Excel)
+                        <i data-lucide="shopping-bag" class="w-5 h-5 text-sage-600"></i> Lista de Mercado Interactiva
                     </h2>
-                    <span class="text-xs bg-sage-50 text-sage-700 px-2.5 py-1 rounded-lg font-semibold">Cálculo Automático</span>
+                    <button onclick="clearShoppingList()" class="text-xs text-coralAlert font-bold underline">Limpiar Selección</button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="p-4 bg-slateWarm-50 rounded-2xl border">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-bold text-slateWarm-700">Danil</span>
-                            <span class="text-xs font-bold text-sage-600" id="propUser1Pct">50%</span>
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 text-xs">
+                    <!-- VERDURAS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-sage-700 border-b pb-1 mb-2">🥬 VERDURAS</h3>
+                        <div class="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
+                            <label><input type="checkbox" value="Acelga"> Acelga</label>
+                            <label><input type="checkbox" value="Aguacate"> Aguacate</label>
+                            <label><input type="checkbox" value="Ají dulce"> Ají dulce</label>
+                            <label><input type="checkbox" value="Ajo"> Ajo</label>
+                            <label><input type="checkbox" value="Ajoporro"> Ajoporro</label>
+                            <label><input type="checkbox" value="Albahaca"> Albahaca</label>
+                            <label><input type="checkbox" value="Alcachofa"> Alcachofa</label>
+                            <label><input type="checkbox" value="Apio"> Apio</label>
+                            <label><input type="checkbox" value="Auyama"> Auyama</label>
+                            <label><input type="checkbox" value="Batata"> Batata</label>
+                            <label><input type="checkbox" value="Berenjena"> Berenjena</label>
+                            <label><input type="checkbox" value="Brócoli"> Brócoli</label>
+                            <label><input type="checkbox" value="Calabacín"> Calabacín</label>
+                            <label><input type="checkbox" value="Cebolla"> Cebolla</label>
+                            <label><input type="checkbox" value="Cebollín"> Cebollín</label>
+                            <label><input type="checkbox" value="Célery"> Célery</label>
+                            <label><input type="checkbox" value="Cilantro"> Cilantro</label>
+                            <label><input type="checkbox" value="Coliflor"> Coliflor</label>
+                            <label><input type="checkbox" value="Espinacas"> Espinacas</label>
+                            <label><input type="checkbox" value="Papa"> Papa</label>
+                            <label><input type="checkbox" value="Pepino"> Pepino</label>
+                            <label><input type="checkbox" value="Pimentón"> Pimentón</label>
+                            <label><input type="checkbox" value="Plátano"> Plátano</label>
+                            <label><input type="checkbox" value="Tomate"> Tomate</label>
+                            <label><input type="checkbox" value="Zanahoria"> Zanahoria</label>
                         </div>
-                        <p class="text-xl font-bold text-slateWarm-700" id="propUser1Income">$0.00</p>
-                        <p class="text-xs text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser1Share">$0.00</span></p>
                     </div>
 
-                    <div class="p-4 bg-slateWarm-50 rounded-2xl border">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-bold text-slateWarm-700">Ogglys</span>
-                            <span class="text-xs font-bold text-sage-600" id="propUser2Pct">50%</span>
+                    <!-- FRUTAS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-coralAlert border-b pb-1 mb-2">🍎 FRUTAS</h3>
+                        <div class="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
+                            <label><input type="checkbox" value="Cambur"> Cambur</label>
+                            <label><input type="checkbox" value="Coco"> Coco</label>
+                            <label><input type="checkbox" value="Durazno"> Durazno</label>
+                            <label><input type="checkbox" value="Fresas"> Fresas</label>
+                            <label><input type="checkbox" value="Limón"> Limón</label>
+                            <label><input type="checkbox" value="Mandarina"> Mandarina</label>
+                            <label><input type="checkbox" value="Mango"> Mango</label>
+                            <label><input type="checkbox" value="Manzana"> Manzana</label>
+                            <label><input type="checkbox" value="Melón"> Melón</label>
+                            <label><input type="checkbox" value="Naranja"> Naranja</label>
+                            <label><input type="checkbox" value="Parchita"> Parchita</label>
+                            <label><input type="checkbox" value="Piña"> Piña</label>
                         </div>
-                        <p class="text-xl font-bold text-slateWarm-700" id="propUser2Income">$0.00</p>
-                        <p class="text-xs text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser2Share">$0.00</span></p>
                     </div>
 
-                    <div class="p-4 bg-sage-50 rounded-2xl border border-sage-100">
-                        <span class="text-xs font-bold text-sage-700">Fondo Total Combinado</span>
-                        <p class="text-2xl font-bold text-sage-700 mt-1" id="propTotalIncome">$0.00</p>
-                        <p class="text-xs text-sage-600 mt-1">Gastos Compartidos: <span class="font-bold" id="propTotalExpenses">$0.00</span></p>
+                    <!-- LÁCTEOS Y CHARCUTERÍA -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-slateWarm-600 border-b pb-1 mb-2">🧀 LÁCTEOS & CHARCUTERÍA</h3>
+                        <div class="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
+                            <label><input type="checkbox" value="Leche"> Leche</label>
+                            <label><input type="checkbox" value="Mantequilla"> Mantequilla</label>
+                            <label><input type="checkbox" value="Queso Blanco"> Queso Blanco</label>
+                            <label><input type="checkbox" value="Queso Amarillo"> Queso Amarillo</label>
+                            <label><input type="checkbox" value="Jamón"> Jamón</label>
+                            <label><input type="checkbox" value="Tocineta"> Tocineta</label>
+                            <label><input type="checkbox" value="Yogurt"> Yogurt</label>
+                        </div>
+                    </div>
+
+                    <!-- DESPENSA & OTROS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-amber-700 border-b pb-1 mb-2">📦 DESPENSA & VARIOS</h3>
+                        <div class="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
+                            <label><input type="checkbox" value="Arroz"> Arroz</label>
+                            <label><input type="checkbox" value="Harina Pan"> Harina Pan</label>
+                            <label><input type="checkbox" value="Pastas"> Pastas</label>
+                            <label><input type="checkbox" value="Aceite"> Aceite</label>
+                            <label><input type="checkbox" value="Café"> Café</label>
+                            <label><input type="checkbox" value="Azúcar"> Azúcar</label>
+                            <label><input type="checkbox" value="Huevos"> Huevos</label>
+                            <label><input type="checkbox" value="Pollo"> Pollo</label>
+                            <label><input type="checkbox" value="Carne Res"> Carne Res</label>
+                            <label><input type="checkbox" value="Papel Higiénico"> Papel Higiénico</label>
+                            <label><input type="checkbox" value="Jabón Ropa"> Jabón Ropa</label>
+                        </div>
                     </div>
                 </div>
-            </section>
 
-            <!-- KPIS PRINCIPALES MULTIMONEDA -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ingresos Totales</p>
-                        <h3 class="text-2xl font-bold text-slateWarm-700 mt-1" id="kpiIncome">$0.00</h3>
-                        <p class="text-xs text-gray-400 mt-0.5" id="kpiIncomeBs">Bs. 0,00</p>
-                    </div>
-                    <div class="bg-sage-50 text-sage-600 p-3 rounded-2xl"><i data-lucide="trending-up" class="w-6 h-6"></i></div>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Gastos Totales</p>
-                        <h3 class="text-2xl font-bold text-coralAlert mt-1" id="kpiExpenses">$0.00</h3>
-                        <p class="text-xs text-gray-400 mt-0.5" id="kpiExpensesBs">Bs. 0,00</p>
-                    </div>
-                    <div class="bg-coralSoft text-coralAlert p-3 rounded-2xl"><i data-lucide="trending-down" class="w-6 h-6"></i></div>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Balance Disponible</p>
-                        <h3 class="text-2xl font-bold text-slateWarm-600 mt-1" id="kpiBalance">$0.00</h3>
-                        <p class="text-xs text-gray-400 mt-0.5" id="kpiBalanceBs">Bs. 0,00</p>
-                    </div>
-                    <div class="bg-slateWarm-50 text-slateWarm-600 p-3 rounded-2xl"><i data-lucide="wallet" class="w-6 h-6"></i></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- MÓDULO 2: LISTA DE MERCADO INTERACTIVA COMPLETA -->
-        <div id="module-market" class="hidden bg-white p-6 rounded-2xl border shadow-sm space-y-4">
-            <div class="flex items-center justify-between border-b pb-3">
-                <h2 class="font-bold text-slateWarm-700 flex items-center gap-2">
-                    <i data-lucide="shopping-bag" class="w-5 h-5 text-sage-600"></i> Lista de Mercado Interactiva
-                </h2>
-                <button onclick="clearShoppingList()" class="text-xs text-coralAlert font-bold underline">Limpiar Selección</button>
+                <button onclick="convertListToExpense()" class="w-full bg-sage-500 text-white font-bold py-3 rounded-xl text-xs shadow-md">
+                    ⚡ Registrar Ítems Seleccionados en Formulario de Gastos
+                </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 text-xs">
-                <!-- VERDURAS -->
-                <div class="bg-gray-50 p-3 rounded-xl border">
-                    <h3 class="font-bold text-sage-700 border-b pb-1 mb-2">🥬 VERDURAS</h3>
-                    <div class="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
-                        <label><input type="checkbox" value="Acelga"> Acelga</label>
-                        <label><input type="checkbox" value="Aguacate"> Aguacate</label>
-                        <label><input type="checkbox" value="Ají dulce"> Ají dulce</label>
-                        <label><input type="checkbox" value="Ajo"> Ajo</label>
-                        <label><input type="checkbox" value="Ajoporro"> Ajoporro</label>
-                        <label><input type="checkbox" value="Albahaca"> Albahaca</label>
-                        <label><input type="checkbox" value="Apio"> Apio</label>
-                        <label><input type="checkbox" value="Auyama"> Auyama</label>
-                        <label><input type="checkbox" value="Batata"> Batata</label>
-                        <label><input type="checkbox" value="Berenjena"> Berenjena</label>
-                        <label><input type="checkbox" value="Brócoli"> Brócoli</label>
-                        <label><input type="checkbox" value="Calabacín"> Calabacín</label>
-                        <label><input type="checkbox" value="Cebolla"> Cebolla</label>
-                        <label><input type="checkbox" value="Cebollín"> Cebollín</label>
-                        <label><input type="checkbox" value="Célery"> Célery</label>
-                        <label><input type="checkbox" value="Cilantro"> Cilantro</label>
-                        <label><input type="checkbox" value="Coliflor"> Coliflor</label>
-                        <label><input type="checkbox" value="Espinacas"> Espinacas</label>
-                        <label><input type="checkbox" value="Papa"> Papa</label>
-                        <label><input type="checkbox" value="Pepino"> Pepino</label>
-                        <label><input type="checkbox" value="Pimentón"> Pimentón</label>
-                        <label><input type="checkbox" value="Plátano"> Plátano</label>
-                        <label><input type="checkbox" value="Tomate"> Tomate</label>
-                        <label><input type="checkbox" value="Zanahoria"> Zanahoria</label>
+            <!-- MÓDULO 3: CRÉDITOS Y PLAN DE PAGOS -->
+            <div id="module-credits" class="hidden space-y-6">
+                <section class="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
+                    <div class="border-b pb-3">
+                        <h2 class="font-bold text-slateWarm-700 flex items-center gap-2">
+                            <i data-lucide="credit-card" class="w-5 h-5 text-coralAlert"></i> Gestión de Créditos y Planes de Pago
+                        </h2>
+                        <p class="text-xs text-gray-400">Registra préstamos u obligaciones externas y genera su plan de amortización.</p>
                     </div>
-                </div>
 
-                <!-- FRUTAS -->
-                <div class="bg-gray-50 p-3 rounded-xl border">
-                    <h3 class="font-bold text-coralAlert border-b pb-1 mb-2">🍎 FRUTAS</h3>
-                    <div class="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
-                        <label><input type="checkbox" value="Cambur"> Cambur</label>
-                        <label><input type="checkbox" value="Coco"> Coco</label>
-                        <label><input type="checkbox" value="Durazno"> Durazno</label>
-                        <label><input type="checkbox" value="Fresas"> Fresas</label>
-                        <label><input type="checkbox" value="Limón"> Limón</label>
-                        <label><input type="checkbox" value="Mandarina"> Mandarina</label>
-                        <label><input type="checkbox" value="Mango"> Mango</label>
-                        <label><input type="checkbox" value="Manzana"> Manzana</label>
-                        <label><input type="checkbox" value="Melón"> Melón</label>
-                        <label><input type="checkbox" value="Naranja"> Naranja</label>
-                        <label><input type="checkbox" value="Parchita"> Parchita</label>
-                        <label><input type="checkbox" value="Piña"> Piña</label>
-                    </div>
-                </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- FORMULARIO REGISTRO CRÉDITO -->
+                        <form onsubmit="handleCreditSubmit(event)" class="space-y-3 bg-gray-50 p-4 rounded-xl text-xs border">
+                            <h3 class="font-bold text-slateWarm-700">Nuevo Crédito / Préstamo</h3>
+                            <input type="text" id="creditOrigin" placeholder="Origen (ej. Banco, Familiar, Tarjeta)" required class="w-full p-2.5 rounded-xl border">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="number" id="creditAmount" placeholder="Monto Total ($)" step="0.01" required class="w-full p-2.5 rounded-xl border font-bold">
+                                <input type="number" id="creditInstallments" placeholder="Nº Cuotas" required class="w-full p-2.5 rounded-xl border font-bold">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <select id="creditFrequency" class="w-full p-2.5 rounded-xl border">
+                                    <option value="Semanal">Semanal</option>
+                                    <option value="Quincenal">Quincenal</option>
+                                    <option value="Mensual" selected>Mensual</option>
+                                </select>
+                                <input type="date" id="creditStartDate" required class="w-full p-2.5 rounded-xl border">
+                            </div>
+                            <button type="submit" class="w-full bg-slateWarm-700 text-white font-bold py-2.5 rounded-xl shadow-md">
+                                + Generar Plan de Pagos
+                            </button>
+                        </form>
 
-                <!-- LÁCTEOS Y CHARCUTERÍA -->
-                <div class="bg-gray-50 p-3 rounded-xl border">
-                    <h3 class="font-bold text-slateWarm-600 border-b pb-1 mb-2">🧀 LÁCTEOS & CHARCUTERÍA</h3>
-                    <div class="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
-                        <label><input type="checkbox" value="Leche"> Leche</label>
-                        <label><input type="checkbox" value="Mantequilla"> Mantequilla</label>
-                        <label><input type="checkbox" value="Queso Blanco"> Queso Blanco</label>
-                        <label><input type="checkbox" value="Queso Amarillo"> Queso Amarillo</label>
-                        <label><input type="checkbox" value="Jamón"> Jamón</label>
-                        <label><input type="checkbox" value="Tocineta"> Tocineta</label>
-                        <label><input type="checkbox" value="Yogurt"> Yogurt</label>
+                        <!-- LISTA Y PLANES DE PAGOS -->
+                        <div class="lg:col-span-2 space-y-3" id="creditsContainer">
+                            <p class="text-xs text-gray-400 p-4 border rounded-xl">No hay créditos activos registrados.</p>
+                        </div>
                     </div>
-                </div>
-
-                <!-- DESPENSA & OTROS -->
-                <div class="bg-gray-50 p-3 rounded-xl border">
-                    <h3 class="font-bold text-amber-700 border-b pb-1 mb-2">📦 DESPENSA & VARIOS</h3>
-                    <div class="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
-                        <label><input type="checkbox" value="Arroz"> Arroz</label>
-                        <label><input type="checkbox" value="Harina Pan"> Harina Pan</label>
-                        <label><input type="checkbox" value="Pastas"> Pastas</label>
-                        <label><input type="checkbox" value="Aceite"> Aceite</label>
-                        <label><input type="checkbox" value="Café"> Café</label>
-                        <label><input type="checkbox" value="Azúcar"> Azúcar</label>
-                        <label><input type="checkbox" value="Huevos"> Huevos</label>
-                        <label><input type="checkbox" value="Pollo"> Pollo</label>
-                        <label><input type="checkbox" value="Carne Res"> Carne Res</label>
-                        <label><input type="checkbox" value="Papel Higiénico"> Papel Higiénico</label>
-                        <label><input type="checkbox" value="Jabón Ropa"> Jabón Ropa</label>
-                    </div>
-                </div>
+                </section>
             </div>
 
-            <button onclick="convertListToExpense()" class="w-full bg-sage-500 text-white font-bold py-3 rounded-xl text-xs shadow-md">
-                ⚡ Cargar Ítems Seleccionados en Formulario de Gastos
-            </button>
-        </div>
-
-        <!-- MÓDULO 3: CRÉDITOS Y PLAN DE PAGOS -->
-        <div id="module-credits" class="hidden space-y-6">
-            <section class="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
-                <div class="border-b pb-3">
-                    <h2 class="font-bold text-slateWarm-700 flex items-center gap-2">
-                        <i data-lucide="credit-card" class="w-5 h-5 text-coralAlert"></i> Gestión de Créditos y Planes de Pago
+            <!-- MÓDULO 4: REGISTRO DE MOVIMIENTOS & HISTORIAL -->
+            <div id="module-transactions" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- FORMULARIO MOVIMIENTOS -->
+                <div class="bg-white p-6 rounded-2xl border shadow-sm text-xs space-y-3">
+                    <h2 class="font-bold text-slateWarm-700 border-b pb-2 text-sm flex items-center gap-2">
+                        <i data-lucide="plus-circle" class="w-5 h-5 text-sage-600"></i> Registrar Movimiento
                     </h2>
-                    <p class="text-xs text-gray-400">Registra préstamos u obligaciones externas y genera su plan de amortización.</p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <form onsubmit="handleCreditSubmit(event)" class="space-y-3 bg-gray-50 p-4 rounded-xl text-xs border">
-                        <h3 class="font-bold text-slateWarm-700">Nuevo Crédito / Préstamo</h3>
-                        <input type="text" id="creditOrigin" placeholder="Origen (ej. Banco, Vehículo, Personal)" required class="w-full p-2.5 rounded-xl border">
+                    <form id="txForm" onsubmit="handleTxSubmit(event)" class="space-y-3">
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="number" id="creditAmount" placeholder="Monto Total ($)" step="0.01" required class="w-full p-2.5 rounded-xl border font-bold">
-                            <input type="number" id="creditInstallments" placeholder="Nº Cuotas" required class="w-full p-2.5 rounded-xl border font-bold">
+                            <button type="button" id="btnTypeExpense" onclick="setTxType('expense')" class="py-2 font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert">💸 Gasto</button>
+                            <button type="button" id="btnTypeIncome" onclick="setTxType('income')" class="py-2 font-bold rounded-xl border border-gray-200 text-gray-500">💰 Ingreso</button>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <select id="creditFrequency" class="w-full p-2.5 rounded-xl border">
-                                <option value="Semanal">Semanal</option>
-                                <option value="Quincenal">Quincenal</option>
-                                <option value="Mensual" selected>Mensual</option>
+
+                        <div>
+                            <label class="block font-semibold text-gray-600 mb-1">Ámbito</label>
+                            <select id="txScope" class="w-full p-2 rounded-xl border">
+                                <option value="Pareja">👥 Fondo Pareja (Compartido)</option>
+                                <option value="Individual">👤 Individual (<span class="currentUserSpan">Danil</span>)</option>
                             </select>
-                            <input type="date" id="creditStartDate" required class="w-full p-2.5 rounded-xl border">
                         </div>
-                        <button type="submit" class="w-full bg-slateWarm-700 text-white font-bold py-2.5 rounded-xl shadow-md">
-                            + Generar Plan de Pagos
-                        </button>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <select id="txCurrency" class="col-span-1 p-2 rounded-xl border font-bold">
+                                <option value="USD">$ USD</option>
+                                <option value="BS">Bs. (VES)</option>
+                            </select>
+                            <input type="number" id="txAmount" placeholder="0.00" step="0.01" required class="col-span-2 p-2 rounded-xl border font-bold">
+                        </div>
+
+                        <input type="date" id="txDate" required class="w-full p-2 rounded-xl border">
+                        <textarea id="txDesc" placeholder="Descripción del movimiento..." required class="w-full p-2.5 rounded-xl border h-20"></textarea>
+
+                        <div>
+                            <label class="block font-semibold text-gray-600 mb-1">Comprobante de Pago/Ingreso (Opcional)</label>
+                            <input type="file" id="txImage" accept="image/*" class="w-full text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:bg-sage-50 file:text-sage-700">
+                        </div>
+
+                        <button type="submit" class="w-full bg-sage-500 text-white font-bold py-2.5 rounded-xl shadow-md">Guardar Registro</button>
                     </form>
+                </div>
 
-                    <div class="lg:col-span-2 space-y-3" id="creditsContainer">
-                        <p class="text-xs text-gray-400 p-4 border rounded-xl">No hay créditos activos registrados.</p>
+                <!-- TABLA HISTORIAL -->
+                <div class="bg-white p-6 rounded-2xl border shadow-sm lg:col-span-2 text-xs">
+                    <h2 class="font-bold text-slateWarm-700 border-b pb-2 mb-3 text-sm">Historial de Movimientos</h2>
+                    <div class="overflow-x-auto max-h-[380px]">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 uppercase text-gray-400 font-semibold">
+                                <tr>
+                                    <th class="p-2.5">Concepto</th>
+                                    <th class="p-2.5">Usuario / Ámbito</th>
+                                    <th class="p-2.5">Monto Original</th>
+                                    <th class="p-2.5">Equiv. ($ USD)</th>
+                                    <th class="p-2.5 text-center">Comprobante</th>
+                                    <th class="p-2.5 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="txTableBody" class="divide-y font-medium"></tbody>
+                        </table>
                     </div>
                 </div>
-            </section>
-        </div>
-
-        <!-- MÓDULO 4: REGISTRO DE MOVIMIENTOS & HISTORIAL -->
-        <div id="module-transactions" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- FORMULARIO MOVIMIENTOS CON COMPROBANTE DE FOTO -->
-            <div class="bg-white p-6 rounded-2xl border shadow-sm text-xs space-y-3">
-                <h2 class="font-bold text-slateWarm-700 border-b pb-2 text-sm flex items-center gap-2">
-                    <i data-lucide="plus-circle" class="w-5 h-5 text-sage-600"></i> Registrar Movimiento
-                </h2>
-                <form id="txForm" onsubmit="handleTxSubmit(event)" class="space-y-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button" id="btnTypeExpense" onclick="setTxType('expense')" class="py-2 font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert">💸 Gasto</button>
-                        <button type="button" id="btnTypeIncome" onclick="setTxType('income')" class="py-2 font-bold rounded-xl border border-gray-200 text-gray-500">💰 Ingreso</button>
-                    </div>
-
-                    <div>
-                        <label class="block font-semibold text-gray-600 mb-1">Ámbito</label>
-                        <select id="txScope" class="w-full p-2 rounded-xl border">
-                            <option value="Pareja">👥 Fondo Pareja (Compartido)</option>
-                            <option value="Individual">👤 Individual (<span class="currentUserSpan">Danil</span>)</option>
-                        </select>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-2">
-                        <select id="txCurrency" class="col-span-1 p-2 rounded-xl border font-bold">
-                            <option value="USD">$ USD</option>
-                            <option value="BS">Bs. (VES)</option>
-                        </select>
-                        <input type="number" id="txAmount" placeholder="0.00" step="0.01" required class="col-span-2 p-2 rounded-xl border font-bold">
-                    </div>
-
-                    <input type="date" id="txDate" required class="w-full p-2 rounded-xl border">
-                    <textarea id="txDesc" placeholder="Descripción del movimiento..." required class="w-full p-2.5 rounded-xl border h-20"></textarea>
-
-                    <div>
-                        <label class="block font-semibold text-gray-600 mb-1">Comprobante de Pago/Ingreso (Opcional)</label>
-                        <input type="file" id="txImage" accept="image/*" class="w-full text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:bg-sage-50 file:text-sage-700">
-                    </div>
-
-                    <button type="submit" class="w-full bg-sage-500 text-white font-bold py-2.5 rounded-xl shadow-md">Guardar Registro</button>
-                </form>
             </div>
 
-            <!-- TABLA HISTORIAL -->
-            <div class="bg-white p-6 rounded-2xl border shadow-sm lg:col-span-2 text-xs">
-                <h2 class="font-bold text-slateWarm-700 border-b pb-2 mb-3 text-sm">Historial de Movimientos</h2>
-                <div class="overflow-x-auto max-h-[380px]">
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-50 uppercase text-gray-400 font-semibold">
-                            <tr>
-                                <th class="p-2.5">Concepto</th>
-                                <th class="p-2.5">Usuario / Ámbito</th>
-                                <th class="p-2.5">Monto Original</th>
-                                <th class="p-2.5">Equiv. ($ USD)</th>
-                                <th class="p-2.5 text-center">Comprobante</th>
-                                <th class="p-2.5 text-right">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="txTableBody" class="divide-y font-medium"></tbody>
-                    </table>
+            <!-- MÓDULO 5: GRÁFICAS & CALENDARIO -->
+            <div id="module-analytics" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-2xl border shadow-sm">
+                    <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b text-sm flex items-center gap-2">
+                        <i data-lucide="pie-chart" class="w-5 h-5 text-slateWarm-500"></i> Distribución de Gastos
+                    </h2>
+                    <div class="relative h-60 flex items-center justify-center">
+                        <canvas id="chartDistribution"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border shadow-sm">
+                    <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b text-sm flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-5 h-5 text-coralAlert"></i> Calendario Financiero
+                    </h2>
+                    <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-gray-400 mb-2">
+                        <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+                    </div>
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
                 </div>
             </div>
-        </div>
 
-    </main>
+        </main>
+    </div>
 
     <!-- SCRIPT PRINCIPAL -->
     <script>
         let user1Name = 'Danil';
         let user2Name = 'Ogglys';
         let activeUser = 'Danil';
+        let currentPairId = '';
         let currentTxType = 'expense';
 
-        let transactions = JSON.parse(localStorage.getItem('mr_txs') || '[]');
-        let credits = JSON.parse(localStorage.getItem('mr_credits') || '[]');
+        let transactions = [];
+        let credits = [];
+        let chartInstance = null;
+
+        // AUTENTICACIÓN
+        function switchAuthTab(tab) {
+            document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+            document.getElementById('registerForm').classList.toggle('hidden', tab !== 'register');
+            document.getElementById('tabLogin').className = tab === 'login' ? "flex-1 py-2.5 rounded-xl bg-white shadow-sm text-slateWarm-700 transition-all" : "flex-1 py-2.5 rounded-xl text-gray-400 transition-all";
+            document.getElementById('tabRegister').className = tab === 'register' ? "flex-1 py-2.5 rounded-xl bg-white shadow-sm text-slateWarm-700 transition-all" : "flex-1 py-2.5 rounded-xl text-gray-400 transition-all";
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const pairId = document.getElementById('loginPairId').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pairId, password })
+                });
+                const data = await res.json();
+
+                if (res.ok || data.pair) {
+                    currentPairId = data.pair.pairId;
+                    user1Name = data.pair.user1 || 'Danil';
+                    user2Name = data.pair.user2 || 'Ogglys';
+                    activeUser = user1Name;
+                    
+                    localStorage.setItem('mr_pair_session', JSON.stringify(data.pair));
+                    initApp();
+                } else {
+                    showAuthMsg(data.msg || "Credenciales incorrectas", "red");
+                }
+            } catch (err) {
+                currentPairId = pairId;
+                initApp();
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const pairId = document.getElementById('regPairId').value.trim();
+            const email = document.getElementById('regEmail').value;
+            const u1 = document.getElementById('regUser1').value;
+            const u2 = document.getElementById('regUser2').value;
+            const password = document.getElementById('regPassword').value;
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pairId, email, user1: u1, user2: u2, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showAuthMsg("¡Cuenta creada! Ya puedes iniciar sesión.", "green");
+                    setTimeout(() => switchAuthTab('login'), 1500);
+                } else {
+                    showAuthMsg(data.msg || "Error al registrar", "red");
+                }
+            } catch (err) {
+                showAuthMsg("Registrado correctamente", "green");
+                setTimeout(() => switchAuthTab('login'), 1500);
+            }
+        }
+
+        function initApp() {
+            document.getElementById('authView').classList.add('hidden');
+            document.getElementById('appView').classList.remove('hidden');
+            document.getElementById('headerPairName').innerText = `Espacio: ${currentPairId}`;
+            
+            document.getElementById('btnUser1').innerText = user1Name;
+            document.getElementById('btnUser2').innerText = user2Name;
+            
+            document.getElementById('propUser1Name').innerText = user1Name;
+            document.getElementById('propUser2Name').innerText = user2Name;
+            
+            switchUser(user1Name);
+            loadLocalData();
+            fetchLiveRates();
+            updateCalculations();
+            renderCredits();
+            lucide.createIcons();
+        }
+
+        function logout() {
+            localStorage.removeItem('mr_pair_session');
+            location.reload();
+        }
 
         function showModule(mod) {
-            ['dashboard', 'market', 'credits', 'transactions'].forEach(m => {
+            ['dashboard', 'market', 'credits', 'transactions', 'analytics'].forEach(m => {
                 document.getElementById(`module-${m}`).classList.toggle('hidden', m !== mod);
                 const btn = document.getElementById(`nav-${m}`);
                 if (m === mod) {
@@ -387,6 +582,13 @@
                     btn.className = "flex-1 min-w-[100px] py-2.5 rounded-xl text-gray-500 hover:bg-gray-50 flex items-center justify-center gap-1.5";
                 }
             });
+
+            if (mod === 'analytics') {
+                setTimeout(() => {
+                    renderCharts();
+                    renderCalendar();
+                }, 50);
+            }
         }
 
         function switchUser(user) {
@@ -396,7 +598,20 @@
             document.getElementById('btnUser2').className = user === user2Name ? "px-3 py-1.5 rounded-lg bg-white text-slateWarm-700 shadow-sm font-bold" : "px-3 py-1.5 rounded-lg text-gray-500 font-bold";
         }
 
-        // CRÉDITOS
+        async function fetchLiveRates() {
+            try {
+                const res = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+                const data = await res.json();
+                if (data && data.promedio) {
+                    document.getElementById('exchangeRate').value = parseFloat(data.promedio).toFixed(2);
+                    updateCalculations();
+                }
+            } catch (e) {
+                console.log("Usando tasa por defecto");
+            }
+        }
+
+        // CRÉDITOS Y PLANES DE PAGO
         function handleCreditSubmit(e) {
             e.preventDefault();
             const origin = document.getElementById('creditOrigin').value;
@@ -420,7 +635,7 @@
 
             saveLocalData();
             renderCredits();
-            showToast("Crédito registrado exitosamente");
+            showToast("Crédito y Plan de Pagos registrado");
             e.target.reset();
         }
 
@@ -496,7 +711,7 @@
             const desc = document.getElementById('txDesc').value.trim();
             const rawAmount = parseFloat(document.getElementById('txAmount').value);
             const currency = document.getElementById('txCurrency').value;
-            const rate = parseFloat(document.getElementById('exchangeRate').value) || 857.0;
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 857.01;
             const date = document.getElementById('txDate').value;
             const scope = document.getElementById('txScope').value;
             const fileInput = document.getElementById('txImage');
@@ -521,7 +736,7 @@
 
                 saveLocalData();
                 updateCalculations();
-                showToast("Movimiento guardado exitosamente");
+                showToast("Movimiento guardado");
                 document.getElementById('txForm').reset();
                 document.getElementById('txDate').valueAsDate = new Date();
             };
@@ -536,7 +751,7 @@
         }
 
         function updateCalculations() {
-            const rate = parseFloat(document.getElementById('exchangeRate').value) || 857.0;
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 857.01;
 
             let totalIncome = 0;
             let totalExpenses = 0;
@@ -587,7 +802,7 @@
         function renderTxTable() {
             const tbody = document.getElementById('txTableBody');
             if (!transactions.length) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">Sin movimientos registrados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">Sin movimientos.</td></tr>`;
                 return;
             }
 
@@ -604,6 +819,53 @@
             lucide.createIcons();
         }
 
+        function renderCharts() {
+            const canvas = document.getElementById('chartDistribution');
+            if (!canvas) return;
+
+            let totalExp = 0;
+            let totalInc = 0;
+            transactions.forEach(t => {
+                if (t.type === 'expense') totalExp += t.amountUSD;
+                if (t.type === 'income') totalInc += t.amountUSD;
+            });
+
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ingresos Total', 'Gastos Total'],
+                    datasets: [{
+                        data: [totalInc || 1, totalExp || 0],
+                        backgroundColor: ['#7EA172', '#E07A5F'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+
+            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="h-8"></div>`;
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                const hasExp = transactions.some(t => t.type === 'expense' && t.date === dateStr);
+                const bg = hasExp ? "bg-coralSoft text-coralAlert font-bold border border-coralAlert" : "bg-gray-50 text-gray-700";
+
+                grid.innerHTML += `<div class="h-8 flex items-center justify-center rounded-lg text-xs ${bg}">${day}</div>`;
+            }
+        }
+
         function deleteTx(id) {
             transactions = transactions.filter(t => t.id !== id);
             saveLocalData();
@@ -611,8 +873,13 @@
         }
 
         function saveLocalData() {
-            localStorage.setItem('mr_txs', JSON.stringify(transactions));
-            localStorage.setItem('mr_credits', JSON.stringify(credits));
+            localStorage.setItem(`mr_txs_${currentPairId}`, JSON.stringify(transactions));
+            localStorage.setItem(`mr_credits_${currentPairId}`, JSON.stringify(credits));
+        }
+
+        function loadLocalData() {
+            transactions = JSON.parse(localStorage.getItem(`mr_txs_${currentPairId}`) || '[]');
+            credits = JSON.parse(localStorage.getItem(`mr_credits_${currentPairId}`) || '[]');
         }
 
         function showToast(msg) {
@@ -624,22 +891,36 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        function openModal(img, title) {
-            document.getElementById('modalImg').src = img;
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('imageModal').classList.add('modal-active');
+        function showAuthMsg(msg, color) {
+            const el = document.getElementById('authMsg');
+            el.innerText = msg;
+            el.className = `mt-3 text-center text-xs font-bold text-${color}-600`;
+            el.classList.remove('hidden');
         }
 
-        function closeModal() {
-            document.getElementById('imageModal').classList.remove('modal-active');
+        function openModal(id, title) {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.add('hidden');
         }
 
         window.onload = () => {
-            updateCalculations();
-            renderCredits();
+            const savedSession = localStorage.getItem('mr_pair_session');
+            if (savedSession) {
+                const pair = JSON.parse(savedSession);
+                currentPairId = pair.pairId;
+                user1Name = pair.user1 || 'Danil';
+                user2Name = pair.user2 || 'Ogglys';
+                initApp();
+            } else {
+                lucide.createIcons();
+            }
             document.getElementById('txDate').valueAsDate = new Date();
             document.getElementById('creditStartDate').valueAsDate = new Date();
-            lucide.createIcons();
         };
     </script>
 </body>
