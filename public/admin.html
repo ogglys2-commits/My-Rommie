@@ -29,10 +29,12 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg">My Roomie Admin</h1>
-                    <p class="text-xs text-gray-400">Control de Usuarios y Soporte</p>
+                    <p class="text-xs text-gray-400" id="adminUserLabel">Control de Usuarios y Soporte</p>
                 </div>
             </div>
-            <a href="/" class="bg-white/10 hover:bg-white/20 text-xs px-3 py-1.5 rounded-xl font-semibold transition-all">Volver a App</a>
+            <button onclick="logoutAdmin()" class="bg-red-500/80 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-xl font-semibold transition-all">
+                Cerrar Sesión Admin
+            </button>
         </div>
     </header>
 
@@ -58,10 +60,10 @@
 
             <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                 <div>
-                    <p class="text-xs text-gray-400 uppercase font-semibold">Servicio de Correo</p>
-                    <h3 class="text-xs font-bold text-green-600 mt-1">Activo (Nodemailer)</h3>
+                    <p class="text-xs text-gray-400 uppercase font-semibold">Estado del Sistema</p>
+                    <h3 class="text-xs font-bold text-green-600 mt-1">Conectado (Modo Seguro)</h3>
                 </div>
-                <div class="bg-green-50 text-green-600 p-3 rounded-2xl"><i data-lucide="mail" class="w-6 h-6"></i></div>
+                <div class="bg-green-50 text-green-600 p-3 rounded-2xl"><i data-lucide="shield" class="w-6 h-6"></i></div>
             </div>
         </div>
 
@@ -91,15 +93,31 @@
     </main>
 
     <script>
+        // VERIFICACIÓN DE SEGURIDAD AL CARGAR LA PÁGINA
+        const savedPair = JSON.parse(localStorage.getItem('myroomie_pair') || '{}');
+        const token = localStorage.getItem('myroomie_token');
+
+        if (!token || savedPair.role !== 'admin') {
+            alert("Acceso denegado: Esta área requiere permisos de Administrador.");
+            window.location.href = '/';
+        } else {
+            document.getElementById('adminUserLabel').innerText = `Sesión iniciada como: ${savedPair.pairId} (Admin)`;
+        }
+
         let allPairs = [];
 
         async function loadAdminData() {
             try {
-                const res = await fetch('/api/auth/admin/pairs');
+                const res = await fetch('/api/auth/admin/pairs', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error("No autorizado");
+                
                 allPairs = await res.json();
                 renderAdminTable(allPairs);
             } catch (err) {
-                console.error("Error al cargar parejas admin", err);
+                alert("Sesión expirada o no autorizada.");
+                window.location.href = '/';
             }
         }
 
@@ -149,6 +167,11 @@
                     alert("Error al solicitar envío de correo");
                 }
             }
+        }
+
+        function logoutAdmin() {
+            localStorage.clear();
+            window.location.href = '/';
         }
 
         window.onload = loadAdminData;
