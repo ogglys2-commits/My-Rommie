@@ -50,8 +50,8 @@ exports.adminLogin = async (req, res) => {
     try {
         const { adminUser, adminPassword } = req.body;
 
-        const envUser = process.env.ADMIN_USER || 'admin';
-        const envPass = process.env.ADMIN_PASSWORD || 'admin123';
+        const envUser = process.env.ADMIN_USER || 'Ogglys';
+        const envPass = process.env.ADMIN_PASSWORD || 'admin0920';
 
         if (adminUser === envUser && adminPassword === envPass) {
             const token = jwt.sign(
