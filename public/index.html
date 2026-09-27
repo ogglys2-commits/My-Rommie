@@ -3,1265 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Roomie - Finanzas en Pareja</title>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#7EA172">
-    <!-- Tailwind CSS CDN -->
+    <title>My Roomie - Finanzas para Parejas</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        sage: { 50: '#F4F7F4', 100: '#E8F0E6', 500: '#7EA172', 600: '#68885E', 700: '#536E4B' },
-                        slateWarm: { 50: '#F8FAFC', 100: '#EDF2F7', 500: '#4A6B82', 600: '#3B576C', 700: '#2D4354' },
-                        creamBg: '#FAF9F6',
-                        coralAlert: '#E07A5F',
-                        coralSoft: '#FDF0ED',
+                        sage: { 500: '#7EA172', 600: '#68885E' },
+                        slateWarm: { 700: '#2D4354', 800: '#1E2D38' }
                     }
                 }
             }
         }
     </script>
-    <style>
-        body { background-color: #FAF9F6; font-family: system-ui, -apple-system, sans-serif; }
-        .modal-active { display: flex !important; }
-        .tab-content { display: none !important; }
-        .tab-content.active { display: block !important; }
-    </style>
 </head>
-<body class="text-slate-800 antialiased min-h-screen pb-20 sm:pb-12">
+<body class="bg-slateWarm-700 font-sans min-h-screen flex items-center justify-center p-4">
 
-    <!-- TOAST NOTIFICATIONS -->
-    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-    <!-- PANTALLA / MODAL DE LOGIN OBLIGATORIO Y REGISTRO MULTIPAREJA -->
-    <div id="authModal" class="fixed inset-0 bg-slateWarm-700/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-gray-100">
-            <div class="flex items-center justify-center gap-3 mb-6">
-                <div class="bg-sage-500 text-white p-3 rounded-2xl shadow-md">
-                    <i data-lucide="heart-handshake" class="w-8 h-8"></i>
-                </div>
-                <div>
-                    <h2 class="font-bold text-2xl text-slateWarm-700 leading-none">My Roomie</h2>
-                    <p class="text-xs text-gray-400 mt-1">Gestión Financiera para Parejas</p>
-                </div>
+    <!-- CONTENEDOR DE AUTENTICACIÓN -->
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 relative">
+        
+        <!-- LOGO Y ENCABEZADO -->
+        <div class="flex items-center justify-center gap-3 mb-6">
+            <div class="bg-sage-500 text-white p-3 rounded-2xl shadow-md">
+                <i data-lucide="heart-handshake" class="w-8 h-8"></i>
             </div>
-
-            <!-- TABS LOGIN / REGISTRO -->
-            <div class="flex bg-gray-100 p-1 rounded-xl mb-6">
-                <button type="button" id="tabLogin" onclick="showAuthTab('login')" class="w-1/2 py-2 text-xs font-bold rounded-lg bg-white text-slateWarm-700 shadow-sm transition-all">Iniciar Sesión</button>
-                <button type="button" id="tabRegister" onclick="showAuthTab('register')" class="w-1/2 py-2 text-xs font-bold rounded-lg text-gray-500 transition-all">Registrar Pareja</button>
+            <div>
+                <h1 class="font-bold text-2xl text-slateWarm-700 leading-tight">My Roomie</h1>
+                <p class="text-xs text-gray-400 font-medium">Gestión Financiera para Parejas</p>
             </div>
-
-            <!-- FORMULARIO LOGIN -->
-            <form id="formLogin" onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">ID o Nombre de la Pareja</label>
-                    <input type="text" id="loginPairId" placeholder="Ej: danil-ogglys" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Contraseña de Pareja</label>
-                    <input type="password" id="loginPassword" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
-                </div>
-                <button type="submit" class="w-full bg-sage-500 hover:bg-sage-600 text-white font-bold py-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
-                    <i data-lucide="log-in" class="w-4 h-4"></i> Ingresar a Nuestro Espacio
-                </button>
-            </form>
-
-            <!-- FORMULARIO REGISTRO -->
-            <form id="formRegister" onsubmit="handleRegister(event)" class="space-y-3 hidden">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">ID Único de Pareja</label>
-                    <input type="text" id="regPairId" placeholder="Ej: pareja-perez" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Integrante 1</label>
-                        <input type="text" id="regUser1" placeholder="Ej: Danil" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Integrante 2</label>
-                        <input type="text" id="regUser2" placeholder="Ej: Ogglys" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Contraseña</label>
-                    <input type="password" id="regPassword" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
-                </div>
-                <button type="submit" class="w-full bg-slateWarm-600 hover:bg-slateWarm-700 text-white font-bold py-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
-                    <i data-lucide="user-plus" class="w-4 h-4"></i> Crear Espacio de Pareja
-                </button>
-            </form>
         </div>
-    </div>
 
-    <!-- MODAL COMPROBANTE -->
-    <div id="imageModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-xl w-full p-4 relative shadow-2xl">
-            <button onclick="closeModal('imageModal')" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-gray-100 p-1 rounded-full">
-                <i data-lucide="x" class="w-6 h-6"></i>
+        <!-- PESTAÑAS (INICIAR SESIÓN / REGISTRAR) -->
+        <div class="bg-gray-100 p-1 rounded-2xl flex gap-1 mb-6 text-xs font-bold">
+            <button id="tabLogin" onclick="switchTab('login')" class="flex-1 py-2.5 rounded-xl bg-white shadow-sm text-slateWarm-700 transition-all">Iniciar Sesión</button>
+            <button id="tabRegister" onclick="switchTab('register')" class="flex-1 py-2.5 rounded-xl text-gray-400 hover:text-slateWarm-700 transition-all">Registrar Pareja</button>
+        </div>
+
+        <!-- FORMULARIO 1: INICIAR SESIÓN -->
+        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">ID o Nombre de la Pareja</label>
+                <input type="text" id="loginPairId" required placeholder="Ej: danil-ogglys" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
+            </div>
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-xs font-semibold text-gray-600">Contraseña de Pareja</label>
+                    <button type="button" onclick="showForgotPasswordModal()" class="text-[11px] font-bold text-sage-600 hover:underline">¿Olvidaste tu contraseña?</button>
+                </div>
+                <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
+            </div>
+
+            <button type="submit" class="w-full bg-sage-500 hover:bg-sage-600 text-white font-bold py-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
+                <i data-lucide="log-in" class="w-4 h-4"></i> Ingresar a Nuestro Espacio
             </button>
-            <h3 class="text-lg font-bold text-slateWarm-700 mb-3" id="modalTitle">Comprobante</h3>
-            <div class="flex justify-center items-center max-h-[70vh] overflow-hidden rounded-lg bg-gray-50">
-                <img id="modalImg" src="" alt="Comprobante" class="object-contain max-h-[70vh] w-auto">
+        </form>
+
+        <!-- FORMULARIO 2: REGISTRAR PAREJA (CON CAMPO CORREO) -->
+        <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-3 hidden">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">ID Único de Pareja</label>
+                <input type="text" id="regPairId" required placeholder="Ej: danil-ogglys" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
             </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Correo Electrónico (Para recuperar clave y recibir reportes)</label>
+                <input type="email" id="regEmail" required placeholder="ejemplo@correo.com" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nombre Pareja 1</label>
+                    <input type="text" id="regUser1" required placeholder="Ej: Danil" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nombre Pareja 2</label>
+                    <input type="text" id="regUser2" required placeholder="Ej: Ogglys" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Crear Contraseña Compartida</label>
+                <input type="password" id="regPassword" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
+            </div>
+
+            <button type="submit" class="w-full bg-sage-500 hover:bg-sage-600 text-white font-bold py-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
+                <i data-lucide="user-plus" class="w-4 h-4"></i> Crear Espacio de Pareja
+            </button>
+        </form>
+
+        <!-- ACCESO DIRECTO AL PANEL DE ADMINISTRADOR -->
+        <div class="mt-6 pt-4 border-t text-center">
+            <a href="/admin.html" class="text-xs font-bold text-gray-400 hover:text-slateWarm-700 transition-all flex items-center justify-center gap-1">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Panel Interno de Administrador
+            </a>
         </div>
+
+        <div id="authMsg" class="mt-4 text-center text-xs font-bold hidden"></div>
     </div>
 
-    <!-- HEADER DE LA APLICACIÓN -->
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-0 sm:h-16 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+    <!-- MODAL DE OLVIDÉ MI CONTRASEÑA -->
+    <div id="forgotModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl relative">
+            <button onclick="closeForgotModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <h3 class="font-bold text-base text-slateWarm-700 mb-1">Recuperar Contraseña</h3>
+            <p class="text-xs text-gray-400 mb-4">Ingresa el correo electrónico asociado a tu pareja y te enviaremos un enlace seguro.</p>
             
-            <div class="flex items-center justify-between w-full sm:w-auto">
-                <div class="flex items-center gap-3">
-                    <div class="bg-sage-500 text-white p-2 rounded-xl shadow-sm">
-                        <i data-lucide="heart-handshake" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h1 class="font-bold text-lg sm:text-xl text-slateWarm-700 leading-none">My Roomie</h1>
-                        <span class="text-[10px] sm:text-xs text-gray-400 block mt-0.5" id="headerPairName">Espacio Compartido</span>
-                    </div>
+            <form onsubmit="handleForgotPassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Correo Electrónico</label>
+                    <input type="email" id="forgotEmail" required placeholder="ejemplo@correo.com" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-sage-500">
                 </div>
-
-                <!-- Perfil Activo y Logout Móvil -->
-                <div class="flex items-center gap-2 sm:hidden">
-                    <div class="flex items-center bg-gray-100 p-0.5 rounded-xl" id="userSwitchMobContainer"></div>
-                    <button onclick="logout()" title="Cerrar Sesión" class="p-1.5 text-gray-400 hover:text-coralAlert bg-gray-50 rounded-lg">
-                        <i data-lucide="log-out" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Navegación Superior COMPUTADORA -->
-            <nav class="hidden md:flex items-center gap-1 bg-gray-100 p-1 rounded-xl text-xs font-bold">
-                <button onclick="showTab('mod-dashboard')" id="top-nav-mod-dashboard" class="top-nav-btn px-3 py-1.5 rounded-lg bg-white text-slateWarm-700 shadow-sm flex items-center gap-1.5">
-                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Inicio
+                <button type="submit" class="w-full bg-sage-500 hover:bg-sage-600 text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition-all">
+                    Enviar Enlace por Correo
                 </button>
-                <button onclick="showTab('mod-proportional')" id="top-nav-mod-proportional" class="top-nav-btn px-3 py-1.5 rounded-lg text-gray-500 hover:text-slateWarm-700 flex items-center gap-1.5">
-                    <i data-lucide="calculator" class="w-4 h-4"></i> Aportes
-                </button>
-                <button onclick="showTab('mod-market')" id="top-nav-mod-market" class="top-nav-btn px-3 py-1.5 rounded-lg text-gray-500 hover:text-slateWarm-700 flex items-center gap-1.5">
-                    <i data-lucide="shopping-cart" class="w-4 h-4"></i> Mercado
-                </button>
-                <button onclick="showTab('mod-credits')" id="top-nav-mod-credits" class="top-nav-btn px-3 py-1.5 rounded-lg text-gray-500 hover:text-slateWarm-700 flex items-center gap-1.5">
-                    <i data-lucide="credit-card" class="w-4 h-4"></i> Créditos
-                </button>
-                <button onclick="showTab('mod-transactions')" id="top-nav-mod-transactions" class="top-nav-btn px-3 py-1.5 rounded-lg text-gray-500 hover:text-slateWarm-700 flex items-center gap-1.5">
-                    <i data-lucide="receipt" class="w-4 h-4"></i> Registro
-                </button>
-                <button onclick="showTab('mod-analytics')" id="top-nav-mod-analytics" class="top-nav-btn px-3 py-1.5 rounded-lg text-gray-500 hover:text-slateWarm-700 flex items-center gap-1.5">
-                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Gráficas
-                </button>
-            </nav>
-
-            <!-- Tasa BCV y Logout Computadora -->
-            <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-0 border-gray-100">
-                <div class="flex items-center gap-1.5 bg-slateWarm-50 border border-slateWarm-100 px-3 py-1 rounded-xl text-xs font-medium text-slateWarm-600">
-                    <i data-lucide="dollar-sign" class="w-3.5 h-3.5 text-sage-600"></i>
-                    <span class="text-xs font-bold">Tasa BCV:</span>
-                    <input type="number" id="exchangeRate" value="36.50" step="0.01" class="w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 text-xs focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
-                    <button onclick="fetchLiveRates()" title="Actualizar Tasa BCV" class="text-sage-600 hover:text-sage-700 p-0.5">
-                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <span class="text-gray-400 text-xs">Bs/$</span>
-                </div>
-
-                <div class="hidden sm:flex items-center gap-2">
-                    <div class="flex items-center bg-gray-100 p-1 rounded-xl" id="userSwitchContainer"></div>
-
-                    <button onclick="logout()" title="Cerrar Sesión" class="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-coralAlert/30 bg-coralSoft text-coralAlert hover:bg-coralAlert hover:text-white text-xs font-bold transition-all">
-                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-                        <span class="hidden lg:inline">Salir</span>
-                    </button>
-                </div>
-            </div>
-
+            </form>
+            <div id="forgotMsg" class="mt-3 text-center text-xs font-bold hidden"></div>
         </div>
-    </header>
+    </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
-
-        <!-- INTERFAZ 1: PANEL GENERAL -->
-        <section id="mod-dashboard" class="tab-content active space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ingresos Totales</p>
-                        <h3 class="text-2xl font-bold text-slateWarm-700 mt-1" id="kpiIncome">$0.00</h3>
-                        <p class="text-xs text-gray-400 mt-0.5" id="kpiIncomeBs">Bs. 0,00</p>
-                    </div>
-                    <div class="bg-sage-50 text-sage-600 p-3 rounded-2xl"><i data-lucide="trending-up" class="w-6 h-6"></i></div>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Gastos Totales</p>
-                        <h3 class="text-2xl font-bold text-coralAlert mt-1" id="kpiExpenses">$0.00</h3>
-                        <p class="text-xs text-gray-400 mt-0.5" id="kpiExpensesBs">Bs. 0,00</p>
-                    </div>
-                    <div class="bg-coralSoft text-coralAlert p-3 rounded-2xl"><i data-lucide="trending-down" class="w-6 h-6"></i></div>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Balance Disponible</p>
-                        <h3 class="text-2xl font-bold text-slateWarm-600 mt-1" id="kpiBalance">$0.00</h3>
-                        <p class="text-xs text-gray-400 mt-0.5" id="kpiBalanceBs">Bs. 0,00</p>
-                    </div>
-                    <div class="bg-slateWarm-50 text-slateWarm-600 p-3 rounded-2xl"><i data-lucide="wallet" class="w-6 h-6"></i></div>
-                </div>
-
-                <div class="bg-gradient-to-br from-slateWarm-500 to-slateWarm-700 text-white p-5 rounded-2xl shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-slateWarm-100 uppercase tracking-wider">Perfil Activo</p>
-                        <h3 class="text-2xl font-bold mt-1" id="activeUserLabel">Usuario</h3>
-                        <span class="inline-block mt-1 bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold" id="activePairLabel">Espacio Pareja</span>
-                    </div>
-                    <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-sm"><i data-lucide="user" class="w-6 h-6 text-white"></i></div>
-                </div>
-            </div>
-
-            <!-- Accesos Rápida -->
-            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <h3 class="font-bold text-slateWarm-700 mb-4 text-sm">Módulos de Trabajo</h3>
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
-                    <button onclick="showTab('mod-proportional')" class="p-3.5 rounded-xl bg-slateWarm-50 hover:bg-slateWarm-100 border border-slateWarm-100 text-left transition-all">
-                        <i data-lucide="calculator" class="w-5 h-5 text-sage-600 mb-1.5"></i>
-                        <h4 class="font-bold text-slateWarm-700">Regla Aportes</h4>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Porcentajes ingresos</p>
-                    </button>
-                    <button onclick="showTab('mod-market')" class="p-3.5 rounded-xl bg-sage-50 hover:bg-sage-100 border border-sage-100 text-left transition-all">
-                        <i data-lucide="shopping-cart" class="w-5 h-5 text-sage-600 mb-1.5"></i>
-                        <h4 class="font-bold text-slateWarm-700">Lista Mercado</h4>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Super Planner</p>
-                    </button>
-                    <button onclick="showTab('mod-credits')" class="p-3.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-100 text-left transition-all">
-                        <i data-lucide="credit-card" class="w-5 h-5 text-amber-600 mb-1.5"></i>
-                        <h4 class="font-bold text-slateWarm-700">Créditos</h4>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Plan de Pagos</p>
-                    </button>
-                    <button onclick="showTab('mod-transactions')" class="p-3.5 rounded-xl bg-slateWarm-50 hover:bg-slateWarm-100 border border-slateWarm-100 text-left transition-all">
-                        <i data-lucide="receipt" class="w-5 h-5 text-slateWarm-600 mb-1.5"></i>
-                        <h4 class="font-bold text-slateWarm-700">Registrar Gastos</h4>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Historial y fotos</p>
-                    </button>
-                    <button onclick="showTab('mod-analytics')" class="p-3.5 rounded-xl bg-coralSoft hover:bg-coralSoft/80 border border-coralAlert/20 text-left transition-all">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-coralAlert mb-1.5"></i>
-                        <h4 class="font-bold text-slateWarm-700">Gráficas</h4>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Calendario y reportes</p>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- INTERFAZ 2: APORTES PROPORCIONALES -->
-        <section id="mod-proportional" class="tab-content bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="calculator" class="w-5 h-5 text-sage-600"></i>
-                    <h2 class="font-bold text-slateWarm-700 text-sm">Aporte Proporcional por Ingresos (Modelo Excel)</h2>
-                </div>
-                <span class="text-[10px] bg-sage-50 text-sage-700 px-2 py-1 rounded-lg font-semibold">Cálculo Automático</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                <div class="p-4 bg-slateWarm-50 rounded-xl border border-slateWarm-100">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-xs font-bold text-slateWarm-700" id="propUser1Name">Integrante 1</span>
-                        <span class="text-xs font-bold text-sage-600" id="propUser1Pct">50%</span>
-                    </div>
-                    <p class="text-lg font-bold text-slateWarm-700" id="propUser1Income">$0.00</p>
-                    <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser1Share">$0.00</span></p>
-                </div>
-
-                <div class="p-4 bg-slateWarm-50 rounded-xl border border-slateWarm-100">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-xs font-bold text-slateWarm-700" id="propUser2Name">Integrante 2</span>
-                        <span class="text-xs font-bold text-sage-600" id="propUser2Pct">50%</span>
-                    </div>
-                    <p class="text-lg font-bold text-slateWarm-700" id="propUser2Income">$0.00</p>
-                    <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser2Share">$0.00</span></p>
-                </div>
-
-                <div class="p-4 bg-sage-50 rounded-xl border border-sage-100">
-                    <span class="text-xs font-bold text-sage-700">Fondo Total Combinado</span>
-                    <p class="text-2xl font-bold text-sage-700 mt-1" id="propTotalIncome">$0.00</p>
-                    <p class="text-[11px] text-sage-600 mt-1">Gastos Compartidos en Pareja: <span class="font-bold" id="propTotalExpenses">$0.00</span></p>
-                </div>
-            </div>
-        </section>
-
-        <!-- INTERFAZ 3: LISTA DE MERCADO COMPLETA (SUPER PLANNER) -->
-        <section id="mod-market" class="tab-content bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="shopping-cart" class="w-5 h-5 text-sage-600"></i>
-                    <h2 class="font-bold text-slateWarm-700 text-sm">Lista de Compras de Mercado (Super Planner)</h2>
-                </div>
-                <span class="text-xs bg-sage-50 text-sage-700 font-semibold px-2 py-1 rounded-lg" id="marketCheckCount">0 Seleccionados</span>
-            </div>
-
-            <div id="marketEstimateAlert" class="mb-4 p-3 bg-slateWarm-50 border border-slateWarm-100 rounded-xl text-xs flex items-center justify-between text-slateWarm-700">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="clock" class="w-4 h-4 text-sage-600"></i>
-                    <span>Estimación de recompra habitual: <strong id="marketEstimateDays">Cada 15 días aprox.</strong></span>
-                </div>
-                <span class="text-[10px] bg-white px-2 py-0.5 rounded border text-gray-500" id="marketLastDate">Última compra: Sin registros</span>
-            </div>
-
-            <div class="flex gap-2 mb-4">
-                <input type="text" id="customMarketItem" placeholder="➕ ¿Falta algún producto especial? Escríbelo aquí..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
-                <button type="button" onclick="addCustomMarketItem()" class="bg-sage-500 hover:bg-sage-600 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1">
-                    <i data-lucide="plus" class="w-4 h-4"></i> Añadir
-                </button>
-            </div>
-
-            <div class="space-y-4 max-h-[420px] overflow-y-auto pr-1" id="marketListContainer"></div>
-
-            <div class="mt-4 pt-3 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-2">
-                <span class="text-[11px] text-gray-500">Selecciona los productos y envíalos a registro.</span>
-                <button type="button" onclick="registerSelectedMarketItems()" class="w-full sm:w-auto bg-slateWarm-600 hover:bg-slateWarm-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm">
-                    <i data-lucide="check-square" class="w-4 h-4"></i> Cargar a Formulario de Gastos
-                </button>
-            </div>
-        </section>
-
-        <!-- INTERFAZ 4: MÓDULO DE CRÉDITOS Y PLAN DE PAGOS (NUEVO) -->
-        <section id="mod-credits" class="tab-content space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Formulario Registrar Crédito / Deuda -->
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-xs">
-                    <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center gap-2 text-sm">
-                        <i data-lucide="credit-card" class="w-5 h-5 text-amber-600"></i> Registrar Nuevo Crédito
-                    </h2>
-                    <form id="creditForm" onsubmit="handleCreditSubmit(event)" class="space-y-3">
-                        <div>
-                            <label class="block font-semibold text-gray-600 mb-1">Origen / Entidad del Crédito</label>
-                            <input type="text" id="credOrigin" placeholder="Ej: Banco, Prestamista, Tarjeta, Familiar" required class="w-full p-2.5 rounded-xl border">
-                        </div>
-
-                        <div>
-                            <label class="block font-semibold text-gray-600 mb-1">Monto Otorgado y Moneda</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <select id="credCurrency" class="col-span-1 p-2 rounded-xl border font-bold">
-                                    <option value="USD">$ USD</option>
-                                    <option value="BS">Bs. (VES)</option>
-                                </select>
-                                <input type="number" id="credAmount" placeholder="0.00" step="0.01" required class="col-span-2 p-2 rounded-xl border font-bold">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block font-semibold text-gray-600 mb-1">Interés / Recargo (%)</label>
-                                <input type="number" id="credInterest" placeholder="0%" step="0.1" value="0" class="w-full p-2 rounded-xl border">
-                            </div>
-                            <div>
-                                <label class="block font-semibold text-gray-600 mb-1">Frecuencia de Pago</label>
-                                <select id="credFrequency" class="w-full p-2 rounded-xl border font-medium">
-                                    <option value="Semanal">Semanal</option>
-                                    <option value="Quincenal">Quincenal</option>
-                                    <option value="Mensual">Mensual</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block font-semibold text-gray-600 mb-1">N° de Cuotas</label>
-                                <input type="number" id="credInstallments" placeholder="Ej: 4" min="1" value="4" required class="w-full p-2 rounded-xl border">
-                            </div>
-                            <div>
-                                <label class="block font-semibold text-gray-600 mb-1">Fecha de Inicio</label>
-                                <input type="date" id="credStartDate" required class="w-full p-2 rounded-xl border">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl shadow-md transition-all">
-                            Generar Plan de Pagos
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Lista de Créditos Activos y Plan de Pagos Generado -->
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2 text-xs flex flex-col justify-between">
-                    <div>
-                        <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center justify-between text-sm">
-                            <span>Créditos Activos y Plan de Amortización</span>
-                            <span class="text-xs text-gray-400 font-normal" id="creditCount">0 Créditos</span>
-                        </h2>
-
-                        <div id="creditListContainer" class="space-y-4 max-h-[400px] overflow-y-auto pr-1"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- INTERFAZ 5: REGISTRO E HISTORIAL -->
-        <section id="mod-transactions" class="tab-content">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-xs">
-                    <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center gap-2 text-sm">
-                        <i data-lucide="plus-circle" class="w-5 h-5 text-sage-600"></i> Registrar Movimiento
-                    </h2>
-                    <form id="txForm" onsubmit="handleTxSubmit(event)" class="space-y-3">
-                        <div class="grid grid-cols-2 gap-2">
-                            <button type="button" id="btnTypeExpense" onclick="setTxType('expense')" class="py-2 font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert">💸 Gasto</button>
-                            <button type="button" id="btnTypeIncome" onclick="setTxType('income')" class="py-2 font-bold rounded-xl border border-gray-200 text-gray-500">💰 Ingreso</button>
-                        </div>
-
-                        <div>
-                            <label class="block font-semibold text-gray-600 mb-1">Pertenencia / Ámbito</label>
-                            <select id="txScope" class="w-full p-2 rounded-xl border font-medium">
-                                <option value="Pareja">👥 Fondo Pareja (Compartido)</option>
-                                <option value="Individual">👤 Individual (<span class="currentUserSpan">Usuario</span>)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block font-semibold text-gray-600 mb-1">Monto y Moneda</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <select id="txCurrency" onchange="updateConvertedPreview()" class="col-span-1 p-2 rounded-xl border font-bold">
-                                    <option value="USD">$ USD</option>
-                                    <option value="BS">Bs. (VES)</option>
-                                </select>
-                                <input type="number" id="txAmount" placeholder="0.00" step="0.01" required class="col-span-2 p-2 rounded-xl border font-bold">
-                            </div>
-                            <p class="text-[10px] text-gray-400 mt-1" id="currencyConvertedPreview">Monto a registrar en USD: $0.00</p>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block font-semibold text-gray-600 mb-1">Semana del Mes</label>
-                                <select id="txWeek" class="w-full p-2 rounded-xl border font-medium">
-                                    <option value="Semana 1">Semana 1</option>
-                                    <option value="Semana 2">Semana 2</option>
-                                    <option value="Semana 3">Semana 3</option>
-                                    <option value="Semana 4">Semana 4</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-semibold text-gray-600 mb-1">Fecha</label>
-                                <input type="date" id="txDate" required class="w-full p-2 rounded-xl border">
-                            </div>
-                        </div>
-
-                        <input type="text" id="txDesc" placeholder="Descripción (ej. Mercado o Alquiler)" required class="w-full p-2.5 rounded-xl border">
-
-                        <div>
-                            <label class="block font-semibold text-gray-600 mb-1">Categoría</label>
-                            <select id="txCategory" class="w-full p-2 rounded-xl border font-medium">
-                                <option value="🛒 Mercado">🛒 Mercado / Alimentación</option>
-                                <option value="🏠 Alquiler">🏠 Alquiler / Vivienda</option>
-                                <option value="⚡ Servicios">⚡ Servicios (Luz, Agua)</option>
-                                <option value="📶 Internet">📶 Internet / Cable</option>
-                                <option value="🚗 Transporte">🚗 Transporte</option>
-                                <option value="📦 Otros">📦 Otros / Varios</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block font-semibold text-gray-600 mb-1">Comprobante (Opcional)</label>
-                            <input type="file" id="txImage" accept="image/*" class="w-full text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:bg-sage-50 file:text-sage-700">
-                        </div>
-
-                        <button type="submit" class="w-full bg-sage-500 text-white font-bold py-2.5 rounded-xl shadow-md">Guardar Registro</button>
-                    </form>
-                </div>
-
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2 text-xs flex flex-col justify-between">
-                    <div>
-                        <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center justify-between text-sm">
-                            <span>Historial de Movimientos</span>
-                            <span class="text-xs text-gray-400 font-normal" id="txCount">0 Registros</span>
-                        </h2>
-
-                        <div class="overflow-x-auto max-h-[350px]">
-                            <table class="w-full text-left">
-                                <thead class="bg-gray-50 uppercase text-gray-400 font-semibold">
-                                    <tr>
-                                        <th class="p-2.5">Concepto</th>
-                                        <th class="p-2.5">Usuario / Ámbito</th>
-                                        <th class="p-2.5">Monto Original</th>
-                                        <th class="p-2.5">Equiv. ($ USD)</th>
-                                        <th class="p-2.5 text-center">Comprobante</th>
-                                        <th class="p-2.5 text-right">Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="txTableBody" class="divide-y font-medium"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 pt-3 border-t text-right">
-                        <button onclick="clearAllData()" class="text-xs text-coralAlert hover:underline font-semibold">Restablecer todos los datos</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- INTERFAZ 6: GRÁFICAS -->
-        <section id="mod-analytics" class="tab-content">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-                        <i data-lucide="pie-chart" class="w-5 h-5 text-slateWarm-500"></i>
-                        <h2 class="font-bold text-slateWarm-700">Gastos por Categoría</h2>
-                    </div>
-                    <div class="relative h-60 flex items-center justify-center">
-                        <canvas id="chartDistribution"></canvas>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-sage-600"></i>
-                        <h2 class="font-bold text-slateWarm-700">Distribución por Semanas</h2>
-                    </div>
-                    <div class="relative h-60">
-                        <canvas id="chartWeeklyHabits"></canvas>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="calendar" class="w-5 h-5 text-coralAlert"></i>
-                            <h2 class="font-bold text-slateWarm-700">Calendario Financiero</h2>
-                        </div>
-                        <span class="text-xs font-semibold text-sage-600 bg-sage-50 px-2 py-0.5 rounded-md">Mes Actual</span>
-                    </div>
-                    <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-gray-400 mb-2">
-                        <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
-                    </div>
-                    <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- NAVEGACIÓN INFERIOR PARA TELÉFONOS (BOTTOM NAV BAR CON NAVEGACIÓN COMPLETA) -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 px-1 py-1.5 shadow-lg">
-        <div class="flex justify-around items-center text-[9px] font-bold">
-            <button onclick="showTab('mod-dashboard')" id="nav-mod-dashboard" class="nav-btn flex flex-col items-center gap-0.5 text-sage-600">
-                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                <span>Inicio</span>
-            </button>
-            <button onclick="showTab('mod-proportional')" id="nav-mod-proportional" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
-                <i data-lucide="calculator" class="w-4 h-4"></i>
-                <span>Aportes</span>
-            </button>
-            <button onclick="showTab('mod-market')" id="nav-mod-market" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
-                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                <span>Mercado</span>
-            </button>
-            <button onclick="showTab('mod-credits')" id="nav-mod-credits" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
-                <i data-lucide="credit-card" class="w-4 h-4"></i>
-                <span>Créditos</span>
-            </button>
-            <button onclick="showTab('mod-transactions')" id="nav-mod-transactions" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
-                <i data-lucide="receipt" class="w-4 h-4"></i>
-                <span>Registro</span>
-            </button>
-            <button onclick="showTab('mod-analytics')" id="nav-mod-analytics" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
-                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-                <span>Gráficas</span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- JS PRINCIPAL -->
     <script>
-        let currentPair = null;
-        let activeUser = '';
-        let currentTxType = 'expense';
-        let transactions = [];
-        let credits = [];
-        let chartDistInstance = null;
-        let chartHabitsInstance = null;
+        function switchTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabLogin = document.getElementById('tabLogin');
+            const tabRegister = document.getElementById('tabRegister');
 
-        // BASE DE DATOS COMPLETA EXTRAÍDA DE LA HOJA (SUPER PLANNER)
-        const fullMarketPlannerList = [
-            { category: "🥬 Verduras y Hortalizas", items: ["Acelga", "Aguacate", "Ají dulce", "Ajo", "Ajoporro", "Albahaca", "Alcachofa", "Apio", "Auyama", "Batata", "Berenjena", "Berro", "Brócoli", "Calabacín", "Cebolla", "Cebollín", "Célery", "Cilantro", "Coliflor", "Espárragos", "Espinacas", "Jengibre", "Hongos", "Maíz", "Lechuga", "Papa", "Pepino", "Perejil", "Pimentón", "Plátano", "Remolacha", "Repollo", "Tomate", "Vainitas", "Yuca", "Zanahoria"] },
-            { category: "🍎 Frutas Frescas", items: ["Cambur", "Coco", "Durazno", "Fresas", "Guanábana", "Guayaba", "Kiwi", "Lechosa", "Limón", "Mandarina", "Mango", "Manzana", "Melón", "Moras", "Naranja", "Parchita", "Patilla", "Pera", "Piña", "Uvas"] },
-            { category: "🥩 Carnes y Proteínas", items: ["Cochino", "Pavo", "Pescado", "Pollo", "Res"] },
-            { category: "🥫 Enlatados", items: ["Aceitunas", "Atún", "Guisantes", "Maíz", "Palmito", "Sardina", "Tomate pelado", "Vegetales mixtos"] },
-            { category: "🥛 Lácteos y Huevos", items: ["Crema chantilly", "Crema de leche", "Leche condensada", "Leche en polvo", "Leche evaporada", "Leche líquida", "Mantequilla", "Margarina", "Yogurt", "Huevos"] },
-            { category: "📦 Varios & Despensa", items: ["Aceite de maíz", "Aceite de oliva", "Aceite de soya", "Arroz blanco", "Arroz integral", "Avena", "Azúcar", "Azúcar glass", "Bicarbonato de sodio", "Café", "Cereales", "Compotas", "Galletas", "Harina de maíz", "Harina de trigo", "Maicena", "Mezcla de cachapa", "Papelón", "Pastas", "Pepinillos en vinagre", "Polvo para hornear", "Sal", "Sirope", "Sobre de puré de papa", "Sobre de sopa", "Vinagre"] },
-            { category: "🌱 Granos", items: ["Arvejas", "Caraotas blancas", "Caraotas negras", "Caraotas rojas", "Garbanzos", "Lentejas", "Maíz para cotufas", "Quinoa"] },
-            { category: "🍿 Snacks", items: ["Almendras", "Dips", "Maní / Merey", "Nueces", "Papas y chips", "Pasas", "Tostones", "Tortillas"] },
-            { category: "🍶 Salsas y Untables", items: ["Jamón endiablado", "Ketchup", "Mayonesa", "Mermelada", "Mostaza", "Queso crema", "Queso de cabra", "Queso fundido", "Salsa barbecue", "Salsa de ajo", "Salsa de soya", "Salsa inglesa", "Vinagreta"] },
-            { category: "🍞 Panes", items: ["Casabe", "Pan andino", "Pan cuadrado", "Pan hamburguesa", "Pan integral", "Pan molido", "Pan perro caliente", "Pan pita", "Pan pizza", "Tortillas"] },
-            { category: "🍫 Dulces y Repostería", items: ["Arequipe", "Cacao en polvo", "Chocolate", "Galletas", "Gelatina", "Mezclas para postres", "Obleas", "Ponqué", "Vainilla"] },
-            { category: "❄️ Congelados", items: ["Helado", "Hielo", "Lumpias", "Masa de hojaldre", "Masa lista", "Nuggets", "Papas fritas", "Pastelitos", "Productos del mar", "Pulpa de frutas", "Tequeños", "Vegetales"] },
-            { category: "🧂 Condimentos", items: ["Adobo", "Ajo molido", "Albahaca", "Canela", "Cubitos", "Onoto", "Orégano", "Paprika", "Picante", "Pimienta", "Romero"] },
-            { category: "🧀 Charcutería", items: ["Chorizo", "Jamón de pavo", "Jamón de pierna", "Jamón serrano", "Queso amarillo", "Queso blanco", "Queso guayanés", "Queso mozzarella", "Queso parmesano", "Salchichas", "Tocineta"] },
-            { category: "🧹 Limpieza del Hogar", items: ["Apresto", "Cloro", "Desengrasante de cocina", "Desinfectante", "Esponja", "Insecticida", "Jabón de lavaplatos", "Jabón de ropa", "Jabón en panela", "Limpia pocetas", "Limpia vidrios", "Pañito", "Suavizante"] },
-            { category: "🧻 Plásticos y Papeles", items: ["Bolsas para basura", "Bolsitas sellables", "Cubiertos", "Papel absorbente", "Papel de aluminio", "Papel de plástico", "Papel encerado", "Papel higiénico", "Platos", "Servilletas", "Vasos"] },
-            { category: "🥤 Bebidas", items: ["Agua gasificada", "Agua mineral", "Aguakina", "Bebidas achocolatadas", "Bebidas hidratantes", "Bebidas instantáneas", "Cerveza", "Jugo", "Malta", "Refresco", "Ron", "Soda", "Té", "Vino"] },
-            { category: "🧼 Higiene Personal", items: ["Acondicionador", "Afeitadora", "Algodón", "Cepillo dental", "Champú", "Crema corporal", "Crema dental", "Desodorante", "Enjuague bucal", "Hilo dental", "Jabón", "Pañales", "Toallas sanitarias", "Toallitas húmedas"] },
-            { category: "🐾 Otros", items: ["Comida para mascota"] }
-        ];
-
-        let currentMarketItems = JSON.parse(localStorage.getItem('myroomie_market_items')) || fullMarketPlannerList;
-
-        function initApp() {
-            // VERIFICAR LOGIN OBLIGATORIO DE PAREJA
-            const savedSession = localStorage.getItem('myroomie_active_session');
-            if (savedSession) {
-                currentPair = JSON.parse(savedSession);
-                loadPairDashboard();
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                tabLogin.className = "flex-1 py-2.5 rounded-xl bg-white shadow-sm text-slateWarm-700 transition-all";
+                tabRegister.className = "flex-1 py-2.5 rounded-xl text-gray-400 hover:text-slateWarm-700 transition-all";
             } else {
-                document.getElementById('authModal').style.display = 'flex';
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                tabRegister.className = "flex-1 py-2.5 rounded-xl bg-white shadow-sm text-slateWarm-700 transition-all";
+                tabLogin.className = "flex-1 py-2.5 rounded-xl text-gray-400 hover:text-slateWarm-700 transition-all";
             }
-
-            document.getElementById('credStartDate').valueAsDate = new Date();
-            document.getElementById('txDate').valueAsDate = new Date();
-            document.getElementById('txAmount').addEventListener('input', updateConvertedPreview);
-            lucide.createIcons();
         }
 
-        // AUTH CONTROL TABS
-        function showAuthTab(tab) {
-            if (tab === 'login') {
-                document.getElementById('formLogin').classList.remove('hidden');
-                document.getElementById('formRegister').classList.add('hidden');
-                document.getElementById('tabLogin').className = "w-1/2 py-2 text-xs font-bold rounded-lg bg-white text-slateWarm-700 shadow-sm transition-all";
-                document.getElementById('tabRegister').className = "w-1/2 py-2 text-xs font-bold rounded-lg text-gray-500 transition-all";
-            } else {
-                document.getElementById('formRegister').classList.remove('hidden');
-                document.getElementById('formLogin').classList.add('hidden');
-                document.getElementById('tabRegister').className = "w-1/2 py-2 text-xs font-bold rounded-lg bg-white text-slateWarm-700 shadow-sm transition-all";
-                document.getElementById('tabLogin').className = "w-1/2 py-2 text-xs font-bold rounded-lg text-gray-500 transition-all";
+        async function handleLogin(e) {
+            e.preventDefault();
+            const pairId = document.getElementById('loginPairId').value;
+            const password = document.getElementById('loginPassword').value;
+            showMsg("Iniciando sesión...", "gray");
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pairId, password })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem('myroomie_token', data.token);
+                    localStorage.setItem('myroomie_pair', JSON.stringify(data.pair));
+                    showMsg("¡Bienvenido/a!", "green");
+                    setTimeout(() => window.location.href = '/dashboard.html', 1000);
+                } else {
+                    showMsg(data.msg || "Credenciales incorrectas", "red");
+                }
+            } catch (err) {
+                showMsg("Error de conexión", "red");
             }
         }
 
         async function handleRegister(e) {
             e.preventDefault();
-            const pairId = document.getElementById('regPairId').value.trim().toLowerCase();
-            const user1 = document.getElementById('regUser1').value.trim();
-            const user2 = document.getElementById('regUser2').value.trim();
+            const pairId = document.getElementById('regPairId').value;
+            const email = document.getElementById('regEmail').value;
+            const user1 = document.getElementById('regUser1').value;
+            const user2 = document.getElementById('regUser2').value;
             const password = document.getElementById('regPassword').value;
 
-            const existingPair = localStorage.getItem(`myroomie_pair_${pairId}`);
-            if (existingPair) {
-                showToast('Ese ID de pareja ya está registrado', 'warning');
-                return;
-            }
+            showMsg("Registrando pareja...", "gray");
 
-            const newPairObj = { pairId, user1, user2, password };
-            localStorage.setItem(`myroomie_pair_${pairId}`, JSON.stringify(newPairObj));
-            showToast('¡Pareja registrada con éxito! Inicia sesión');
-            showAuthTab('login');
-            document.getElementById('loginPairId').value = pairId;
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const pairId = document.getElementById('loginPairId').value.trim().toLowerCase();
-            const password = document.getElementById('loginPassword').value;
-
-            const savedPair = localStorage.getItem(`myroomie_pair_${pairId}`);
-            if (!savedPair) {
-                showToast('Pareja no encontrada. Por favor regístrate', 'warning');
-                return;
-            }
-
-            const pairObj = JSON.parse(savedPair);
-            if (pairObj.password !== password) {
-                showToast('Contraseña incorrecta', 'warning');
-                return;
-            }
-
-            currentPair = pairObj;
-            localStorage.setItem('myroomie_active_session', JSON.stringify(currentPair));
-            loadPairDashboard();
-        }
-
-        function loadPairDashboard() {
-            document.getElementById('authModal').style.display = 'none';
-            activeUser = currentPair.user1;
-
-            document.getElementById('headerPairName').innerText = `Pareja: ${currentPair.user1} & ${currentPair.user2}`;
-            document.getElementById('propUser1Name').innerText = currentPair.user1;
-            document.getElementById('propUser2Name').innerText = currentPair.user2;
-
-            // Render Selectores de Usuarios
-            const switcher = document.getElementById('userSwitchContainer');
-            switcher.innerHTML = `
-                <button id="btnUser1" onclick="switchUser('${currentPair.user1}')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm">${currentPair.user1}</button>
-                <button id="btnUser2" onclick="switchUser('${currentPair.user2}')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500">${currentPair.user2}</button>
-            `;
-
-            const switcherMob = document.getElementById('userSwitchMobContainer');
-            switcherMob.innerHTML = `
-                <button id="btnUser1Mob" onclick="switchUser('${currentPair.user1}')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slateWarm-700 shadow-sm">${currentPair.user1}</button>
-                <button id="btnUser2Mob" onclick="switchUser('${currentPair.user2}')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-500">${currentPair.user2}</button>
-            `;
-
-            // Cargar Transacciones y Créditos de la Pareja
-            transactions = JSON.parse(localStorage.getItem(`mr_txs_${currentPair.pairId}`) || '[]');
-            credits = JSON.parse(localStorage.getItem(`mr_credits_${currentPair.pairId}`) || '[]');
-
-            switchUser(currentPair.user1);
-            fetchLiveRates();
-            renderMarketList();
-            renderCredits();
-            updateCalculations();
-        }
-
-        function logout() {
-            if (confirm('¿Deseas cerrar sesión en My Roomie?')) {
-                localStorage.removeItem('myroomie_active_session');
-                location.reload();
-            }
-        }
-
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            const selected = document.getElementById(tabId);
-            if (selected) selected.classList.add('active');
-
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('text-sage-600');
-                btn.classList.add('text-gray-400');
-            });
-            const activeNav = document.getElementById(`nav-${tabId}`);
-            if (activeNav) {
-                activeNav.classList.remove('text-gray-400');
-                activeNav.classList.add('text-sage-600');
-            }
-
-            document.querySelectorAll('.top-nav-btn').forEach(btn => {
-                btn.classList.remove('bg-white', 'text-slateWarm-700', 'shadow-sm');
-                btn.classList.add('text-gray-500');
-            });
-            const activeTopNav = document.getElementById(`top-${tabId}`);
-            if (activeTopNav) {
-                activeTopNav.classList.remove('text-gray-500');
-                activeTopNav.classList.add('bg-white', 'text-slateWarm-700', 'shadow-sm');
-            }
-
-            const titles = {
-                'mod-dashboard': 'Panel General',
-                'mod-proportional': 'Regla de Aportes Excel',
-                'mod-market': 'Lista de Mercado (Super Planner)',
-                'mod-credits': 'Módulo de Créditos y Plan de Pagos',
-                'mod-transactions': 'Registro e Historial',
-                'mod-analytics': 'Gráficas y Calendario'
-            };
-            document.getElementById('currentTabTitle').innerText = titles[tabId] || 'My Roomie';
-
-            if (tabId === 'mod-analytics') {
-                setTimeout(() => {
-                    renderCharts();
-                    renderCalendar();
-                }, 50);
-            }
-        }
-
-        // MANEJO DE CRÉDITOS Y AMORTIZACIÓN
-        function handleCreditSubmit(e) {
-            e.preventDefault();
-            const origin = document.getElementById('credOrigin').value.trim();
-            const rawAmount = parseFloat(document.getElementById('credAmount').value);
-            const currency = document.getElementById('credCurrency').value;
-            const interest = parseFloat(document.getElementById('credInterest').value) || 0;
-            const frequency = document.getElementById('credFrequency').value;
-            const installments = parseInt(document.getElementById('credInstallments').value);
-            const startDate = document.getElementById('credStartDate').value;
-            const rate = parseFloat(document.getElementById('exchangeRate').value) || 36.5;
-
-            if (!origin || isNaN(rawAmount) || rawAmount <= 0 || !installments) return;
-
-            const amountUSD = currency === 'BS' ? (rawAmount / rate) : rawAmount;
-            const totalWithInterestUSD = amountUSD * (1 + (interest / 100));
-            const installmentAmountUSD = totalWithInterestUSD / installments;
-
-            // Generar Cuotas del Cronograma de Pago
-            let schedule = [];
-            let currDate = new Date(startDate);
-
-            for (let i = 1; i <= installments; i++) {
-                schedule.push({
-                    number: i,
-                    date: currDate.toISOString().split('T')[0],
-                    amountUSD: installmentAmountUSD,
-                    paid: false
-                });
-
-                if (frequency === 'Semanal') currDate.setDate(currDate.getDate() + 7);
-                else if (frequency === 'Quincenal') currDate.setDate(currDate.getDate() + 15);
-                else if (frequency === 'Mensual') currDate.setMonth(currDate.getMonth() + 1);
-            }
-
-            const newCredit = {
-                id: Date.now(),
-                origin,
-                rawAmount,
-                currency,
-                amountUSD,
-                interest,
-                totalWithInterestUSD,
-                frequency,
-                installments,
-                schedule
-            };
-
-            credits.unshift(newCredit);
-            saveCredits();
-            renderCredits();
-            showToast('Crédito registrado y plan generado');
-            document.getElementById('creditForm').reset();
-            document.getElementById('credStartDate').valueAsDate = new Date();
-        }
-
-        function saveCredits() {
-            if (currentPair) {
-                localStorage.setItem(`mr_credits_${currentPair.pairId}`, JSON.stringify(credits));
-            }
-        }
-
-        function toggleInstallmentPaid(creditId, installmentNum) {
-            const cred = credits.find(c => c.id === creditId);
-            if (cred) {
-                const inst = cred.schedule.find(s => s.number === installmentNum);
-                if (inst) {
-                    inst.paid = !inst.paid;
-                    saveCredits();
-                    renderCredits();
-                    showToast(inst.paid ? `Cuota ${installmentNum} marcada como pagada` : `Cuota ${installmentNum} desmarcada`);
-                }
-            }
-        }
-
-        function renderCredits() {
-            const container = document.getElementById('creditListContainer');
-            if (!container) return;
-
-            document.getElementById('creditCount').innerText = `${credits.length} Créditos Registrados`;
-
-            if (credits.length === 0) {
-                container.innerHTML = `<div class="p-6 text-center text-gray-400 bg-gray-50 rounded-xl">No hay créditos registrados actualmente.</div>`;
-                return;
-            }
-
-            container.innerHTML = credits.map(c => {
-                const paidCount = c.schedule.filter(s => s.paid).length;
-                const progressPct = Math.round((paidCount / c.installments) * 100);
-
-                return `
-                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="font-bold text-slateWarm-700 text-sm">${c.origin}</h3>
-                                <p class="text-[10px] text-gray-400">${c.frequency} • ${c.installments} Cuotas (${c.interest}% Int.)</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-sm font-bold text-amber-600">$${c.totalWithInterestUSD.toFixed(2)}</span>
-                                <p class="text-[10px] text-gray-400">Total con intereses</p>
-                            </div>
-                        </div>
-
-                        <!-- Barra de Progreso -->
-                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                            <div class="bg-sage-500 h-2 rounded-full transition-all" style="width: ${progressPct}%"></div>
-                        </div>
-
-                        <!-- Tabla de Amortización / Cuotas -->
-                        <div class="bg-white rounded-lg border border-gray-100 p-2 max-h-36 overflow-y-auto">
-                            <table class="w-full text-[10px] text-left">
-                                <thead class="text-gray-400 font-bold border-b">
-                                    <tr>
-                                        <th class="py-1">Cuota</th>
-                                        <th class="py-1">Fecha Límite</th>
-                                        <th class="py-1">Monto ($)</th>
-                                        <th class="py-1 text-right">Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y">
-                                    ${c.schedule.map(s => `
-                                        <tr>
-                                            <td class="py-1 font-bold">Cuota ${s.number}</td>
-                                            <td class="py-1 text-gray-500">${s.date}</td>                                             <td class="py-1 font-bold text-slateWarm-700">$${s.amountUSD.toFixed(2)}</td>
-                                            <td class="py-1 text-right">
-                                                <button onclick="toggleInstallmentPaid(${c.id},${s.number})" class="px-2 py-0.5 rounded font-bold transition-all ${s.paid ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}">
-                                                    ${s.paid ? '✓ Pagado' : 'Pendiente'}
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            lucide.createIcons();
-        }
-
-        async function fetchLiveRates() {
-            const rateInput = document.getElementById('exchangeRate');
             try {
-                const res = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pairId, email, user1, user2, password })
+                });
                 const data = await res.json();
-                if (data && data.promedio) {
-                    rateInput.value = parseFloat(data.promedio).toFixed(2);
-                    updateCalculations();
-                    showToast('Tasa BCV cargada en vivo');
+
+                if (res.ok) {
+                    showMsg("¡Cuenta creada con éxito! Ya puedes iniciar sesión.", "green");
+                    setTimeout(() => switchTab('login'), 2000);
+                } else {
+                    showMsg(data.msg || "Error al registrar", "red");
                 }
             } catch (err) {
-                console.log("Error al consultar tasa.");
+                showMsg("Error de conexión", "red");
             }
         }
 
-        function renderMarketList() {
-            const container = document.getElementById('marketListContainer');
-            if (!container) return;
-
-            container.innerHTML = currentMarketItems.map((cat, catIdx) => `
-                <div class="bg-gray-50/70 p-3 rounded-xl border border-gray-100">
-                    <h4 class="font-bold text-xs text-slateWarm-700 mb-2">${cat.category}</h4>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        ${cat.items.map((item, itemIdx) => `
-                            <label class="flex items-center gap-2 text-xs text-gray-700 bg-white p-2 rounded-lg border border-gray-200 cursor-pointer hover:border-sage-500 transition-colors">
-                                <input type="checkbox" data-item="${item}" class="market-checkbox rounded text-sage-600 focus:ring-sage-500" onchange="updateMarketCount()">
-                                <span class="truncate">${item}</span>
-                            </label>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
-            lucide.createIcons();
-            calculateMarketEstimate();
+        function showForgotPasswordModal() {
+            document.getElementById('forgotModal').classList.remove('hidden');
         }
 
-        function updateMarketCount() {
-            const checked = document.querySelectorAll('.market-checkbox:checked').length;
-            document.getElementById('marketCheckCount').innerText = `${checked} Seleccionados`;
+        function closeForgotModal() {
+            document.getElementById('forgotModal').classList.add('hidden');
         }
 
-        function addCustomMarketItem() {
-            const input = document.getElementById('customMarketItem');
-            const val = input.value.trim();
-            if (!val) return;
-
-            let otrosCat = currentMarketItems.find(c => c.category.includes("Otros") || c.category.includes("Personalizados"));
-            if (!otrosCat) {
-                otrosCat = { category: "📦 Personalizados / Varios", items: [] };
-                currentMarketItems.push(otrosCat);
-            }
-            otrosCat.items.push(val);
-            localStorage.setItem('myroomie_market_items', JSON.stringify(currentMarketItems));
-            input.value = '';
-            renderMarketList();
-            showToast(`" ${val} " agregado a la lista`);
-        }
-
-        function registerSelectedMarketItems() {
-            const selected = Array.from(document.querySelectorAll('.market-checkbox:checked')).map(cb => cb.getAttribute('data-item'));
-            if (selected.length === 0) {
-                showToast('Selecciona al menos un producto', 'warning');
-                return;
-            }
-
-            const description = `Mercado (${selected.length} ítems: ${selected.slice(0, 3).join(', ')}${selected.length > 3 ? '...' : ''})`;
-            document.getElementById('txDesc').value = description;
-            document.getElementById('txCategory').value = '🛒 Mercado';
-            showTab('mod-transactions');
-            document.getElementById('txAmount').focus();
-            showToast('Ítems cargados en el formulario');
-        }
-
-        function calculateMarketEstimate() {
-            const marketTx = transactions.filter(t => t.type === 'expense' && t.category.includes('Mercado'));
-            if (marketTx.length > 0) {
-                const lastDate = marketTx[0].date;
-                document.getElementById('marketLastDate').innerText = `Última compra: ${lastDate}`;
-            }
-        }
-
-        function switchUser(user) {
-            activeUser = user;
-            document.getElementById('activeUserLabel').innerText = user;
-            document.querySelectorAll('.currentUserSpan').forEach(el => el.innerText = user);
-
-            const btn1 = document.getElementById('btnUser1');
-            const btn2 = document.getElementById('btnUser2');
-            const btn1Mob = document.getElementById('btnUser1Mob');
-            const btn2Mob = document.getElementById('btnUser2Mob');
-
-            const isU1 = user === (currentPair ? currentPair.user1 : 'User1');
-
-            if (btn1) btn1.className = isU1 ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm" : "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500";
-            if (btn2) btn2.className = !isU1 ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm" : "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500";
-
-            if (btn1Mob) btn1Mob.className = isU1 ? "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slateWarm-700 shadow-sm" : "px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-500";
-            if (btn2Mob) btn2Mob.className = !isU1 ? "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slateWarm-700 shadow-sm" : "px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-500";
-        }
-
-        function setTxType(type) {
-            currentTxType = type;
-            document.getElementById('btnTypeExpense').className = type === 'expense' ? 'py-2 font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert' : 'py-2 font-bold rounded-xl border border-gray-200 text-gray-500';
-            document.getElementById('btnTypeIncome').className = type === 'income' ? 'py-2 font-bold rounded-xl border bg-sage-50 text-sage-700 border-sage-500' : 'py-2 font-bold rounded-xl border border-gray-200 text-gray-500';
-        }
-
-        function updateConvertedPreview() {
-            const amount = parseFloat(document.getElementById('txAmount').value) || 0;
-            const curr = document.getElementById('txCurrency').value;
-            const rate = parseFloat(document.getElementById('exchangeRate').value) || 36.5;
-            const preview = document.getElementById('currencyConvertedPreview');
-
-            if (curr === 'BS') {
-                preview.innerText = `Equivalente en USD: $${(amount / rate).toFixed(2)} (Tasa: ${rate} Bs/$)`;
-            } else {
-                preview.innerText = `Equivalente en Bs: Bs. ${(amount * rate).toFixed(2)} (Tasa: ${rate} Bs/$)`;
-            }
-        }
-
-        function handleTxSubmit(e) {
+        async function handleForgotPassword(e) {
             e.preventDefault();
-            const desc = document.getElementById('txDesc').value.trim();
-            const rawAmount = parseFloat(document.getElementById('txAmount').value);
-            const currency = document.getElementById('txCurrency').value;
-            const rate = parseFloat(document.getElementById('exchangeRate').value) || 36.5;
-            const date = document.getElementById('txDate').value;
-            const scope = document.getElementById('txScope').value;
-            const week = document.getElementById('txWeek').value;
-            const category = document.getElementById('txCategory').value;
-            const fileInput = document.getElementById('txImage');
+            const email = document.getElementById('forgotEmail').value;
+            const msgEl = document.getElementById('forgotMsg');
+            msgEl.innerText = "Enviando correo...";
+            msgEl.className = "mt-3 text-center text-xs font-bold text-gray-500";
+            msgEl.classList.remove('hidden');
 
-            if (!desc || isNaN(rawAmount) || rawAmount <= 0) return;
-
-            const amountUSD = currency === 'BS' ? (rawAmount / rate) : rawAmount;
-
-            const save = (imgData = null) => {
-                const tx = {
-                    id: Date.now(),
-                    user: activeUser,
-                    type: currentTxType,
-                    scope: scope,
-                    week: week,
-                    desc: desc,
-                    rawAmount: rawAmount,
-                    currency: currency,
-                    amountUSD: amountUSD,
-                    date: date,
-                    category: category,
-                    img: imgData
-                };
-                transactions.unshift(tx);
-                if (currentPair) {
-                    localStorage.setItem(`mr_txs_${currentPair.pairId}`, JSON.stringify(transactions));
-                }
-                updateCalculations();
-                showToast(`Registrado: ${desc}`);
-                document.getElementById('txForm').reset();
-                document.getElementById('txDate').valueAsDate = new Date();
-                updateConvertedPreview();
-            };
-
-            if (fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (evt) => save(evt.target.result);
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                save(null);
+            try {
+                const res = await fetch('/api/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                msgEl.innerText = data.msg;
+                msgEl.className = res.ok ? "mt-3 text-center text-xs font-bold text-green-600" : "mt-3 text-center text-xs font-bold text-red-500";
+            } catch (err) {
+                msgEl.innerText = "Error de conexión";
+                msgEl.className = "mt-3 text-center text-xs font-bold text-red-500";
             }
         }
 
-        function updateCalculations() {
-            const rate = parseFloat(document.getElementById('exchangeRate').value) || 36.5;
-
-            let totalIncome = 0, totalExpenses = 0, user1Income = 0, user2Income = 0, sharedExpenses = 0;
-
-            transactions.forEach(t => {
-                if (t.type === 'income') {
-                    totalIncome += t.amountUSD;
-                    if (t.user === (currentPair ? currentPair.user1 : 'User1')) user1Income += t.amountUSD;
-                    if (t.user === (currentPair ? currentPair.user2 : 'User2')) user2Income += t.amountUSD;
-                }
-                if (t.type === 'expense') {
-                    totalExpenses += t.amountUSD;
-                    if (t.scope === 'Pareja') sharedExpenses += t.amountUSD;
-                }
-            });
-
-            const totalPairIncome = user1Income + user2Income;
-            let u1Pct = totalPairIncome > 0 ? (user1Income / totalPairIncome) * 100 : 50;
-            let u2Pct = totalPairIncome > 0 ? (user2Income / totalPairIncome) * 100 : 50;
-
-            document.getElementById('propUser1Pct').innerText = `${u1Pct.toFixed(1)}%`;
-            document.getElementById('propUser1Income').innerText = `$${user1Income.toFixed(2)}`;
-            document.getElementById('propUser1Share').innerText = `$${(sharedExpenses * (u1Pct / 100)).toFixed(2)}`;
-
-            document.getElementById('propUser2Pct').innerText = `${u2Pct.toFixed(1)}%`;
-            document.getElementById('propUser2Income').innerText = `$${user2Income.toFixed(2)}`;
-            document.getElementById('propUser2Share').innerText = `$${(sharedExpenses * (u2Pct / 100)).toFixed(2)}`;
-
-            document.getElementById('propTotalIncome').innerText = `$${totalPairIncome.toFixed(2)}`;
-            document.getElementById('propTotalExpenses').innerText = `$${sharedExpenses.toFixed(2)}`;
-
-            const balance = totalIncome - totalExpenses;
-
-            document.getElementById('kpiIncome').innerText = `$${totalIncome.toFixed(2)}`;
-            document.getElementById('kpiIncomeBs').innerText = `Bs. ${(totalIncome * rate).toLocaleString('es-VE', {minimumFractionDigits: 2})}`;
-
-            document.getElementById('kpiExpenses').innerText = `$${totalExpenses.toFixed(2)}`;
-            document.getElementById('kpiExpensesBs').innerText = `Bs. ${(totalExpenses * rate).toLocaleString('es-VE', {minimumFractionDigits: 2})}`;
-
-            document.getElementById('kpiBalance').innerText = `$${balance.toFixed(2)}`;
-            document.getElementById('kpiBalanceBs').innerText = `Bs. ${(balance * rate).toLocaleString('es-VE', {minimumFractionDigits: 2})}`;
-
-            renderTable();
-            calculateMarketEstimate();
+        function showMsg(text, color) {
+            const el = document.getElementById('authMsg');
+            el.innerText = text;
+            el.className = `mt-4 text-center text-xs font-bold text-${color}-600`;
+            el.classList.remove('hidden');
         }
 
-        function renderTable() {
-            const tbody = document.getElementById('txTableBody');
-            document.getElementById('txCount').innerText = `${transactions.length} Registros`;
-
-            if (!transactions.length) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">Sin movimientos registrados.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = transactions.map(t => `
-                <tr class="hover:bg-gray-50">
-                    <td class="p-2.5 font-bold text-slateWarm-700">${t.desc}<br><span class="text-[10px] text-gray-400 font-normal">${t.date} • ${t.category}</span></td>
-                    <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.scope === 'Pareja' ? 'bg-slateWarm-100 text-slateWarm-700' : 'bg-sage-100 text-sage-700'}">${t.user} (${t.scope})</span></td>
-                    <td class="p-2.5 font-semibold text-slateWarm-600">${t.currency === 'BS' ? 'Bs. ' + t.rawAmount.toFixed(2) : '$' + t.rawAmount.toFixed(2)}</td>
-                    <td class="p-2.5 font-bold ${t.type === 'income' ? 'text-sage-600' : 'text-coralAlert'}">${t.type === 'income' ? '+' : '-'}$${t.amountUSD.toFixed(2)}</td>
-                    <td class="p-2.5 text-center">
-                        ${t.img ? `<button onclick="openModal('${t.img}', '${t.desc}')" class="text-slateWarm-600 underline font-semibold">Ver Foto</button>` : '-'}
-                    </td>
-                    <td class="p-2.5 text-right"><button onclick="deleteTx(${t.id})" class="text-red-400 font-bold">✕</button></td>
-                </tr>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        function renderCharts() {
-            const canvasDist = document.getElementById('chartDistribution');
-            const canvasHabits = document.getElementById('chartWeeklyHabits');
-            if (!canvasDist || !canvasHabits) return;
-
-            let catTotals = {};
-            transactions.filter(t => t.type === 'expense').forEach(t => {
-                catTotals[t.category] = (catTotals[t.category] || 0) + t.amountUSD;
-            });
-
-            if (chartDistInstance) chartDistInstance.destroy();
-            chartDistInstance = new Chart(canvasDist.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(catTotals).length ? Object.keys(catTotals) : ['Sin Gastos'],
-                    datasets: [{
-                        data: Object.values(catTotals).length ? Object.values(catTotals) : [1],
-                        backgroundColor: ['#7EA172', '#4A6B82', '#E07A5F', '#E6B89C', '#84A59D', '#F28482'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
-            });
-
-            let weekTotals = { 'Semana 1': 0, 'Semana 2': 0, 'Semana 3': 0, 'Semana 4': 0 };
-            transactions.filter(t => t.type === 'expense').forEach(t => {
-                const w = t.week || 'Semana 1';
-                if (weekTotals[w] !== undefined) weekTotals[w] += t.amountUSD;
-            });
-
-            if (chartHabitsInstance) chartHabitsInstance.destroy();
-            chartHabitsInstance = new Chart(canvasHabits.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(weekTotals),
-                    datasets: [{
-                        label: 'Gasto por Semana ($)',
-                        data: Object.values(weekTotals),
-                        backgroundColor: '#4A6B82',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { grid: { color: '#f3f4f6' } } },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-
-        function renderCalendar() {
-            const grid = document.getElementById('calendarGrid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const firstDayIndex = new Date(year, month, 1).getDay();
-
-            for (let i = 0; i < firstDayIndex; i++) grid.innerHTML += `<div class="h-8"></div>`;
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-                const dayExpenses = transactions.filter(t => t.type === 'expense' && t.date === dateStr);
-                const hasMarket = dayExpenses.some(t => t.category.includes('Mercado'));
-
-                let bgClass = "bg-gray-50 text-gray-700";
-                if (hasMarket) bgClass = "bg-sage-100 text-sage-700 font-bold border border-sage-500";
-                else if (dayExpenses.length > 0) bgClass = "bg-coralSoft text-coralAlert font-bold border border-coralAlert";
-
-                grid.innerHTML += `<div class="h-8 flex flex-col items-center justify-center rounded-lg text-xs ${bgClass}">${day}</div>`;
-            }
-        }
-
-        function deleteTx(id) {
-            transactions = transactions.filter(t => t.id !== id);
-            if (currentPair) {
-                localStorage.setItem(`mr_txs_${currentPair.pairId}`, JSON.stringify(transactions));
-            }
-            updateCalculations();
-        }
-
-        function clearAllData() {
-            if (confirm('¿Borrar todos los movimientos registrados?')) {
-                transactions = [];
-                if (currentPair) {
-                    localStorage.removeItem(`mr_txs_${currentPair.pairId}`);
-                }
-                updateCalculations();
-            }
-        }
-
-        function showToast(msg, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            let bg = type === 'warning' ? 'bg-amber-600 text-white' : 'bg-slateWarm-700 text-white';
-            toast.className = `${bg} px-4 py-2 rounded-xl text-xs shadow-lg font-semibold`;
-            toast.innerText = msg;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        function openModal(img, title) {
-            document.getElementById('modalImg').src = img;
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('imageModal').classList.add('modal-active');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('modal-active');
-        }
-
-        window.onload = initApp;
+        lucide.createIcons();
     </script>
 </body>
 </html>
