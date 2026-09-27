@@ -39,6 +39,67 @@
     <!-- TOAST NOTIFICATIONS -->
     <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
+    <!-- PANTALLA / MODAL DE LOGIN OBLIGATORIO Y REGISTRO MULTIPAREJA -->
+    <div id="authModal" class="fixed inset-0 bg-slateWarm-700/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-gray-100">
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <div class="bg-sage-500 text-white p-3 rounded-2xl shadow-md">
+                    <i data-lucide="heart-handshake" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <h2 class="font-bold text-2xl text-slateWarm-700 leading-none">My Roomie</h2>
+                    <p class="text-xs text-gray-400 mt-1">Gestión Financiera para Parejas</p>
+                </div>
+            </div>
+
+            <!-- TABS LOGIN / REGISTRO -->
+            <div class="flex bg-gray-100 p-1 rounded-xl mb-6">
+                <button type="button" id="tabLogin" onclick="showAuthTab('login')" class="w-1/2 py-2 text-xs font-bold rounded-lg bg-white text-slateWarm-700 shadow-sm transition-all">Iniciar Sesión</button>
+                <button type="button" id="tabRegister" onclick="showAuthTab('register')" class="w-1/2 py-2 text-xs font-bold rounded-lg text-gray-500 transition-all">Registrar Pareja</button>
+            </div>
+
+            <!-- FORMULARIO LOGIN -->
+            <form id="formLogin" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">ID o Nombre de la Pareja</label>
+                    <input type="text" id="loginPairId" placeholder="Ej: danil-ogglys" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Contraseña de Pareja</label>
+                    <input type="password" id="loginPassword" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
+                </div>
+                <button type="submit" class="w-full bg-sage-500 hover:bg-sage-600 text-white font-bold py-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="log-in" class="w-4 h-4"></i> Ingresar a Nuestro Espacio
+                </button>
+            </form>
+
+            <!-- FORMULARIO REGISTRO -->
+            <form id="formRegister" onsubmit="handleRegister(event)" class="space-y-3 hidden">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">ID Único de Pareja</label>
+                    <input type="text" id="regPairId" placeholder="Ej: pareja-perez" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Integrante 1</label>
+                        <input type="text" id="regUser1" placeholder="Ej: Danil" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Integrante 2</label>
+                        <input type="text" id="regUser2" placeholder="Ej: Ogglys" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Contraseña</label>
+                    <input type="password" id="regPassword" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
+                </div>
+                <button type="submit" class="w-full bg-slateWarm-600 hover:bg-slateWarm-700 text-white font-bold py-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> Crear Espacio de Pareja
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL COMPROBANTE -->
     <div id="imageModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-xl w-full p-4 relative shadow-2xl">
@@ -52,11 +113,10 @@
         </div>
     </div>
 
-    <!-- HEADER ADAPTADO PARA ESCRITORIO Y MÓVIL -->
+    <!-- HEADER DE LA APLICACIÓN -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-0 sm:h-16 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
             
-            <!-- Marca y Estado del Usuario -->
             <div class="flex items-center justify-between w-full sm:w-auto">
                 <div class="flex items-center gap-3">
                     <div class="bg-sage-500 text-white p-2 rounded-xl shadow-sm">
@@ -64,23 +124,20 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-lg sm:text-xl text-slateWarm-700 leading-none">My Roomie</h1>
-                        <span class="text-[10px] sm:text-xs text-gray-400 block mt-0.5" id="currentTabTitle">Panel General</span>
+                        <span class="text-[10px] sm:text-xs text-gray-400 block mt-0.5" id="headerPairName">Espacio Compartido</span>
                     </div>
                 </div>
 
-                <!-- Perfil Activo en Móvil -->
+                <!-- Perfil Activo y Logout Móvil -->
                 <div class="flex items-center gap-2 sm:hidden">
-                    <div class="flex items-center bg-gray-100 p-0.5 rounded-xl">
-                        <button id="btnUser1Mob" onclick="switchUser('Danil')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slateWarm-700 shadow-sm">Danil</button>
-                        <button id="btnUser2Mob" onclick="switchUser('Ogglys')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-500">Ogglys</button>
-                    </div>
+                    <div class="flex items-center bg-gray-100 p-0.5 rounded-xl" id="userSwitchMobContainer"></div>
                     <button onclick="logout()" title="Cerrar Sesión" class="p-1.5 text-gray-400 hover:text-coralAlert bg-gray-50 rounded-lg">
                         <i data-lucide="log-out" class="w-4 h-4"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Navegación Superior para COMPUTADORA -->
+            <!-- Navegación Superior COMPUTADORA -->
             <nav class="hidden md:flex items-center gap-1 bg-gray-100 p-1 rounded-xl text-xs font-bold">
                 <button onclick="showTab('mod-dashboard')" id="top-nav-mod-dashboard" class="top-nav-btn px-3 py-1.5 rounded-lg bg-white text-slateWarm-700 shadow-sm flex items-center gap-1.5">
                     <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Inicio
@@ -91,6 +148,9 @@
                 <button onclick="showTab('mod-market')" id="top-nav-mod-market" class="top-nav-btn px-3 py-1.5 rounded-lg text-gray-500 hover:text-slateWarm-700 flex items-center gap-1.5">
                     <i data-lucide="shopping-cart" class="w-4 h-4"></i> Mercado
                 </button>
+                <button onclick="showTab('mod-credits')" id="top-nav-mod-credits" class="top-nav-btn px-3 py-1.5 rounded-lg text-gray-500 hover:text-slateWarm-700 flex items-center gap-1.5">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i> Créditos
+                </button>
                 <button onclick="showTab('mod-transactions')" id="top-nav-mod-transactions" class="top-nav-btn px-3 py-1.5 rounded-lg text-gray-500 hover:text-slateWarm-700 flex items-center gap-1.5">
                     <i data-lucide="receipt" class="w-4 h-4"></i> Registro
                 </button>
@@ -99,7 +159,7 @@
                 </button>
             </nav>
 
-            <!-- Tasa BCV, Usuarios y Cerrar Sesión en Computadora -->
+            <!-- Tasa BCV y Logout Computadora -->
             <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-0 border-gray-100">
                 <div class="flex items-center gap-1.5 bg-slateWarm-50 border border-slateWarm-100 px-3 py-1 rounded-xl text-xs font-medium text-slateWarm-600">
                     <i data-lucide="dollar-sign" class="w-3.5 h-3.5 text-sage-600"></i>
@@ -112,12 +172,8 @@
                 </div>
 
                 <div class="hidden sm:flex items-center gap-2">
-                    <div class="flex items-center bg-gray-100 p-1 rounded-xl">
-                        <button id="btnUser1" onclick="switchUser('Danil')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm">Danil</button>
-                        <button id="btnUser2" onclick="switchUser('Ogglys')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500">Ogglys</button>
-                    </div>
+                    <div class="flex items-center bg-gray-100 p-1 rounded-xl" id="userSwitchContainer"></div>
 
-                    <!-- Botón Cerrar Sesión -->
                     <button onclick="logout()" title="Cerrar Sesión" class="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-coralAlert/30 bg-coralSoft text-coralAlert hover:bg-coralAlert hover:text-white text-xs font-bold transition-all">
                         <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
                         <span class="hidden lg:inline">Salir</span>
@@ -163,41 +219,47 @@
                 <div class="bg-gradient-to-br from-slateWarm-500 to-slateWarm-700 text-white p-5 rounded-2xl shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium text-slateWarm-100 uppercase tracking-wider">Perfil Activo</p>
-                        <h3 class="text-2xl font-bold mt-1" id="activeUserLabel">Danil</h3>
-                        <span class="inline-block mt-1 bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">Espacio Compartido</span>
+                        <h3 class="text-2xl font-bold mt-1" id="activeUserLabel">Usuario</h3>
+                        <span class="inline-block mt-1 bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold" id="activePairLabel">Espacio Pareja</span>
                     </div>
                     <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-sm"><i data-lucide="user" class="w-6 h-6 text-white"></i></div>
                 </div>
             </div>
 
+            <!-- Accesos Rápida -->
             <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                 <h3 class="font-bold text-slateWarm-700 mb-4 text-sm">Módulos de Trabajo</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
                     <button onclick="showTab('mod-proportional')" class="p-3.5 rounded-xl bg-slateWarm-50 hover:bg-slateWarm-100 border border-slateWarm-100 text-left transition-all">
                         <i data-lucide="calculator" class="w-5 h-5 text-sage-600 mb-1.5"></i>
-                        <h4 class="font-bold text-slateWarm-700">Regla de Aportes</h4>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Proporciones ingresos</p>
+                        <h4 class="font-bold text-slateWarm-700">Regla Aportes</h4>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Porcentajes ingresos</p>
                     </button>
                     <button onclick="showTab('mod-market')" class="p-3.5 rounded-xl bg-sage-50 hover:bg-sage-100 border border-sage-100 text-left transition-all">
                         <i data-lucide="shopping-cart" class="w-5 h-5 text-sage-600 mb-1.5"></i>
                         <h4 class="font-bold text-slateWarm-700">Lista Mercado</h4>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Checklist compras</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Super Planner</p>
+                    </button>
+                    <button onclick="showTab('mod-credits')" class="p-3.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-100 text-left transition-all">
+                        <i data-lucide="credit-card" class="w-5 h-5 text-amber-600 mb-1.5"></i>
+                        <h4 class="font-bold text-slateWarm-700">Créditos</h4>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Plan de Pagos</p>
                     </button>
                     <button onclick="showTab('mod-transactions')" class="p-3.5 rounded-xl bg-slateWarm-50 hover:bg-slateWarm-100 border border-slateWarm-100 text-left transition-all">
                         <i data-lucide="receipt" class="w-5 h-5 text-slateWarm-600 mb-1.5"></i>
                         <h4 class="font-bold text-slateWarm-700">Registrar Gastos</h4>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Formulario e historial</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Historial y fotos</p>
                     </button>
                     <button onclick="showTab('mod-analytics')" class="p-3.5 rounded-xl bg-coralSoft hover:bg-coralSoft/80 border border-coralAlert/20 text-left transition-all">
                         <i data-lucide="bar-chart-3" class="w-5 h-5 text-coralAlert mb-1.5"></i>
                         <h4 class="font-bold text-slateWarm-700">Gráficas</h4>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Calendario y analítica</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Calendario y reportes</p>
                     </button>
                 </div>
             </div>
         </section>
 
-        <!-- INTERFAZ 2: APORTES -->
+        <!-- INTERFAZ 2: APORTES PROPORCIONALES -->
         <section id="mod-proportional" class="tab-content bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <div class="flex items-center gap-2">
@@ -210,7 +272,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                 <div class="p-4 bg-slateWarm-50 rounded-xl border border-slateWarm-100">
                     <div class="flex justify-between items-center mb-1">
-                        <span class="text-xs font-bold text-slateWarm-700">Danil</span>
+                        <span class="text-xs font-bold text-slateWarm-700" id="propUser1Name">Integrante 1</span>
                         <span class="text-xs font-bold text-sage-600" id="propUser1Pct">50%</span>
                     </div>
                     <p class="text-lg font-bold text-slateWarm-700" id="propUser1Income">$0.00</p>
@@ -219,7 +281,7 @@
 
                 <div class="p-4 bg-slateWarm-50 rounded-xl border border-slateWarm-100">
                     <div class="flex justify-between items-center mb-1">
-                        <span class="text-xs font-bold text-slateWarm-700">Ogglys</span>
+                        <span class="text-xs font-bold text-slateWarm-700" id="propUser2Name">Integrante 2</span>
                         <span class="text-xs font-bold text-sage-600" id="propUser2Pct">50%</span>
                     </div>
                     <p class="text-lg font-bold text-slateWarm-700" id="propUser2Income">$0.00</p>
@@ -234,12 +296,12 @@
             </div>
         </section>
 
-        <!-- INTERFAZ 3: MERCADO -->
+        <!-- INTERFAZ 3: LISTA DE MERCADO COMPLETA (SUPER PLANNER) -->
         <section id="mod-market" class="tab-content bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <div class="flex items-center gap-2">
                     <i data-lucide="shopping-cart" class="w-5 h-5 text-sage-600"></i>
-                    <h2 class="font-bold text-slateWarm-700 text-sm">Lista de Compras de Mercado</h2>
+                    <h2 class="font-bold text-slateWarm-700 text-sm">Lista de Compras de Mercado (Super Planner)</h2>
                 </div>
                 <span class="text-xs bg-sage-50 text-sage-700 font-semibold px-2 py-1 rounded-lg" id="marketCheckCount">0 Seleccionados</span>
             </div>
@@ -253,13 +315,13 @@
             </div>
 
             <div class="flex gap-2 mb-4">
-                <input type="text" id="customMarketItem" placeholder="➕ ¿Falta algo? Escríbelo aquí..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
+                <input type="text" id="customMarketItem" placeholder="➕ ¿Falta algún producto especial? Escríbelo aquí..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-slateWarm-700 focus:outline-none focus:border-sage-500">
                 <button type="button" onclick="addCustomMarketItem()" class="bg-sage-500 hover:bg-sage-600 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1">
                     <i data-lucide="plus" class="w-4 h-4"></i> Añadir
                 </button>
             </div>
 
-            <div class="space-y-4 max-h-[380px] overflow-y-auto pr-1" id="marketListContainer"></div>
+            <div class="space-y-4 max-h-[420px] overflow-y-auto pr-1" id="marketListContainer"></div>
 
             <div class="mt-4 pt-3 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-2">
                 <span class="text-[11px] text-gray-500">Selecciona los productos y envíalos a registro.</span>
@@ -269,7 +331,78 @@
             </div>
         </section>
 
-        <!-- INTERFAZ 4: REGISTRO E HISTORIAL -->
+        <!-- INTERFAZ 4: MÓDULO DE CRÉDITOS Y PLAN DE PAGOS (NUEVO) -->
+        <section id="mod-credits" class="tab-content space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Formulario Registrar Crédito / Deuda -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-xs">
+                    <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center gap-2 text-sm">
+                        <i data-lucide="credit-card" class="w-5 h-5 text-amber-600"></i> Registrar Nuevo Crédito
+                    </h2>
+                    <form id="creditForm" onsubmit="handleCreditSubmit(event)" class="space-y-3">
+                        <div>
+                            <label class="block font-semibold text-gray-600 mb-1">Origen / Entidad del Crédito</label>
+                            <input type="text" id="credOrigin" placeholder="Ej: Banco, Prestamista, Tarjeta, Familiar" required class="w-full p-2.5 rounded-xl border">
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-gray-600 mb-1">Monto Otorgado y Moneda</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <select id="credCurrency" class="col-span-1 p-2 rounded-xl border font-bold">
+                                    <option value="USD">$ USD</option>
+                                    <option value="BS">Bs. (VES)</option>
+                                </select>
+                                <input type="number" id="credAmount" placeholder="0.00" step="0.01" required class="col-span-2 p-2 rounded-xl border font-bold">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block font-semibold text-gray-600 mb-1">Interés / Recargo (%)</label>
+                                <input type="number" id="credInterest" placeholder="0%" step="0.1" value="0" class="w-full p-2 rounded-xl border">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-gray-600 mb-1">Frecuencia de Pago</label>
+                                <select id="credFrequency" class="w-full p-2 rounded-xl border font-medium">
+                                    <option value="Semanal">Semanal</option>
+                                    <option value="Quincenal">Quincenal</option>
+                                    <option value="Mensual">Mensual</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block font-semibold text-gray-600 mb-1">N° de Cuotas</label>
+                                <input type="number" id="credInstallments" placeholder="Ej: 4" min="1" value="4" required class="w-full p-2 rounded-xl border">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-gray-600 mb-1">Fecha de Inicio</label>
+                                <input type="date" id="credStartDate" required class="w-full p-2 rounded-xl border">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl shadow-md transition-all">
+                            Generar Plan de Pagos
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Lista de Créditos Activos y Plan de Pagos Generado -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2 text-xs flex flex-col justify-between">
+                    <div>
+                        <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center justify-between text-sm">
+                            <span>Créditos Activos y Plan de Amortización</span>
+                            <span class="text-xs text-gray-400 font-normal" id="creditCount">0 Créditos</span>
+                        </h2>
+
+                        <div id="creditListContainer" class="space-y-4 max-h-[400px] overflow-y-auto pr-1"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- INTERFAZ 5: REGISTRO E HISTORIAL -->
         <section id="mod-transactions" class="tab-content">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-xs">
@@ -286,7 +419,7 @@
                             <label class="block font-semibold text-gray-600 mb-1">Pertenencia / Ámbito</label>
                             <select id="txScope" class="w-full p-2 rounded-xl border font-medium">
                                 <option value="Pareja">👥 Fondo Pareja (Compartido)</option>
-                                <option value="Individual">👤 Individual (<span class="currentUserSpan">Danil</span>)</option>
+                                <option value="Individual">👤 Individual (<span class="currentUserSpan">Usuario</span>)</option>
                             </select>
                         </div>
 
@@ -372,7 +505,7 @@
             </div>
         </section>
 
-        <!-- INTERFAZ 5: GRÁFICAS -->
+        <!-- INTERFAZ 6: GRÁFICAS -->
         <section id="mod-analytics" class="tab-content">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
@@ -413,63 +546,188 @@
 
     </main>
 
-    <!-- NAVEGACIÓN INFERIOR PARA TELÉFONOS (BOTTOM NAV BAR) -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 px-2 py-1.5 shadow-lg">
-        <div class="flex justify-around items-center text-[10px] font-bold">
+    <!-- NAVEGACIÓN INFERIOR PARA TELÉFONOS (BOTTOM NAV BAR CON NAVEGACIÓN COMPLETA) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 px-1 py-1.5 shadow-lg">
+        <div class="flex justify-around items-center text-[9px] font-bold">
             <button onclick="showTab('mod-dashboard')" id="nav-mod-dashboard" class="nav-btn flex flex-col items-center gap-0.5 text-sage-600">
-                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                 <span>Inicio</span>
             </button>
             <button onclick="showTab('mod-proportional')" id="nav-mod-proportional" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
-                <i data-lucide="calculator" class="w-5 h-5"></i>
+                <i data-lucide="calculator" class="w-4 h-4"></i>
                 <span>Aportes</span>
             </button>
             <button onclick="showTab('mod-market')" id="nav-mod-market" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
-                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                 <span>Mercado</span>
             </button>
+            <button onclick="showTab('mod-credits')" id="nav-mod-credits" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
+                <i data-lucide="credit-card" class="w-4 h-4"></i>
+                <span>Créditos</span>
+            </button>
             <button onclick="showTab('mod-transactions')" id="nav-mod-transactions" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
-                <i data-lucide="receipt" class="w-5 h-5"></i>
+                <i data-lucide="receipt" class="w-4 h-4"></i>
                 <span>Registro</span>
             </button>
             <button onclick="showTab('mod-analytics')" id="nav-mod-analytics" class="nav-btn flex flex-col items-center gap-0.5 text-gray-400">
-                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
                 <span>Gráficas</span>
             </button>
         </div>
     </nav>
 
-    <!-- JS -->
+    <!-- JS PRINCIPAL -->
     <script>
-        let activeUser = 'Danil';
+        let currentPair = null;
+        let activeUser = '';
         let currentTxType = 'expense';
-        let user1Name = 'Danil';
-        let user2Name = 'Ogglys';
-        let transactions = JSON.parse(localStorage.getItem('mr_txs') || '[]');
+        let transactions = [];
+        let credits = [];
         let chartDistInstance = null;
         let chartHabitsInstance = null;
 
-        const defaultMarketList = [
-            { category: "🥩 Proteínas y Carnes", items: ["Pollo (Entero/Pechuga)", "Carne molida / para mechar", "Chuleta / Cerdo", "Pescado", "Huevos"] },
-            { category: "🥬 Frutas y Verduras", items: ["Tomate", "Cebolla", "Papas", "Plátanos", "Aguacate", "Ajo", "Frutas variadas"] },
-            { category: "🌾 Víveres y Despensa", items: ["Harina PAN", "Arroz", "Pasta", "Aceite", "Café", "Azúcar / Endulzante", "Queso", "Leche"] },
-            { category: "🧴 Limpieza e Higiene", items: ["Jabón de ropa", "Lavaplatos", "Papel higiénico", "Desinfectante", "Champú"] }
+        // BASE DE DATOS COMPLETA EXTRAÍDA DE LA HOJA (SUPER PLANNER)
+        const fullMarketPlannerList = [
+            { category: "🥬 Verduras y Hortalizas", items: ["Acelga", "Aguacate", "Ají dulce", "Ajo", "Ajoporro", "Albahaca", "Alcachofa", "Apio", "Auyama", "Batata", "Berenjena", "Berro", "Brócoli", "Calabacín", "Cebolla", "Cebollín", "Célery", "Cilantro", "Coliflor", "Espárragos", "Espinacas", "Jengibre", "Hongos", "Maíz", "Lechuga", "Papa", "Pepino", "Perejil", "Pimentón", "Plátano", "Remolacha", "Repollo", "Tomate", "Vainitas", "Yuca", "Zanahoria"] },
+            { category: "🍎 Frutas Frescas", items: ["Cambur", "Coco", "Durazno", "Fresas", "Guanábana", "Guayaba", "Kiwi", "Lechosa", "Limón", "Mandarina", "Mango", "Manzana", "Melón", "Moras", "Naranja", "Parchita", "Patilla", "Pera", "Piña", "Uvas"] },
+            { category: "🥩 Carnes y Proteínas", items: ["Cochino", "Pavo", "Pescado", "Pollo", "Res"] },
+            { category: "🥫 Enlatados", items: ["Aceitunas", "Atún", "Guisantes", "Maíz", "Palmito", "Sardina", "Tomate pelado", "Vegetales mixtos"] },
+            { category: "🥛 Lácteos y Huevos", items: ["Crema chantilly", "Crema de leche", "Leche condensada", "Leche en polvo", "Leche evaporada", "Leche líquida", "Mantequilla", "Margarina", "Yogurt", "Huevos"] },
+            { category: "📦 Varios & Despensa", items: ["Aceite de maíz", "Aceite de oliva", "Aceite de soya", "Arroz blanco", "Arroz integral", "Avena", "Azúcar", "Azúcar glass", "Bicarbonato de sodio", "Café", "Cereales", "Compotas", "Galletas", "Harina de maíz", "Harina de trigo", "Maicena", "Mezcla de cachapa", "Papelón", "Pastas", "Pepinillos en vinagre", "Polvo para hornear", "Sal", "Sirope", "Sobre de puré de papa", "Sobre de sopa", "Vinagre"] },
+            { category: "🌱 Granos", items: ["Arvejas", "Caraotas blancas", "Caraotas negras", "Caraotas rojas", "Garbanzos", "Lentejas", "Maíz para cotufas", "Quinoa"] },
+            { category: "🍿 Snacks", items: ["Almendras", "Dips", "Maní / Merey", "Nueces", "Papas y chips", "Pasas", "Tostones", "Tortillas"] },
+            { category: "🍶 Salsas y Untables", items: ["Jamón endiablado", "Ketchup", "Mayonesa", "Mermelada", "Mostaza", "Queso crema", "Queso de cabra", "Queso fundido", "Salsa barbecue", "Salsa de ajo", "Salsa de soya", "Salsa inglesa", "Vinagreta"] },
+            { category: "🍞 Panes", items: ["Casabe", "Pan andino", "Pan cuadrado", "Pan hamburguesa", "Pan integral", "Pan molido", "Pan perro caliente", "Pan pita", "Pan pizza", "Tortillas"] },
+            { category: "🍫 Dulces y Repostería", items: ["Arequipe", "Cacao en polvo", "Chocolate", "Galletas", "Gelatina", "Mezclas para postres", "Obleas", "Ponqué", "Vainilla"] },
+            { category: "❄️ Congelados", items: ["Helado", "Hielo", "Lumpias", "Masa de hojaldre", "Masa lista", "Nuggets", "Papas fritas", "Pastelitos", "Productos del mar", "Pulpa de frutas", "Tequeños", "Vegetales"] },
+            { category: "🧂 Condimentos", items: ["Adobo", "Ajo molido", "Albahaca", "Canela", "Cubitos", "Onoto", "Orégano", "Paprika", "Picante", "Pimienta", "Romero"] },
+            { category: "🧀 Charcutería", items: ["Chorizo", "Jamón de pavo", "Jamón de pierna", "Jamón serrano", "Queso amarillo", "Queso blanco", "Queso guayanés", "Queso mozzarella", "Queso parmesano", "Salchichas", "Tocineta"] },
+            { category: "🧹 Limpieza del Hogar", items: ["Apresto", "Cloro", "Desengrasante de cocina", "Desinfectante", "Esponja", "Insecticida", "Jabón de lavaplatos", "Jabón de ropa", "Jabón en panela", "Limpia pocetas", "Limpia vidrios", "Pañito", "Suavizante"] },
+            { category: "🧻 Plásticos y Papeles", items: ["Bolsas para basura", "Bolsitas sellables", "Cubiertos", "Papel absorbente", "Papel de aluminio", "Papel de plástico", "Papel encerado", "Papel higiénico", "Platos", "Servilletas", "Vasos"] },
+            { category: "🥤 Bebidas", items: ["Agua gasificada", "Agua mineral", "Aguakina", "Bebidas achocolatadas", "Bebidas hidratantes", "Bebidas instantáneas", "Cerveza", "Jugo", "Malta", "Refresco", "Ron", "Soda", "Té", "Vino"] },
+            { category: "🧼 Higiene Personal", items: ["Acondicionador", "Afeitadora", "Algodón", "Cepillo dental", "Champú", "Crema corporal", "Crema dental", "Desodorante", "Enjuague bucal", "Hilo dental", "Jabón", "Pañales", "Toallas sanitarias", "Toallitas húmedas"] },
+            { category: "🐾 Otros", items: ["Comida para mascota"] }
         ];
 
-        let currentMarketItems = JSON.parse(localStorage.getItem('myroomie_market_items')) || defaultMarketList;
+        let currentMarketItems = JSON.parse(localStorage.getItem('myroomie_market_items')) || fullMarketPlannerList;
 
-        // CAMBIO DE PESTAÑA / NAVEGACIÓN DUAL (COMPUTADORA Y MÓVIL)
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            const selected = document.getElementById(tabId);
-            if (selected) {
-                selected.classList.add('active');
+        function initApp() {
+            // VERIFICAR LOGIN OBLIGATORIO DE PAREJA
+            const savedSession = localStorage.getItem('myroomie_active_session');
+            if (savedSession) {
+                currentPair = JSON.parse(savedSession);
+                loadPairDashboard();
+            } else {
+                document.getElementById('authModal').style.display = 'flex';
             }
 
-            // Actualizar estado botones móvil
+            document.getElementById('credStartDate').valueAsDate = new Date();
+            document.getElementById('txDate').valueAsDate = new Date();
+            document.getElementById('txAmount').addEventListener('input', updateConvertedPreview);
+            lucide.createIcons();
+        }
+
+        // AUTH CONTROL TABS
+        function showAuthTab(tab) {
+            if (tab === 'login') {
+                document.getElementById('formLogin').classList.remove('hidden');
+                document.getElementById('formRegister').classList.add('hidden');
+                document.getElementById('tabLogin').className = "w-1/2 py-2 text-xs font-bold rounded-lg bg-white text-slateWarm-700 shadow-sm transition-all";
+                document.getElementById('tabRegister').className = "w-1/2 py-2 text-xs font-bold rounded-lg text-gray-500 transition-all";
+            } else {
+                document.getElementById('formRegister').classList.remove('hidden');
+                document.getElementById('formLogin').classList.add('hidden');
+                document.getElementById('tabRegister').className = "w-1/2 py-2 text-xs font-bold rounded-lg bg-white text-slateWarm-700 shadow-sm transition-all";
+                document.getElementById('tabLogin').className = "w-1/2 py-2 text-xs font-bold rounded-lg text-gray-500 transition-all";
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const pairId = document.getElementById('regPairId').value.trim().toLowerCase();
+            const user1 = document.getElementById('regUser1').value.trim();
+            const user2 = document.getElementById('regUser2').value.trim();
+            const password = document.getElementById('regPassword').value;
+
+            const existingPair = localStorage.getItem(`myroomie_pair_${pairId}`);
+            if (existingPair) {
+                showToast('Ese ID de pareja ya está registrado', 'warning');
+                return;
+            }
+
+            const newPairObj = { pairId, user1, user2, password };
+            localStorage.setItem(`myroomie_pair_${pairId}`, JSON.stringify(newPairObj));
+            showToast('¡Pareja registrada con éxito! Inicia sesión');
+            showAuthTab('login');
+            document.getElementById('loginPairId').value = pairId;
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const pairId = document.getElementById('loginPairId').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+
+            const savedPair = localStorage.getItem(`myroomie_pair_${pairId}`);
+            if (!savedPair) {
+                showToast('Pareja no encontrada. Por favor regístrate', 'warning');
+                return;
+            }
+
+            const pairObj = JSON.parse(savedPair);
+            if (pairObj.password !== password) {
+                showToast('Contraseña incorrecta', 'warning');
+                return;
+            }
+
+            currentPair = pairObj;
+            localStorage.setItem('myroomie_active_session', JSON.stringify(currentPair));
+            loadPairDashboard();
+        }
+
+        function loadPairDashboard() {
+            document.getElementById('authModal').style.display = 'none';
+            activeUser = currentPair.user1;
+
+            document.getElementById('headerPairName').innerText = `Pareja: ${currentPair.user1} & ${currentPair.user2}`;
+            document.getElementById('propUser1Name').innerText = currentPair.user1;
+            document.getElementById('propUser2Name').innerText = currentPair.user2;
+
+            // Render Selectores de Usuarios
+            const switcher = document.getElementById('userSwitchContainer');
+            switcher.innerHTML = `
+                <button id="btnUser1" onclick="switchUser('${currentPair.user1}')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm">${currentPair.user1}</button>
+                <button id="btnUser2" onclick="switchUser('${currentPair.user2}')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500">${currentPair.user2}</button>
+            `;
+
+            const switcherMob = document.getElementById('userSwitchMobContainer');
+            switcherMob.innerHTML = `
+                <button id="btnUser1Mob" onclick="switchUser('${currentPair.user1}')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slateWarm-700 shadow-sm">${currentPair.user1}</button>
+                <button id="btnUser2Mob" onclick="switchUser('${currentPair.user2}')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-500">${currentPair.user2}</button>
+            `;
+
+            // Cargar Transacciones y Créditos de la Pareja
+            transactions = JSON.parse(localStorage.getItem(`mr_txs_${currentPair.pairId}`) || '[]');
+            credits = JSON.parse(localStorage.getItem(`mr_credits_${currentPair.pairId}`) || '[]');
+
+            switchUser(currentPair.user1);
+            fetchLiveRates();
+            renderMarketList();
+            renderCredits();
+            updateCalculations();
+        }
+
+        function logout() {
+            if (confirm('¿Deseas cerrar sesión en My Roomie?')) {
+                localStorage.removeItem('myroomie_active_session');
+                location.reload();
+            }
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            const selected = document.getElementById(tabId);
+            if (selected) selected.classList.add('active');
+
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('text-sage-600');
                 btn.classList.add('text-gray-400');
@@ -480,7 +738,6 @@
                 activeNav.classList.add('text-sage-600');
             }
 
-            // Actualizar estado botones computadora
             document.querySelectorAll('.top-nav-btn').forEach(btn => {
                 btn.classList.remove('bg-white', 'text-slateWarm-700', 'shadow-sm');
                 btn.classList.add('text-gray-500');
@@ -494,7 +751,8 @@
             const titles = {
                 'mod-dashboard': 'Panel General',
                 'mod-proportional': 'Regla de Aportes Excel',
-                'mod-market': 'Lista de Mercado',
+                'mod-market': 'Lista de Mercado (Super Planner)',
+                'mod-credits': 'Módulo de Créditos y Plan de Pagos',
                 'mod-transactions': 'Registro e Historial',
                 'mod-analytics': 'Gráficas y Calendario'
             };
@@ -508,11 +766,148 @@
             }
         }
 
-        // CONSULTA DE TASA BCV DIRECTA
+        // MANEJO DE CRÉDITOS Y AMORTIZACIÓN
+        function handleCreditSubmit(e) {
+            e.preventDefault();
+            const origin = document.getElementById('credOrigin').value.trim();
+            const rawAmount = parseFloat(document.getElementById('credAmount').value);
+            const currency = document.getElementById('credCurrency').value;
+            const interest = parseFloat(document.getElementById('credInterest').value) || 0;
+            const frequency = document.getElementById('credFrequency').value;
+            const installments = parseInt(document.getElementById('credInstallments').value);
+            const startDate = document.getElementById('credStartDate').value;
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 36.5;
+
+            if (!origin || isNaN(rawAmount) || rawAmount <= 0 || !installments) return;
+
+            const amountUSD = currency === 'BS' ? (rawAmount / rate) : rawAmount;
+            const totalWithInterestUSD = amountUSD * (1 + (interest / 100));
+            const installmentAmountUSD = totalWithInterestUSD / installments;
+
+            // Generar Cuotas del Cronograma de Pago
+            let schedule = [];
+            let currDate = new Date(startDate);
+
+            for (let i = 1; i <= installments; i++) {
+                schedule.push({
+                    number: i,
+                    date: currDate.toISOString().split('T')[0],
+                    amountUSD: installmentAmountUSD,
+                    paid: false
+                });
+
+                if (frequency === 'Semanal') currDate.setDate(currDate.getDate() + 7);
+                else if (frequency === 'Quincenal') currDate.setDate(currDate.getDate() + 15);
+                else if (frequency === 'Mensual') currDate.setMonth(currDate.getMonth() + 1);
+            }
+
+            const newCredit = {
+                id: Date.now(),
+                origin,
+                rawAmount,
+                currency,
+                amountUSD,
+                interest,
+                totalWithInterestUSD,
+                frequency,
+                installments,
+                schedule
+            };
+
+            credits.unshift(newCredit);
+            saveCredits();
+            renderCredits();
+            showToast('Crédito registrado y plan generado');
+            document.getElementById('creditForm').reset();
+            document.getElementById('credStartDate').valueAsDate = new Date();
+        }
+
+        function saveCredits() {
+            if (currentPair) {
+                localStorage.setItem(`mr_credits_${currentPair.pairId}`, JSON.stringify(credits));
+            }
+        }
+
+        function toggleInstallmentPaid(creditId, installmentNum) {
+            const cred = credits.find(c => c.id === creditId);
+            if (cred) {
+                const inst = cred.schedule.find(s => s.number === installmentNum);
+                if (inst) {
+                    inst.paid = !inst.paid;
+                    saveCredits();
+                    renderCredits();
+                    showToast(inst.paid ? `Cuota ${installmentNum} marcada como pagada` : `Cuota ${installmentNum} desmarcada`);
+                }
+            }
+        }
+
+        function renderCredits() {
+            const container = document.getElementById('creditListContainer');
+            if (!container) return;
+
+            document.getElementById('creditCount').innerText = `${credits.length} Créditos Registrados`;
+
+            if (credits.length === 0) {
+                container.innerHTML = `<div class="p-6 text-center text-gray-400 bg-gray-50 rounded-xl">No hay créditos registrados actualmente.</div>`;
+                return;
+            }
+
+            container.innerHTML = credits.map(c => {
+                const paidCount = c.schedule.filter(s => s.paid).length;
+                const progressPct = Math.round((paidCount / c.installments) * 100);
+
+                return `
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-bold text-slateWarm-700 text-sm">${c.origin}</h3>
+                                <p class="text-[10px] text-gray-400">${c.frequency} • ${c.installments} Cuotas (${c.interest}% Int.)</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-amber-600">$${c.totalWithInterestUSD.toFixed(2)}</span>
+                                <p class="text-[10px] text-gray-400">Total con intereses</p>
+                            </div>
+                        </div>
+
+                        <!-- Barra de Progreso -->
+                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div class="bg-sage-500 h-2 rounded-full transition-all" style="width: ${progressPct}%"></div>
+                        </div>
+
+                        <!-- Tabla de Amortización / Cuotas -->
+                        <div class="bg-white rounded-lg border border-gray-100 p-2 max-h-36 overflow-y-auto">
+                            <table class="w-full text-[10px] text-left">
+                                <thead class="text-gray-400 font-bold border-b">
+                                    <tr>
+                                        <th class="py-1">Cuota</th>
+                                        <th class="py-1">Fecha Límite</th>
+                                        <th class="py-1">Monto ($)</th>
+                                        <th class="py-1 text-right">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    ${c.schedule.map(s => `
+                                        <tr>
+                                            <td class="py-1 font-bold">Cuota ${s.number}</td>
+                                            <td class="py-1 text-gray-500">${s.date}</td>                                             <td class="py-1 font-bold text-slateWarm-700">$${s.amountUSD.toFixed(2)}</td>
+                                            <td class="py-1 text-right">
+                                                <button onclick="toggleInstallmentPaid(${c.id},${s.number})" class="px-2 py-0.5 rounded font-bold transition-all ${s.paid ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}">
+                                                    ${s.paid ? '✓ Pagado' : 'Pendiente'}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
         async function fetchLiveRates() {
             const rateInput = document.getElementById('exchangeRate');
-            
-            // 1. Consulta directa a la API de Dólar Oficial en Venezuela
             try {
                 const res = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
                 const data = await res.json();
@@ -520,30 +915,9 @@
                     rateInput.value = parseFloat(data.promedio).toFixed(2);
                     updateCalculations();
                     showToast('Tasa BCV cargada en vivo');
-                    return;
                 }
             } catch (err) {
-                console.log("Revisando API de respaldo interna...");
-            }
-
-            // 2. Respaldo
-            try {
-                const fallbackRes = await fetch('/api/rates/current');
-                const fallbackData = await fallbackRes.json();
-                if (fallbackData.success && fallbackData.rates && fallbackData.rates.BCV_USD) {
-                    rateInput.value = parseFloat(fallbackData.rates.BCV_USD).toFixed(2);
-                    updateCalculations();
-                    showToast('Tasa BCV del servidor cargada');
-                }
-            } catch (err2) {
-                console.log("Usando tasa manual.");
-            }
-        }
-
-        function logout() {
-            if (confirm('¿Deseas cerrar sesión en My Roomie?')) {
-                showToast('Sesión cerrada correctamente');
-                setTimeout(() => location.reload(), 800);
+                console.log("Error al consultar tasa.");
             }
         }
 
@@ -610,12 +984,6 @@
             if (marketTx.length > 0) {
                 const lastDate = marketTx[0].date;
                 document.getElementById('marketLastDate').innerText = `Última compra: ${lastDate}`;
-                if (marketTx.length > 1) {
-                    const d1 = new Date(marketTx[0].date);
-                    const d2 = new Date(marketTx[1].date);
-                    const diffDays = Math.abs(Math.round((d1 - d2) / (1000 * 60 * 60 * 24)));
-                    document.getElementById('marketEstimateDays').innerText = `Frecuencia: cada ${diffDays} días aprox.`;
-                }
             }
         }
 
@@ -629,7 +997,7 @@
             const btn1Mob = document.getElementById('btnUser1Mob');
             const btn2Mob = document.getElementById('btnUser2Mob');
 
-            const isU1 = user === user1Name;
+            const isU1 = user === (currentPair ? currentPair.user1 : 'User1');
 
             if (btn1) btn1.className = isU1 ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm" : "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500";
             if (btn2) btn2.className = !isU1 ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slateWarm-700 shadow-sm" : "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500";
@@ -689,7 +1057,9 @@
                     img: imgData
                 };
                 transactions.unshift(tx);
-                localStorage.setItem('mr_txs', JSON.stringify(transactions));
+                if (currentPair) {
+                    localStorage.setItem(`mr_txs_${currentPair.pairId}`, JSON.stringify(transactions));
+                }
                 updateCalculations();
                 showToast(`Registrado: ${desc}`);
                 document.getElementById('txForm').reset();
@@ -714,8 +1084,8 @@
             transactions.forEach(t => {
                 if (t.type === 'income') {
                     totalIncome += t.amountUSD;
-                    if (t.user === user1Name) user1Income += t.amountUSD;
-                    if (t.user === user2Name) user2Income += t.amountUSD;
+                    if (t.user === (currentPair ? currentPair.user1 : 'User1')) user1Income += t.amountUSD;
+                    if (t.user === (currentPair ? currentPair.user2 : 'User2')) user2Income += t.amountUSD;
                 }
                 if (t.type === 'expense') {
                     totalExpenses += t.amountUSD;
@@ -855,14 +1225,18 @@
 
         function deleteTx(id) {
             transactions = transactions.filter(t => t.id !== id);
-            localStorage.setItem('mr_txs', JSON.stringify(transactions));
+            if (currentPair) {
+                localStorage.setItem(`mr_txs_${currentPair.pairId}`, JSON.stringify(transactions));
+            }
             updateCalculations();
         }
 
         function clearAllData() {
             if (confirm('¿Borrar todos los movimientos registrados?')) {
                 transactions = [];
-                localStorage.removeItem('mr_txs');
+                if (currentPair) {
+                    localStorage.removeItem(`mr_txs_${currentPair.pairId}`);
+                }
                 updateCalculations();
             }
         }
@@ -887,14 +1261,7 @@
             document.getElementById(modalId).classList.remove('modal-active');
         }
 
-        window.onload = () => {
-            fetchLiveRates();
-            renderMarketList();
-            updateCalculations();
-            document.getElementById('txDate').valueAsDate = new Date();
-            document.getElementById('txAmount').addEventListener('input', updateConvertedPreview);
-            lucide.createIcons();
-        };
+        window.onload = initApp;
     </script>
 </body>
 </html>
