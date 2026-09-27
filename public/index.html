@@ -30,8 +30,8 @@
     <style>
         body { background-color: #FAF9F6; font-family: system-ui, -apple-system, sans-serif; }
         .modal-active { display: flex !important; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .tab-content { display: none !important; }
+        .tab-content.active { display: block !important; }
     </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen pb-20 sm:pb-12">
@@ -52,11 +52,10 @@
         </div>
     </div>
 
-    <!-- HEADER LIMPIO ADAPTADO -->
+    <!-- HEADER -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-0 sm:h-16 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
             
-            <!-- Logo y Título -->
             <div class="flex items-center justify-between w-full sm:w-auto">
                 <div class="flex items-center gap-2.5">
                     <div class="bg-sage-500 text-white p-2 rounded-xl shadow-sm">
@@ -68,14 +67,12 @@
                     </div>
                 </div>
 
-                <!-- Botones Perfil Activo Móvil -->
                 <div class="flex items-center bg-gray-100 p-0.5 rounded-xl sm:hidden">
                     <button id="btnUser1Mob" onclick="switchUser('Danil')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slateWarm-700 shadow-sm">Danil</button>
                     <button id="btnUser2Mob" onclick="switchUser('Ogglys')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-500">Ogglys</button>
                 </div>
             </div>
 
-            <!-- Tasa BCV y Perfiles Desktop -->
             <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-1 sm:pt-0 border-t sm:border-0 border-gray-100">
                 <div class="flex items-center gap-1.5 bg-slateWarm-50 border border-slateWarm-100 px-2.5 py-1 rounded-xl text-xs font-medium text-slateWarm-600 w-full sm:w-auto justify-between sm:justify-start">
                     <div class="flex items-center gap-1">
@@ -100,14 +97,14 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
 
-        <!-- INTERFAZ 1: PANEL GENERAL DE CONTROL (SIN GRÁFICAS) -->
+        <!-- INTERFAZ 1: PANEL GENERAL (SIN GRÁFICAS NI CALENDARIO) -->
         <section id="mod-dashboard" class="tab-content active space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ingresos Totales</p>
                         <h3 class="text-2xl font-bold text-slateWarm-700 mt-1" id="kpiIncome">$0.00</h3>
-                        <p class="text-xs text-gray-400 mt-0.5" id="kpiIncomeBs">Bs. 0.00</p>
+                        <p class="text-xs text-gray-400 mt-0.5" id="kpiIncomeBs">Bs. 0,00</p>
                     </div>
                     <div class="bg-sage-50 text-sage-600 p-3 rounded-2xl"><i data-lucide="trending-up" class="w-6 h-6"></i></div>
                 </div>
@@ -116,7 +113,7 @@
                     <div>
                         <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Gastos Totales</p>
                         <h3 class="text-2xl font-bold text-coralAlert mt-1" id="kpiExpenses">$0.00</h3>
-                        <p class="text-xs text-gray-400 mt-0.5" id="kpiExpensesBs">Bs. 0.00</p>
+                        <p class="text-xs text-gray-400 mt-0.5" id="kpiExpensesBs">Bs. 0,00</p>
                     </div>
                     <div class="bg-coralSoft text-coralAlert p-3 rounded-2xl"><i data-lucide="trending-down" class="w-6 h-6"></i></div>
                 </div>
@@ -125,7 +122,7 @@
                     <div>
                         <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Balance Disponible</p>
                         <h3 class="text-2xl font-bold text-slateWarm-600 mt-1" id="kpiBalance">$0.00</h3>
-                        <p class="text-xs text-gray-400 mt-0.5" id="kpiBalanceBs">Bs. 0.00</p>
+                        <p class="text-xs text-gray-400 mt-0.5" id="kpiBalanceBs">Bs. 0,00</p>
                     </div>
                     <div class="bg-slateWarm-50 text-slateWarm-600 p-3 rounded-2xl"><i data-lucide="wallet" class="w-6 h-6"></i></div>
                 </div>
@@ -140,7 +137,6 @@
                 </div>
             </div>
 
-            <!-- Botones de Acceso Rápido en Escritorio -->
             <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                 <h3 class="font-bold text-slateWarm-700 mb-4 text-sm">Módulos de Trabajo</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
@@ -168,7 +164,7 @@
             </div>
         </section>
 
-        <!-- INTERFAZ 2: REGLA DE APORTES PROPORCIONALES -->
+        <!-- INTERFAZ 2: APORTES -->
         <section id="mod-proportional" class="tab-content bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <div class="flex items-center gap-2">
@@ -205,7 +201,7 @@
             </div>
         </section>
 
-        <!-- INTERFAZ 3: LISTA DE MERCADO Y ESTIMACIÓN -->
+        <!-- INTERFAZ 3: MERCADO -->
         <section id="mod-market" class="tab-content bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <div class="flex items-center gap-2">
@@ -215,7 +211,6 @@
                 <span class="text-xs bg-sage-50 text-sage-700 font-semibold px-2 py-1 rounded-lg" id="marketCheckCount">0 Seleccionados</span>
             </div>
 
-            <!-- Panel de Estimación de Frecuencia de Mercado -->
             <div id="marketEstimateAlert" class="mb-4 p-3 bg-slateWarm-50 border border-slateWarm-100 rounded-xl text-xs flex items-center justify-between text-slateWarm-700">
                 <div class="flex items-center gap-2">
                     <i data-lucide="clock" class="w-4 h-4 text-sage-600"></i>
@@ -241,10 +236,9 @@
             </div>
         </section>
 
-        <!-- INTERFAZ 4: REGISTRO DE MOVIMIENTOS E HISTORIAL -->
+        <!-- INTERFAZ 4: REGISTRO E HISTORIAL -->
         <section id="mod-transactions" class="tab-content">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Formulario -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-xs">
                     <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center gap-2 text-sm">
                         <i data-lucide="plus-circle" class="w-5 h-5 text-sage-600"></i> Registrar Movimiento
@@ -314,7 +308,6 @@
                     </form>
                 </div>
 
-                <!-- Historial -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2 text-xs flex flex-col justify-between">
                     <div>
                         <h2 class="font-bold text-slateWarm-700 mb-4 pb-2 border-b flex items-center justify-between text-sm">
@@ -346,46 +339,48 @@
             </div>
         </section>
 
-        <!-- INTERFAZ 5: GRÁFICAS Y CALENDARIO (ÚNICO LUGAR DONDE EXISTEN) -->
-        <section id="mod-analytics" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-                    <i data-lucide="pie-chart" class="w-5 h-5 text-slateWarm-500"></i>
-                    <h2 class="font-bold text-slateWarm-700">Gastos por Categoría</h2>
-                </div>
-                <div class="relative h-60 flex items-center justify-center">
-                    <canvas id="chartDistribution"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-sage-600"></i>
-                    <h2 class="font-bold text-slateWarm-700">Distribución por Semanas</h2>
-                </div>
-                <div class="relative h-60">
-                    <canvas id="chartWeeklyHabits"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="calendar" class="w-5 h-5 text-coralAlert"></i>
-                        <h2 class="font-bold text-slateWarm-700">Calendario Financiero</h2>
+        <!-- INTERFAZ 5: GRÁFICAS Y CALENDARIO (ÚNICA PANTALLA DONDE EXISTEN) -->
+        <section id="mod-analytics" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+                        <i data-lucide="pie-chart" class="w-5 h-5 text-slateWarm-500"></i>
+                        <h2 class="font-bold text-slateWarm-700">Gastos por Categoría</h2>
                     </div>
-                    <span class="text-xs font-semibold text-sage-600 bg-sage-50 px-2 py-0.5 rounded-md">Mes Actual</span>
+                    <div class="relative h-60 flex items-center justify-center">
+                        <canvas id="chartDistribution"></canvas>
+                    </div>
                 </div>
-                <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-gray-400 mb-2">
-                    <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-sage-600"></i>
+                        <h2 class="font-bold text-slateWarm-700">Distribución por Semanas</h2>
+                    </div>
+                    <div class="relative h-60">
+                        <canvas id="chartWeeklyHabits"></canvas>
+                    </div>
                 </div>
-                <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
+
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="calendar" class="w-5 h-5 text-coralAlert"></i>
+                            <h2 class="font-bold text-slateWarm-700">Calendario Financiero</h2>
+                        </div>
+                        <span class="text-xs font-semibold text-sage-600 bg-sage-50 px-2 py-0.5 rounded-md">Mes Actual</span>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-gray-400 mb-2">
+                        <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+                    </div>
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
+                </div>
             </div>
         </section>
 
     </main>
 
-    <!-- NAVEGACIÓN INFERIOR FIJA PARA TELÉFONOS (BOTTOM NAV BAR) -->
+    <!-- NAVEGACIÓN INFERIOR FIJA (BOTTOM NAV BAR) -->
     <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 px-2 py-1.5 shadow-lg">
         <div class="flex justify-around items-center text-[10px] font-bold">
             <button onclick="showTab('mod-dashboard')" id="nav-mod-dashboard" class="nav-btn flex flex-col items-center gap-0.5 text-sage-600">
@@ -411,7 +406,7 @@
         </div>
     </nav>
 
-    <!-- SCRIPTS Y LÓGICA DE NAVEGACIÓN -->
+    <!-- JS -->
     <script>
         let activeUser = 'Danil';
         let currentTxType = 'expense';
@@ -430,13 +425,17 @@
 
         let currentMarketItems = JSON.parse(localStorage.getItem('myroomie_market_items')) || defaultMarketList;
 
-        // CAMBIO DINÁMICO DE PESTAÑA/INTERFAZ
+        // CAMBIO DE PESTAÑA / AISLAMIENTO STRICTO
         function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
             const selected = document.getElementById(tabId);
-            if (selected) selected.classList.add('active');
+            if (selected) {
+                selected.classList.add('active');
+            }
 
-            // Actualizar estilo en la barra inferior móvil
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('text-sage-600');
                 btn.classList.add('text-gray-400');
@@ -456,8 +455,12 @@
             };
             document.getElementById('currentTabTitle').innerText = titles[tabId] || 'My Roomie';
 
+            // DIBUJAR GRÁFICAS Y CALENDARIO ÚNICAMENTE SI LA PESTAÑA ACTIVA ES "GRÁFICAS"
             if (tabId === 'mod-analytics') {
-                setTimeout(() => renderCharts(), 100);
+                setTimeout(() => {
+                    renderCharts();
+                    renderCalendar();
+                }, 50);
             }
         }
 
@@ -692,7 +695,6 @@
             document.getElementById('kpiBalanceBs').innerText = `Bs. ${(balance * rate).toLocaleString('es-VE', {minimumFractionDigits: 2})}`;
 
             renderTable();
-            renderCalendar();
             calculateMarketEstimate();
         }
 
