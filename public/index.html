@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Roomie - Finanzas en Pareja</title>
+    <title>My Roomie - Finanzas para Parejas</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#7EA172">
     <!-- Tailwind CSS CDN -->
@@ -49,7 +49,7 @@
         </div>
     </div>
 
-    <!-- HEADER SUPERIOR (CORREGIDO PARA EVITAR TEXTO ENCIMADO) -->
+    <!-- HEADER SUPERIOR -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
             <!-- LOGO Y TÍTULOS ALINEADOS -->
@@ -68,7 +68,7 @@
                 <!-- Tasa BCV -->
                 <div class="flex items-center gap-1 bg-slateWarm-50 border border-slateWarm-100 px-2 py-1 rounded-xl text-xs font-medium text-slateWarm-600">
                     <i data-lucide="dollar-sign" class="w-3.5 h-3.5 text-sage-600"></i>
-                    <input type="number" id="exchangeRate" value="857.00" step="0.5" class="w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
+                    <input type="number" id="exchangeRate" value="855.66" step="0.5" class="w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
                     <span class="text-gray-400 text-[10px]">Bs/$</span>
                 </div>
 
@@ -90,34 +90,34 @@
             <section class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b pb-3">
                     <h2 class="font-bold text-slateWarm-700 text-sm flex items-center gap-2">
-                        <i data-lucide="calculator" class="w-4 h-4 text-sage-600"></i> Aporte Proporcional según Ingresos
+                        <i data-lucide="calculator" class="w-4 h-4 text-sage-600"></i> Aporte Proporcional según Ingresos (Modelo Excel)
                     </h2>
-                    <span class="text-[10px] bg-sage-50 text-sage-700 px-2 py-0.5 rounded-lg font-semibold">Cálculo en Vivo</span>
+                    <span class="text-[10px] bg-sage-50 text-sage-700 px-2 py-0.5 rounded-lg font-semibold">Cálculo Automático</span>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div class="p-3.5 bg-slateWarm-50 rounded-2xl border">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-slateWarm-700">Danil</span>
-                            <span class="text-xs font-bold text-sage-600" id="propUser1Pct">50%</span>
+                            <span class="text-xs font-bold text-sage-600" id="propUser1Pct">36.8%</span>
                         </div>
-                        <p class="text-lg font-bold text-slateWarm-700" id="propUser1Income">$0.00</p>
-                        <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser1Share">$0.00</span></p>
+                        <p class="text-lg font-bold text-slateWarm-700" id="propUser1Income">$140.00</p>
+                        <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser1Share">$128.95</span></p>
                     </div>
 
                     <div class="p-3.5 bg-slateWarm-50 rounded-2xl border">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-slateWarm-700">Ogglys</span>
-                            <span class="text-xs font-bold text-sage-600" id="propUser2Pct">50%</span>
+                            <span class="text-xs font-bold text-sage-600" id="propUser2Pct">63.2%</span>
                         </div>
-                        <p class="text-lg font-bold text-slateWarm-700" id="propUser2Income">$0.00</p>
-                        <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser2Share">$0.00</span></p>
+                        <p class="text-lg font-bold text-slateWarm-700" id="propUser2Income">$240.00</p>
+                        <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser2Share">$221.05</span></p>
                     </div>
 
                     <div class="p-3.5 bg-sage-50 rounded-2xl border border-sage-100">
                         <span class="text-xs font-bold text-sage-700">Fondo Total Combinado</span>
-                        <p class="text-xl font-bold text-sage-700 mt-1" id="propTotalIncome">$0.00</p>
-                        <p class="text-[11px] text-sage-600 mt-1">Gastos Compartidos: <span class="font-bold" id="propTotalExpenses">$0.00</span></p>
+                        <p class="text-xl font-bold text-sage-700 mt-1" id="propTotalIncome">$380.00</p>
+                        <p class="text-[11px] text-sage-600 mt-1">Gastos Compartidos: <span class="font-bold" id="propTotalExpenses">$350.00</span></p>
                     </div>
                 </div>
             </section>
@@ -127,8 +127,8 @@
                 <div class="bg-white p-4 rounded-2xl border shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Ingresos Totales</p>
-                        <h3 class="text-xl font-bold text-slateWarm-700 mt-0.5" id="kpiIncome">$0.00</h3>
-                        <p class="text-[10px] text-gray-400" id="kpiIncomeBs">Bs. 0,00</p>
+                        <h3 class="text-xl font-bold text-slateWarm-700 mt-0.5" id="kpiIncome">$380.00</h3>
+                        <p class="text-[10px] text-gray-400" id="kpiIncomeBs">Bs. 325.150,80</p>
                     </div>
                     <div class="bg-sage-50 text-sage-600 p-2.5 rounded-2xl"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
                 </div>
@@ -136,8 +136,8 @@
                 <div class="bg-white p-4 rounded-2xl border shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Gastos Totales</p>
-                        <h3 class="text-xl font-bold text-coralAlert mt-0.5" id="kpiExpenses">$0.00</h3>
-                        <p class="text-[10px] text-gray-400" id="kpiExpensesBs">Bs. 0,00</p>
+                        <h3 class="text-xl font-bold text-coralAlert mt-0.5" id="kpiExpenses">$350.00</h3>
+                        <p class="text-[10px] text-gray-400" id="kpiExpensesBs">Bs. 299.481,00</p>
                     </div>
                     <div class="bg-coralSoft text-coralAlert p-2.5 rounded-2xl"><i data-lucide="trending-down" class="w-5 h-5"></i></div>
                 </div>
@@ -145,15 +145,15 @@
                 <div class="bg-white p-4 rounded-2xl border shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Balance Disponible</p>
-                        <h3 class="text-xl font-bold text-slateWarm-600 mt-0.5" id="kpiBalance">$0.00</h3>
-                        <p class="text-[10px] text-gray-400" id="kpiBalanceBs">Bs. 0,00</p>
+                        <h3 class="text-xl font-bold text-slateWarm-600 mt-0.5" id="kpiBalance">$30.00</h3>
+                        <p class="text-[10px] text-gray-400" id="kpiBalanceBs">Bs. 25.669,80</p>
                     </div>
                     <div class="bg-slateWarm-50 text-slateWarm-600 p-2.5 rounded-2xl"><i data-lucide="wallet" class="w-5 h-5"></i></div>
                 </div>
             </div>
         </div>
 
-        <!-- MÓDULO 2: LISTA COMPLETA DE MERCADO (SUPER PLANNER) -->
+        <!-- MÓDULO 2: LISTA COMPLETA DE MERCADO -->
         <div id="module-market" class="hidden bg-white p-5 rounded-2xl border shadow-sm space-y-4">
             <div class="flex items-center justify-between border-b pb-3">
                 <h2 class="font-bold text-slateWarm-700 text-sm flex items-center gap-2">
@@ -366,23 +366,23 @@
     <!-- BARRA NAVEGACIÓN INFERIOR FIJA (BOTTOM NAV BAR) -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg px-2 py-2">
         <div class="max-w-md mx-auto flex justify-around items-center text-[10px] font-bold">
-            <button onclick="showModule('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 text-sage-600">
+            <button onclick="showModule('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 text-sage-600 font-extrabold">
                 <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                 <span>Dashboard</span>
             </button>
-            <button onclick="showModule('market')" id="nav-market" class="flex flex-col items-center gap-1 text-gray-400 hover:text-slateWarm-700">
+            <button onclick="showModule('market')" id="nav-market" class="flex flex-col items-center gap-1 text-gray-400 hover:text-slateWarm-700 font-bold">
                 <i data-lucide="shopping-cart" class="w-5 h-5"></i>
                 <span>Mercado</span>
             </button>
-            <button onclick="showModule('credits')" id="nav-credits" class="flex flex-col items-center gap-1 text-gray-400 hover:text-slateWarm-700">
+            <button onclick="showModule('credits')" id="nav-credits" class="flex flex-col items-center gap-1 text-gray-400 hover:text-slateWarm-700 font-bold">
                 <i data-lucide="credit-card" class="w-5 h-5"></i>
                 <span>Créditos</span>
             </button>
-            <button onclick="showModule('transactions')" id="nav-transactions" class="flex flex-col items-center gap-1 text-gray-400 hover:text-slateWarm-700">
+            <button onclick="showModule('transactions')" id="nav-transactions" class="flex flex-col items-center gap-1 text-gray-400 hover:text-slateWarm-700 font-bold">
                 <i data-lucide="receipt" class="w-5 h-5"></i>
                 <span>Movimientos</span>
             </button>
-            <button onclick="showModule('analytics')" id="nav-analytics" class="flex flex-col items-center gap-1 text-gray-400 hover:text-slateWarm-700">
+            <button onclick="showModule('analytics')" id="nav-analytics" class="flex flex-col items-center gap-1 text-gray-400 hover:text-slateWarm-700 font-bold">
                 <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
                 <span>Gráficas</span>
             </button>
@@ -525,7 +525,7 @@
             const desc = document.getElementById('txDesc').value.trim();
             const rawAmount = parseFloat(document.getElementById('txAmount').value);
             const currency = document.getElementById('txCurrency').value;
-            const rate = parseFloat(document.getElementById('exchangeRate').value) || 857.0;
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 855.66;
             const date = document.getElementById('txDate').value;
             const scope = document.getElementById('txScope').value;
             const fileInput = document.getElementById('txImage');
@@ -565,7 +565,7 @@
         }
 
         function updateCalculations() {
-            const rate = parseFloat(document.getElementById('exchangeRate').value) || 857.0;
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 855.66;
 
             let totalIncome = 0;
             let totalExpenses = 0;
