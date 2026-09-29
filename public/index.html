@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Roomie - Finanzas para Parejas</title>
+    <title>Mita&Mita - Finanzas para Parejas</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#7EA172">
     <!-- Tailwind CSS CDN -->
@@ -12,6 +12,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- FIREBASE SDKs (v9 Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -33,7 +38,7 @@
 </head>
 <body class="text-slate-800 antialiased min-h-screen pb-24">
 
-    <!-- TOAST NOTIFICATIONS -->
+    <!-- NOTIFICACIONES TOAST -->
     <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- MODAL FOTO COMPROBANTE -->
@@ -60,7 +65,7 @@
                     <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
                 </button>
                 <div class="flex flex-col justify-center leading-tight">
-                    <h1 class="font-bold text-base text-slateWarm-700">My Roomie</h1>
+                    <h1 class="font-bold text-base text-slateWarm-700">Mita&Mita</h1>
                     <span class="text-[11px] text-gray-400 font-medium" id="headerPairName">Danil & Ogglys</span>
                 </div>
 
@@ -87,6 +92,10 @@
                     <button id="btnUser1" onclick="switchUser('Danil')" class="px-2 py-1 rounded-lg bg-white text-slateWarm-700 shadow-sm">Danil</button>
                     <button id="btnUser2" onclick="switchUser('Ogglys')" class="px-2 py-1 rounded-lg text-gray-500">Ogglys</button>
                 </div>
+
+                <button onclick="handleLogout()" class="p-2 text-gray-400 hover:text-coralAlert rounded-xl hover:bg-red-50 transition-all" title="Cerrar Sesión">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
             </div>
         </div>
     </header>
@@ -98,9 +107,9 @@
             <section class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b pb-3">
                     <h2 class="font-bold text-slateWarm-700 text-sm flex items-center gap-2">
-                        <i data-lucide="calculator" class="w-4 h-4 text-sage-600"></i> Aporte Proporcional según Ingresos
+                        <i data-lucide="calculator" class="w-4 h-4 text-sage-600"></i> Aporte Proporcional según Ingresos (Modelo Excel)
                     </h2>
-                    <span class="text-[10px] bg-sage-50 text-sage-700 px-2 py-0.5 rounded-lg font-semibold">Cálculo Automático</span>
+                    <span class="text-[10px] bg-sage-50 text-sage-700 px-2 py-0.5 rounded-lg font-semibold">Sincronizado en la Nube</span>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -109,8 +118,8 @@
                             <span class="text-xs font-bold text-slateWarm-700">Danil</span>
                             <span class="text-xs font-bold text-sage-600" id="propUser1Pct">36.8%</span>
                         </div>
-                        <p class="text-lg font-bold text-slateWarm-700" id="propUser1Income">$140.00</p>
-                        <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser1Share">$128.95</span></p>
+                        <p class="text-lg font-bold text-slateWarm-700" id="propUser1Income">$0.00</p>
+                        <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser1Share">$0.00</span></p>
                     </div>
 
                     <div class="p-3.5 bg-slateWarm-50 rounded-2xl border">
@@ -118,14 +127,14 @@
                             <span class="text-xs font-bold text-slateWarm-700">Ogglys</span>
                             <span class="text-xs font-bold text-sage-600" id="propUser2Pct">63.2%</span>
                         </div>
-                        <p class="text-lg font-bold text-slateWarm-700" id="propUser2Income">$240.00</p>
-                        <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser2Share">$221.05</span></p>
+                        <p class="text-lg font-bold text-slateWarm-700" id="propUser2Income">$0.00</p>
+                        <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser2Share">$0.00</span></p>
                     </div>
 
                     <div class="p-3.5 bg-sage-50 rounded-2xl border border-sage-100">
                         <span class="text-xs font-bold text-sage-700">Fondo Total Combinado</span>
-                        <p class="text-xl font-bold text-sage-700 mt-1" id="propTotalIncome">$380.00</p>
-                        <p class="text-[11px] text-sage-600 mt-1">Gastos Compartidos: <span class="font-bold" id="propTotalExpenses">$350.00</span></p>
+                        <p class="text-xl font-bold text-sage-700 mt-1" id="propTotalIncome">$0.00</p>
+                        <p class="text-[11px] text-sage-600 mt-1">Gastos Compartidos: <span class="font-bold" id="propTotalExpenses">$0.00</span></p>
                     </div>
                 </div>
             </section>
@@ -134,8 +143,8 @@
                 <div class="bg-white p-4 rounded-2xl border shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Ingresos Totales</p>
-                        <h3 class="text-xl font-bold text-slateWarm-700 mt-0.5" id="kpiIncome">$380.00</h3>
-                        <p class="text-[10px] text-gray-400" id="kpiIncomeBs">Bs. 325.150,80</p>
+                        <h3 class="text-xl font-bold text-slateWarm-700 mt-0.5" id="kpiIncome">$0.00</h3>
+                        <p class="text-[10px] text-gray-400" id="kpiIncomeBs">Bs. 0,00</p>
                     </div>
                     <div class="bg-sage-50 text-sage-600 p-2.5 rounded-2xl"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
                 </div>
@@ -143,8 +152,8 @@
                 <div class="bg-white p-4 rounded-2xl border shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Gastos Totales</p>
-                        <h3 class="text-xl font-bold text-coralAlert mt-0.5" id="kpiExpenses">$350.00</h3>
-                        <p class="text-[10px] text-gray-400" id="kpiExpensesBs">Bs. 299.481,00</p>
+                        <h3 class="text-xl font-bold text-coralAlert mt-0.5" id="kpiExpenses">$0.00</h3>
+                        <p class="text-[10px] text-gray-400" id="kpiExpensesBs">Bs. 0,00</p>
                     </div>
                     <div class="bg-coralSoft text-coralAlert p-2.5 rounded-2xl"><i data-lucide="trending-down" class="w-5 h-5"></i></div>
                 </div>
@@ -152,39 +161,42 @@
                 <div class="bg-white p-4 rounded-2xl border shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Balance Disponible</p>
-                        <h3 class="text-xl font-bold text-slateWarm-600 mt-0.5" id="kpiBalance">$30.00</h3>
-                        <p class="text-[10px] text-gray-400" id="kpiBalanceBs">Bs. 25.669,80</p>
+                        <h3 class="text-xl font-bold text-slateWarm-600 mt-0.5" id="kpiBalance">$0.00</h3>
+                        <p class="text-[10px] text-gray-400" id="kpiBalanceBs">Bs. 0,00</p>
                     </div>
                     <div class="bg-slateWarm-50 text-slateWarm-600 p-2.5 rounded-2xl"><i data-lucide="wallet" class="w-5 h-5"></i></div>
                 </div>
             </div>
         </div>
 
-        <!-- MÓDULO 2: MERCADO INTELIGENTE Y PREDICCIÓN -->
+        <!-- MÓDULO 2: MERCADO INTELIGENTE Y PREDICCIÓN (SUPER PLANNER COMPLETO) -->
         <div id="module-market" class="hidden space-y-6">
             <section class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b pb-3">
                     <h2 class="font-bold text-slateWarm-700 text-sm flex items-center gap-2">
-                        <i data-lucide="shopping-bag" class="w-4 h-4 text-sage-600"></i> Plantilla Completa de Mercado
+                        <i data-lucide="shopping-bag" class="w-4 h-4 text-sage-600"></i> Plantilla Completa de Mercado (Super Planner)
                     </h2>
                     <button onclick="clearShoppingList()" class="text-xs text-coralAlert font-bold underline">Limpiar Selección</button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 text-xs">
+                    
                     <!-- VERDURAS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-sage-700 border-b pb-1 mb-2">🥬 VERDURAS</h3>
-                        <div class="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
+                        <div class="grid grid-cols-2 gap-1 max-h-52 overflow-y-auto">
                             <label><input type="checkbox" value="Acelga"> Acelga</label>
                             <label><input type="checkbox" value="Aguacate"> Aguacate</label>
                             <label><input type="checkbox" value="Ají dulce"> Ají dulce</label>
                             <label><input type="checkbox" value="Ajo"> Ajo</label>
                             <label><input type="checkbox" value="Ajoporro"> Ajoporro</label>
                             <label><input type="checkbox" value="Albahaca"> Albahaca</label>
+                            <label><input type="checkbox" value="Alcachofa"> Alcachofa</label>
                             <label><input type="checkbox" value="Apio"> Apio</label>
                             <label><input type="checkbox" value="Auyama"> Auyama</label>
                             <label><input type="checkbox" value="Batata"> Batata</label>
                             <label><input type="checkbox" value="Berenjena"> Berenjena</label>
+                            <label><input type="checkbox" value="Berro"> Berro</label>
                             <label><input type="checkbox" value="Brócoli"> Brócoli</label>
                             <label><input type="checkbox" value="Calabacín"> Calabacín</label>
                             <label><input type="checkbox" value="Cebolla"> Cebolla</label>
@@ -192,12 +204,22 @@
                             <label><input type="checkbox" value="Célery"> Célery</label>
                             <label><input type="checkbox" value="Cilantro"> Cilantro</label>
                             <label><input type="checkbox" value="Coliflor"> Coliflor</label>
+                            <label><input type="checkbox" value="Espárragos"> Espárragos</label>
                             <label><input type="checkbox" value="Espinacas"> Espinacas</label>
+                            <label><input type="checkbox" value="Jengibre"> Jengibre</label>
+                            <label><input type="checkbox" value="Hongos"> Hongos</label>
+                            <label><input type="checkbox" value="Maíz"> Maíz</label>
+                            <label><input type="checkbox" value="Lechuga"> Lechuga</label>
                             <label><input type="checkbox" value="Papa"> Papa</label>
                             <label><input type="checkbox" value="Pepino"> Pepino</label>
+                            <label><input type="checkbox" value="Perejil"> Perejil</label>
                             <label><input type="checkbox" value="Pimentón"> Pimentón</label>
                             <label><input type="checkbox" value="Plátano"> Plátano</label>
+                            <label><input type="checkbox" value="Remolacha"> Remolacha</label>
+                            <label><input type="checkbox" value="Repollo"> Repollo</label>
                             <label><input type="checkbox" value="Tomate"> Tomate</label>
+                            <label><input type="checkbox" value="Vainitas"> Vainitas</label>
+                            <label><input type="checkbox" value="Yuca"> Yuca</label>
                             <label><input type="checkbox" value="Zanahoria"> Zanahoria</label>
                         </div>
                     </div>
@@ -205,53 +227,334 @@
                     <!-- FRUTAS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-coralAlert border-b pb-1 mb-2">🍎 FRUTAS</h3>
-                        <div class="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
+                        <div class="grid grid-cols-2 gap-1 max-h-52 overflow-y-auto">
                             <label><input type="checkbox" value="Cambur"> Cambur</label>
                             <label><input type="checkbox" value="Coco"> Coco</label>
                             <label><input type="checkbox" value="Durazno"> Durazno</label>
                             <label><input type="checkbox" value="Fresas"> Fresas</label>
+                            <label><input type="checkbox" value="Guanábana"> Guanábana</label>
+                            <label><input type="checkbox" value="Guayaba"> Guayaba</label>
+                            <label><input type="checkbox" value="Kiwi"> Kiwi</label>
+                            <label><input type="checkbox" value="Lechosa"> Lechosa</label>
                             <label><input type="checkbox" value="Limón"> Limón</label>
                             <label><input type="checkbox" value="Mandarina"> Mandarina</label>
                             <label><input type="checkbox" value="Mango"> Mango</label>
                             <label><input type="checkbox" value="Manzana"> Manzana</label>
                             <label><input type="checkbox" value="Melón"> Melón</label>
+                            <label><input type="checkbox" value="Moras"> Moras</label>
                             <label><input type="checkbox" value="Naranja"> Naranja</label>
                             <label><input type="checkbox" value="Parchita"> Parchita</label>
+                            <label><input type="checkbox" value="Patilla"> Patilla</label>
+                            <label><input type="checkbox" value="Pera"> Pera</label>
                             <label><input type="checkbox" value="Piña"> Piña</label>
+                            <label><input type="checkbox" value="Uvas"> Uvas</label>
                         </div>
                     </div>
 
-                    <!-- LÁCTEOS Y CHARCUTERÍA -->
+                    <!-- ENLATADOS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
-                        <h3 class="font-bold text-slateWarm-600 border-b pb-1 mb-2">🧀 LÁCTEOS & CHARCUTERÍA</h3>
-                        <div class="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
-                            <label><input type="checkbox" value="Leche"> Leche</label>
+                        <h3 class="font-bold text-amber-700 border-b pb-1 mb-2">🥫 ENLATADOS</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Aceitunas"> Aceitunas</label>
+                            <label><input type="checkbox" value="Atún"> Atún</label>
+                            <label><input type="checkbox" value="Guisantes"> Guisantes</label>
+                            <label><input type="checkbox" value="Maíz"> Maíz</label>
+                            <label><input type="checkbox" value="Palmito"> Palmito</label>
+                            <label><input type="checkbox" value="Sardina"> Sardina</label>
+                            <label><input type="checkbox" value="Tomate pelado"> Tomate pelado</label>
+                            <label><input type="checkbox" value="Vegetales mixtos"> Vegetales mixtos</label>
+                        </div>
+                    </div>
+
+                    <!-- LÁCTEOS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-slateWarm-600 border-b pb-1 mb-2">🥛 LÁCTEOS</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Crema Chantilly"> Crema Chantilly</label>
+                            <label><input type="checkbox" value="Crema de leche"> Crema de leche</label>
+                            <label><input type="checkbox" value="Leche condensada"> Leche condensada</label>
+                            <label><input type="checkbox" value="Leche en polvo"> Leche en polvo</label>
+                            <label><input type="checkbox" value="Leche evaporada"> Leche evaporada</label>
+                            <label><input type="checkbox" value="Leche líquida"> Leche líquida</label>
                             <label><input type="checkbox" value="Mantequilla"> Mantequilla</label>
-                            <label><input type="checkbox" value="Queso Blanco"> Queso Blanco</label>
-                            <label><input type="checkbox" value="Queso Amarillo"> Queso Amarillo</label>
-                            <label><input type="checkbox" value="Jamón"> Jamón</label>
-                            <label><input type="checkbox" value="Tocineta"> Tocineta</label>
+                            <label><input type="checkbox" value="Margarina"> Margarina</label>
                             <label><input type="checkbox" value="Yogurt"> Yogurt</label>
                         </div>
                     </div>
 
-                    <!-- DESPENSA & OTROS -->
+                    <!-- VARIOS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
-                        <h3 class="font-bold text-amber-700 border-b pb-1 mb-2">📦 DESPENSA & VARIOS</h3>
-                        <div class="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
-                            <label><input type="checkbox" value="Arroz"> Arroz</label>
-                            <label><input type="checkbox" value="Harina Pan"> Harina Pan</label>
-                            <label><input type="checkbox" value="Pastas"> Pastas</label>
-                            <label><input type="checkbox" value="Aceite"> Aceite</label>
-                            <label><input type="checkbox" value="Café"> Café</label>
+                        <h3 class="font-bold text-amber-800 border-b pb-1 mb-2">📦 VARIOS</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Aceite de maíz"> Aceite de maíz</label>
+                            <label><input type="checkbox" value="Aceite de oliva"> Aceite de oliva</label>
+                            <label><input type="checkbox" value="Aceite de soya"> Aceite de soya</label>
+                            <label><input type="checkbox" value="Arroz blanco"> Arroz blanco</label>
+                            <label><input type="checkbox" value="Arroz integral"> Arroz integral</label>
+                            <label><input type="checkbox" value="Avena"> Avena</label>
                             <label><input type="checkbox" value="Azúcar"> Azúcar</label>
+                            <label><input type="checkbox" value="Azúcar glass"> Azúcar glass</label>
+                            <label><input type="checkbox" value="Bicarbonato de sodio"> Bicarbonato de sodio</label>
+                            <label><input type="checkbox" value="Café"> Café</label>
+                            <label><input type="checkbox" value="Cereales"> Cereales</label>
+                            <label><input type="checkbox" value="Compotas"> Compotas</label>
+                            <label><input type="checkbox" value="Galletas"> Galletas</label>
+                            <label><input type="checkbox" value="Harina de maíz"> Harina de maíz</label>
+                            <label><input type="checkbox" value="Harina de trigo"> Harina de trigo</label>
                             <label><input type="checkbox" value="Huevos"> Huevos</label>
-                            <label><input type="checkbox" value="Pollo"> Pollo</label>
-                            <label><input type="checkbox" value="Carne Res"> Carne Res</label>
-                            <label><input type="checkbox" value="Papel Higiénico"> Papel Higiénico</label>
-                            <label><input type="checkbox" value="Jabón Ropa"> Jabón Ropa</label>
+                            <label><input type="checkbox" value="Maicena"> Maicena</label>
+                            <label><input type="checkbox" value="Mezcla de cachapa"> Mezcla de cachapa</label>
+                            <label><input type="checkbox" value="Papelón"> Papelón</label>
+                            <label><input type="checkbox" value="Pastas"> Pastas</label>
+                            <label><input type="checkbox" value="Pepinillos en vinagre"> Pepinillos en vinagre</label>
+                            <label><input type="checkbox" value="Polvo para hornear"> Polvo para hornear</label>
+                            <label><input type="checkbox" value="Sal"> Sal</label>
+                            <label><input type="checkbox" value="Sirope"> Sirope</label>
+                            <label><input type="checkbox" value="Sobre de puré de papa"> Sobre de puré de papa</label>
+                            <label><input type="checkbox" value="Sobre de sopa"> Sobre de sopa</label>
+                            <label><input type="checkbox" value="Vinagre"> Vinagre</label>
                         </div>
                     </div>
+
+                    <!-- GRANOS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-amber-900 border-b pb-1 mb-2">🌾 GRANOS</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Arvejas"> Arvejas</label>
+                            <label><input type="checkbox" value="Caraotas blancas"> Caraotas blancas</label>
+                            <label><input type="checkbox" value="Caraotas negras"> Caraotas negras</label>
+                            <label><input type="checkbox" value="Caraotas rojas"> Caraotas rojas</label>
+                            <label><input type="checkbox" value="Garbanzos"> Garbanzos</label>
+                            <label><input type="checkbox" value="Lentejas"> Lentejas</label>
+                            <label><input type="checkbox" value="Maíz para cotufas"> Maíz para cotufas</label>
+                            <label><input type="checkbox" value="Quinoa"> Quinoa</label>
+                        </div>
+                    </div>
+
+                    <!-- SNACKS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-purple-700 border-b pb-1 mb-2">🍿 SNACKS</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Almendras"> Almendras</label>
+                            <label><input type="checkbox" value="Dips"> Dips</label>
+                            <label><input type="checkbox" value="Maní / Merey"> Maní / Merey</label>
+                            <label><input type="checkbox" value="Nueces"> Nueces</label>
+                            <label><input type="checkbox" value="Papas y chips"> Papas y chips</label>
+                            <label><input type="checkbox" value="Pasas"> Pasas</label>
+                            <label><input type="checkbox" value="Tostones"> Tostones</label>
+                            <label><input type="checkbox" value="Tortillas"> Tortillas</label>
+                        </div>
+                    </div>
+
+                    <!-- SALSAS Y UNTABLES -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-red-700 border-b pb-1 mb-2">🥫 SALSAS Y UNTABLES</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Jamón endiablado"> Jamón endiablado</label>
+                            <label><input type="checkbox" value="Ketchup"> Ketchup</label>
+                            <label><input type="checkbox" value="Mayonesa"> Mayonesa</label>
+                            <label><input type="checkbox" value="Mermelada"> Mermelada</label>
+                            <label><input type="checkbox" value="Mostaza"> Mostaza</label>
+                            <label><input type="checkbox" value="Queso crema"> Queso crema</label>
+                            <label><input type="checkbox" value="Queso de cabra"> Queso de cabra</label>
+                            <label><input type="checkbox" value="Queso fundido"> Queso fundido</label>
+                            <label><input type="checkbox" value="Salsa barbecue"> Salsa barbecue</label>
+                            <label><input type="checkbox" value="Salsa de ajo"> Salsa de ajo</label>
+                            <label><input type="checkbox" value="Salsa de soya"> Salsa de soya</label>
+                            <label><input type="checkbox" value="Salsa inglesa"> Salsa inglesa</label>
+                            <label><input type="checkbox" value="Vinagreta"> Vinagreta</label>
+                        </div>
+                    </div>
+
+                    <!-- PANES -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-amber-600 border-b pb-1 mb-2">🍞 PANES</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Casabe"> Casabe</label>
+                            <label><input type="checkbox" value="Pan andino"> Pan andino</label>
+                            <label><input type="checkbox" value="Pan cuadrado"> Pan cuadrado</label>
+                            <label><input type="checkbox" value="Pan hamburguesa"> Pan hamburguesa</label>
+                            <label><input type="checkbox" value="Pan integral"> Pan integral</label>
+                            <label><input type="checkbox" value="Pan molido"> Pan molido</label>
+                            <label><input type="checkbox" value="Pan perro caliente"> Pan perro caliente</label>
+                            <label><input type="checkbox" value="Pan pita"> Pan pita</label>
+                            <label><input type="checkbox" value="Pan pizza"> Pan pizza</label>
+                            <label><input type="checkbox" value="Tortillas"> Tortillas</label>
+                        </div>
+                    </div>
+
+                    <!-- DULCES -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-pink-600 border-b pb-1 mb-2">🍫 DULCES</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Arequipe"> Arequipe</label>
+                            <label><input type="checkbox" value="Cacao en polvo"> Cacao en polvo</label>
+                            <label><input type="checkbox" value="Chocolate"> Chocolate</label>
+                            <label><input type="checkbox" value="Galletas"> Galletas</label>
+                            <label><input type="checkbox" value="Gelatina"> Gelatina</label>
+                            <label><input type="checkbox" value="Mezclas para postres"> Mezclas para postres</label>
+                            <label><input type="checkbox" value="Obleas"> Obleas</label>
+                            <label><input type="checkbox" value="Ponqué"> Ponqué</label>
+                            <label><input type="checkbox" value="Vainilla"> Vainilla</label>
+                        </div>
+                    </div>
+
+                    <!-- CONGELADOS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-blue-600 border-b pb-1 mb-2">❄️ CONGELADOS</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Helado"> Helado</label>
+                            <label><input type="checkbox" value="Hielo"> Hielo</label>
+                            <label><input type="checkbox" value="Lumpias"> Lumpias</label>
+                            <label><input type="checkbox" value="Masa de hojaldre"> Masa de hojaldre</label>
+                            <label><input type="checkbox" value="Masa lista"> Masa lista</label>
+                            <label><input type="checkbox" value="Nuggets"> Nuggets</label>
+                            <label><input type="checkbox" value="Papas fritas"> Papas fritas</label>
+                            <label><input type="checkbox" value="Pastelitos"> Pastelitos</label>
+                            <label><input type="checkbox" value="Productos del mar"> Productos del mar</label>
+                            <label><input type="checkbox" value="Pulpa de frutas"> Pulpa de frutas</label>
+                            <label><input type="checkbox" value="Tequeños"> Tequeños</label>
+                            <label><input type="checkbox" value="Vegetales"> Vegetales</label>
+                        </div>
+                    </div>
+
+                    <!-- CONDIMENTOS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-orange-700 border-b pb-1 mb-2">🧂 CONDIMENTOS</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Adobo"> Adobo</label>
+                            <label><input type="checkbox" value="Ajo molido"> Ajo molido</label>
+                            <label><input type="checkbox" value="Albahaca"> Albahaca</label>
+                            <label><input type="checkbox" value="Canela"> Canela</label>
+                            <label><input type="checkbox" value="Cubitos"> Cubitos</label>
+                            <label><input type="checkbox" value="Onoto"> Onoto</label>
+                            <label><input type="checkbox" value="Orégano"> Orégano</label>
+                            <label><input type="checkbox" value="Paprika"> Paprika</label>
+                            <label><input type="checkbox" value="Picante"> Picante</label>
+                            <label><input type="checkbox" value="Pimienta"> Pimienta</label>
+                            <label><input type="checkbox" value="Romero"> Romero</label>
+                        </div>
+                    </div>
+
+                    <!-- CHARCUTERÍA -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-slateWarm-700 border-b pb-1 mb-2">🥓 CHARCUTERÍA</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Chorizo"> Chorizo</label>
+                            <label><input type="checkbox" value="Jamón de pavo"> Jamón de pavo</label>
+                            <label><input type="checkbox" value="Jamón de pierna"> Jamón de pierna</label>
+                            <label><input type="checkbox" value="Jamón serrano"> Jamón serrano</label>
+                            <label><input type="checkbox" value="Mortadela"> Mortadela</label>
+                            <label><input type="checkbox" value="Queso amarillo"> Queso amarillo</label>
+                            <label><input type="checkbox" value="Queso blanco"> Queso blanco</label>
+                            <label><input type="checkbox" value="Queso guayanés"> Queso guayanés</label>
+                            <label><input type="checkbox" value="Queso mozzarella"> Queso mozzarella</label>
+                            <label><input type="checkbox" value="Queso parmesano"> Queso parmesano</label>
+                            <label><input type="checkbox" value="Salchichas"> Salchichas</label>
+                            <label><input type="checkbox" value="Tocineta"> Tocineta</label>
+                        </div>
+                    </div>
+
+                    <!-- CARNE -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-red-800 border-b pb-1 mb-2">🥩 CARNE</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Cochino"> Cochino</label>
+                            <label><input type="checkbox" value="Pavo"> Pavo</label>
+                            <label><input type="checkbox" value="Pescado"> Pescado</label>
+                            <label><input type="checkbox" value="Pollo"> Pollo</label>
+                            <label><input type="checkbox" value="Res"> Res</label>
+                        </div>
+                    </div>
+
+                    <!-- BEBIDAS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-teal-700 border-b pb-1 mb-2">🥤 BEBIDAS</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Agua gasificada"> Agua gasificada</label>
+                            <label><input type="checkbox" value="Agua mineral"> Agua mineral</label>
+                            <label><input type="checkbox" value="Aguakina"> Aguakina</label>
+                            <label><input type="checkbox" value="Bebidas achocolatadas"> Bebidas achocolatadas</label>
+                            <label><input type="checkbox" value="Bebidas hidratantes"> Bebidas hidratantes</label>
+                            <label><input type="checkbox" value="Bebidas instantáneas"> Bebidas instantáneas</label>
+                            <label><input type="checkbox" value="Cerveza"> Cerveza</label>
+                            <label><input type="checkbox" value="Jugo"> Jugo</label>
+                            <label><input type="checkbox" value="Malta"> Malta</label>
+                            <label><input type="checkbox" value="Refresco"> Refresco</label>
+                            <label><input type="checkbox" value="Ron"> Ron</label>
+                            <label><input type="checkbox" value="Soda"> Soda</label>
+                            <label><input type="checkbox" value="Té"> Té</label>
+                            <label><input type="checkbox" value="Vino"> Vino</label>
+                        </div>
+                    </div>
+
+                    <!-- HIGIENE -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-indigo-700 border-b pb-1 mb-2">🧴 HIGIENE</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Acondicionador"> Acondicionador</label>
+                            <label><input type="checkbox" value="Afeitadora"> Afeitadora</label>
+                            <label><input type="checkbox" value="Algodón"> Algodón</label>
+                            <label><input type="checkbox" value="Cepillo dental"> Cepillo dental</label>
+                            <label><input type="checkbox" value="Champú"> Champú</label>
+                            <label><input type="checkbox" value="Crema corporal"> Crema corporal</label>
+                            <label><input type="checkbox" value="Crema dental"> Crema dental</label>
+                            <label><input type="checkbox" value="Desodorante"> Desodorante</label>
+                            <label><input type="checkbox" value="Enjuague bucal"> Enjuague bucal</label>
+                            <label><input type="checkbox" value="Hilo dental"> Hilo dental</label>
+                            <label><input type="checkbox" value="Jabón"> Jabón</label>
+                            <label><input type="checkbox" value="Pañales"> Pañales</label>
+                            <label><input type="checkbox" value="Toallas sanitarias"> Toallas sanitarias</label>
+                            <label><input type="checkbox" value="Toallitas húmedas"> Toallitas húmedas</label>
+                        </div>
+                    </div>
+
+                    <!-- LIMPIEZA -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-cyan-700 border-b pb-1 mb-2">🧹 LIMPIEZA</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Apresto"> Apresto</label>
+                            <label><input type="checkbox" value="Cloro"> Cloro</label>
+                            <label><input type="checkbox" value="Desengrasante de cocina"> Desengrasante de cocina</label>
+                            <label><input type="checkbox" value="Desinfectante"> Desinfectante</label>
+                            <label><input type="checkbox" value="Esponja"> Esponja</label>
+                            <label><input type="checkbox" value="Insecticida"> Insecticida</label>
+                            <label><input type="checkbox" value="Jabón de lavaplatos"> Jabón de lavaplatos</label>
+                            <label><input type="checkbox" value="Jabón de ropa"> Jabón de ropa</label>
+                            <label><input type="checkbox" value="Jabón en panela"> Jabón en panela</label>
+                            <label><input type="checkbox" value="Limpia pocetas"> Limpia pocetas</label>
+                            <label><input type="checkbox" value="Limpia vidrios"> Limpia vidrios</label>
+                            <label><input type="checkbox" value="Pañito"> Pañito</label>
+                            <label><input type="checkbox" value="Suavizante"> Suavizante</label>
+                        </div>
+                    </div>
+
+                    <!-- PLÁSTICOS Y PAPELES -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-gray-700 border-b pb-1 mb-2">🧻 PLÁSTICOS Y PAPELES</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Bolsas para basura"> Bolsas para basura</label>
+                            <label><input type="checkbox" value="Bolsitas sellables"> Bolsitas sellables</label>
+                            <label><input type="checkbox" value="Cubiertos"> Cubiertos</label>
+                            <label><input type="checkbox" value="Papel absorbente"> Papel absorbente</label>
+                            <label><input type="checkbox" value="Papel de aluminio"> Papel de aluminio</label>
+                            <label><input type="checkbox" value="Papel de plástico"> Papel de plástico</label>
+                            <label><input type="checkbox" value="Papel encerado"> Papel encerado</label>
+                            <label><input type="checkbox" value="Papel higiénico"> Papel higiénico</label>
+                            <label><input type="checkbox" value="Platos"> Platos</label>
+                            <label><input type="checkbox" value="Servilletas"> Servilletas</label>
+                            <label><input type="checkbox" value="Vasos"> Vasos</label>
+                        </div>
+                    </div>
+
+                    <!-- OTROS -->
+                    <div class="bg-gray-50 p-3 rounded-xl border">
+                        <h3 class="font-bold text-emerald-700 border-b pb-1 mb-2">🐾 OTROS</h3>
+                        <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
+                            <label><input type="checkbox" value="Comida para mascota"> Comida para mascota</label>
+                        </div>
+                    </div>
+
                 </div>
 
                 <button onclick="convertListToExpense()" class="w-full bg-sage-500 text-white font-bold py-2.5 rounded-xl text-xs shadow-md hover:bg-sage-600">
@@ -265,7 +568,7 @@
                     <i data-lucide="clock" class="w-4 h-4 text-sage-600"></i> Estado de Inventario y Estimación de Agotamiento
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs" id="inventoryStatusContainer">
-                    <div class="p-3 bg-gray-50 rounded-xl border"><span class="text-gray-400">Sin datos de compras anteriores para estimar.</span></div>
+                    <div class="p-3 bg-gray-50 rounded-xl border col-span-3 text-gray-400">Sin datos de compras anteriores para estimar.</div>
                 </div>
             </section>
         </div>
@@ -348,12 +651,12 @@
                         <input type="file" id="txImage" accept="image/*" class="w-full text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:bg-sage-50 file:text-sage-700">
                     </div>
 
-                    <button type="submit" class="w-full bg-sage-500 text-white font-bold py-2 rounded-xl shadow-md">Guardar Registro</button>
+                    <button type="submit" class="w-full bg-sage-500 text-white font-bold py-2 rounded-xl shadow-md">Guardar Registro en la Nube</button>
                 </form>
             </div>
 
             <div class="bg-white p-5 rounded-2xl border shadow-sm lg:col-span-2 text-xs">
-                <h2 class="font-bold text-slateWarm-700 border-b pb-2 mb-3 text-sm">Historial de Movimientos</h2>
+                <h2 class="font-bold text-slateWarm-700 border-b pb-2 mb-3 text-sm">Historial de Movimientos (En Vivo)</h2>
                 <div class="overflow-x-auto max-h-[380px]">
                     <table class="w-full text-left">
                         <thead class="bg-gray-50 uppercase text-gray-400 font-semibold">
@@ -375,7 +678,6 @@
         <!-- MÓDULO 5: ANALYTICS, GRÁFICAS DE BARRAS, DONA Y CALENDARIO -->
         <div id="module-analytics" class="hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- GRÁFICA DONA -->
                 <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
                     <h3 class="font-bold text-slateWarm-700 text-xs uppercase tracking-wider">Distribución de Finanzas</h3>
                     <div class="relative h-56">
@@ -383,7 +685,6 @@
                     </div>
                 </div>
 
-                <!-- GRÁFICA BARRAS -->
                 <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
                     <h3 class="font-bold text-slateWarm-700 text-xs uppercase tracking-wider">Comparativa Ingresos vs Gastos</h3>
                     <div class="relative h-56">
@@ -392,7 +693,6 @@
                 </div>
             </div>
 
-            <!-- CALENDARIO DE PAGOS -->
             <section class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
                 <h3 class="font-bold text-slateWarm-700 text-xs uppercase tracking-wider flex items-center gap-2">
                     <i data-lucide="calendar" class="w-4 h-4 text-sage-600"></i> Calendario de Vencimientos y Pagos
@@ -429,20 +729,59 @@
         </div>
     </nav>
 
-    <!-- LÓGICA COMPLETA -->
+    <!-- LÓGICA DE FIREBASE Y APLICACIÓN -->
     <script>
+        // CONFIGURACIÓN DE FIREBASE DIRECTA A MITAYMITA
+        const firebaseConfig = {
+            apiKey: "AIzaSyCYZdXsYvkXuefBx2a8EFLWsY6NvW1-n1s",
+            authDomain: "mitaymita-82e32.firebaseapp.com",
+            projectId: "mitaymita-82e32",
+            storageBucket: "mitaymita-82e32.firebasestorage.app",
+            messagingSenderId: "97179805247",
+            appId: "1:97179805247:web:602f37e8713f8404287a8a"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         let user1Name = 'Danil';
         let user2Name = 'Ogglys';
         let activeUser = 'Danil';
         let currentTxType = 'expense';
 
-        let transactions = JSON.parse(localStorage.getItem('mr_txs') || '[]');
-        let credits = JSON.parse(localStorage.getItem('mr_credits') || '[]');
+        let transactions = [];
+        let credits = [];
         let chartDoughnutInstance = null;
         let chartBarInstance = null;
 
+        // ESCUCHA EN TIEMPO REAL DESDE FIRESTORE
+        function initRealtimeListeners() {
+            db.collection("transactions").orderBy("id", "desc").onSnapshot(snapshot => {
+                transactions = [];
+                snapshot.forEach(doc => {
+                    transactions.push({ docId: doc.id, ...doc.data() });
+                });
+                updateCalculations();
+            });
+
+            db.collection("credits").onSnapshot(snapshot => {
+                credits = [];
+                snapshot.forEach(doc => {
+                    credits.push({ docId: doc.id, ...doc.data() });
+                });
+                renderCredits();
+            });
+        }
+
         function toggleLogoMenu() {
             document.getElementById('logoMenu').classList.toggle('hidden');
+        }
+
+        function handleLogout() {
+            if (confirm('¿Deseas cerrar sesión?')) {
+                localStorage.removeItem('myroomie_token');
+                window.location.href = '/index.html';
+            }
         }
 
         function showModule(mod) {
@@ -514,7 +853,7 @@
                 const dates = itemsMap[item].sort((a,b) => b - a);
                 const lastDate = dates[0];
                 const daysDiff = Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24));
-                const estDays = 15; // Estimación base
+                const estDays = 15;
                 const remaining = estDays - daysDiff;
 
                 let statusBadge = `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold">🟢 Abastecido</span>`;
@@ -538,7 +877,7 @@
             container.innerHTML = html;
         }
 
-        // CRÉDITOS Y PAGO SEGÚN BALANCE
+        // CRÉDITOS FIRESTORE
         function handleCreditSubmit(e) {
             e.preventDefault();
             const origin = document.getElementById('creditOrigin').value;
@@ -547,7 +886,7 @@
             const freq = document.getElementById('creditFrequency').value;
             const startDate = document.getElementById('creditStartDate').value;
 
-            credits.push({
+            const creditData = {
                 id: Date.now(),
                 origin,
                 amount,
@@ -556,25 +895,22 @@
                 paidAmount: 0,
                 freq,
                 startDate
-            });
+            };
 
-            saveLocalData();
-            renderCredits();
-            showToast("Plan de crédito creado");
-            e.target.reset();
+            db.collection("credits").add(creditData).then(() => {
+                showToast("Plan de crédito guardado en la nube");
+                e.target.reset();
+            });
         }
 
-        function addCreditAbono(id) {
+        function addCreditAbono(docId, currentPaid, totalAmount) {
             const amount = parseFloat(prompt('Monto del Abono ($):'));
             if (!amount || isNaN(amount)) return;
 
-            const c = credits.find(item => item.id === id);
-            if (c) {
-                c.paidAmount = Math.min(c.amount, c.paidAmount + amount);
-                saveLocalData();
-                renderCredits();
+            const newPaid = Math.min(totalAmount, currentPaid + amount);
+            db.collection("credits").doc(docId).update({ paidAmount: newPaid }).then(() => {
                 showToast(`Abono registrado: $${amount.toFixed(2)}`);
-            }
+            });
         }
 
         function renderCredits() {
@@ -607,7 +943,7 @@
                         </div>
                         <div class="flex justify-between items-center text-[11px] text-gray-500">
                             <span>Cuota: <b>$${c.installmentAmount.toFixed(2)}</b> | Pagado: $${c.paidAmount.toFixed(2)} (${pct.toFixed(0)}%)</span>
-                            <button onclick="addCreditAbono(${c.id})" class="text-sage-700 font-bold underline">+ Abono</button>
+                            <button onclick="addCreditAbono('${c.docId}', ${c.paidAmount}, ${c.amount})" class="text-sage-700 font-bold underline">+ Abono</button>
                         </div>
                         <div class="p-2 rounded-lg text-[10px] ${canPayInFull ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'} font-semibold">
                             💡 Sugerencia según Balance ($${availableBalance.toFixed(2)} disponible): 
@@ -618,7 +954,7 @@
             }).join('');
         }
 
-        // CÁLCULOS Y TABLA
+        // CÁLCULOS Y MOVIMIENTOS FIRESTORE
         function setTxType(type) {
             currentTxType = type;
             document.getElementById('btnTypeExpense').className = type === 'expense' ? 'py-2 font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert' : 'py-2 font-bold rounded-xl border border-gray-200 text-gray-500';
@@ -641,7 +977,7 @@
             if (currency === 'BS') amountUSD = rawAmount / rate;
 
             const save = (imgData = null) => {
-                transactions.unshift({
+                const newTx = {
                     id: Date.now(),
                     user: activeUser,
                     type: currentTxType,
@@ -652,13 +988,13 @@
                     amountUSD,
                     date,
                     img: imgData
-                });
+                };
 
-                saveLocalData();
-                updateCalculations();
-                showToast("Movimiento registrado");
-                document.getElementById('txForm').reset();
-                document.getElementById('txDate').valueAsDate = new Date();
+                db.collection("transactions").add(newTx).then(() => {
+                    showToast("Movimiento sincronizado en la nube");
+                    document.getElementById('txForm').reset();
+                    document.getElementById('txDate').valueAsDate = new Date();
+                });
             };
 
             if (fileInput.files[0]) {
@@ -734,7 +1070,7 @@
                     <td class="p-2 font-semibold text-slateWarm-600">${t.currency} ${t.rawAmount.toFixed(2)}</td>
                     <td class="p-2 font-bold ${t.type === 'income' ? 'text-sage-600' : 'text-coralAlert'}">${t.type === 'income' ? '+' : '-'}$${t.amountUSD.toFixed(2)}</td>
                     <td class="p-2 text-center">${t.img ? `<button onclick="openModal('${t.img}', '${t.desc}')" class="text-slateWarm-600 underline font-semibold">Ver</button>` : '-'}</td>
-                    <td class="p-2 text-right"><button onclick="deleteTx(${t.id})" class="text-red-400 font-bold">✕</button></td>
+                    <td class="p-2 text-right"><button onclick="deleteTx('${t.docId}')" class="text-red-400 font-bold">✕</button></td>
                 </tr>
             `).join('');
             lucide.createIcons();
@@ -819,15 +1155,10 @@
             cal.innerHTML = daysHtml;
         }
 
-        function deleteTx(id) {
-            transactions = transactions.filter(t => t.id !== id);
-            saveLocalData();
-            updateCalculations();
-        }
-
-        function saveLocalData() {
-            localStorage.setItem('mr_txs', JSON.stringify(transactions));
-            localStorage.setItem('mr_credits', JSON.stringify(credits));
+        function deleteTx(docId) {
+            db.collection("transactions").doc(docId).delete().then(() => {
+                showToast("Registro eliminado de la nube");
+            });
         }
 
         function showToast(msg) {
@@ -850,9 +1181,9 @@
         }
 
         window.onload = () => {
-            updateCalculations();
             document.getElementById('txDate').valueAsDate = new Date();
             document.getElementById('creditStartDate').valueAsDate = new Date();
+            initRealtimeListeners();
             lucide.createIcons();
         };
     </script>
