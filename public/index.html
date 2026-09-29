@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mita&Mita - Finanzas para Parejas</title>
+    <title>My Roomie - Finanzas para Parejas</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#7EA172">
     <!-- Tailwind CSS CDN -->
@@ -13,7 +13,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- FIREBASE SDKs (v9 Compat) -->
+    <!-- FIREBASE SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -65,7 +65,7 @@
                     <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
                 </button>
                 <div class="flex flex-col justify-center leading-tight">
-                    <h1 class="font-bold text-base text-slateWarm-700">Mita&Mita</h1>
+                    <h1 class="font-bold text-base text-slateWarm-700">My Roomie</h1>
                     <span class="text-[11px] text-gray-400 font-medium" id="headerPairName">Danil & Ogglys</span>
                 </div>
 
@@ -84,7 +84,7 @@
             <div class="flex items-center gap-2">
                 <div class="flex items-center gap-1 bg-slateWarm-50 border border-slateWarm-100 px-2 py-1 rounded-xl text-xs font-medium text-slateWarm-600">
                     <i data-lucide="dollar-sign" class="w-3.5 h-3.5 text-sage-600"></i>
-                    <input type="number" id="exchangeRate" value="855.66" step="0.5" class="w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
+                    <input type="number" id="exchangeRate" value="857.00" step="0.5" class="w-16 bg-white border border-gray-300 rounded px-1 text-center font-bold text-slateWarm-700 focus:outline-none focus:border-sage-500" onchange="updateCalculations()">
                     <span class="text-gray-400 text-[10px]">Bs/$</span>
                 </div>
 
@@ -107,16 +107,16 @@
             <section class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b pb-3">
                     <h2 class="font-bold text-slateWarm-700 text-sm flex items-center gap-2">
-                        <i data-lucide="calculator" class="w-4 h-4 text-sage-600"></i> Aporte Proporcional según Ingresos (Modelo Excel)
+                        <i data-lucide="calculator" class="w-4 h-4 text-sage-600"></i> Aporte Proporcional según Ingresos
                     </h2>
-                    <span class="text-[10px] bg-sage-50 text-sage-700 px-2 py-0.5 rounded-lg font-semibold">Sincronizado en la Nube</span>
+                    <span class="text-[10px] bg-sage-50 text-sage-700 px-2 py-0.5 rounded-lg font-semibold">Sincronizado en Vivo</span>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div class="p-3.5 bg-slateWarm-50 rounded-2xl border">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-slateWarm-700">Danil</span>
-                            <span class="text-xs font-bold text-sage-600" id="propUser1Pct">36.8%</span>
+                            <span class="text-xs font-bold text-sage-600" id="propUser1Pct">50.0%</span>
                         </div>
                         <p class="text-lg font-bold text-slateWarm-700" id="propUser1Income">$0.00</p>
                         <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser1Share">$0.00</span></p>
@@ -125,7 +125,7 @@
                     <div class="p-3.5 bg-slateWarm-50 rounded-2xl border">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-slateWarm-700">Ogglys</span>
-                            <span class="text-xs font-bold text-sage-600" id="propUser2Pct">63.2%</span>
+                            <span class="text-xs font-bold text-sage-600" id="propUser2Pct">50.0%</span>
                         </div>
                         <p class="text-lg font-bold text-slateWarm-700" id="propUser2Income">$0.00</p>
                         <p class="text-[11px] text-gray-500 mt-1">Aporte estimado en gastos: <span class="font-bold text-slateWarm-700" id="propUser2Share">$0.00</span></p>
@@ -169,7 +169,7 @@
             </div>
         </div>
 
-        <!-- MÓDULO 2: MERCADO INTELIGENTE Y PREDICCIÓN (SUPER PLANNER COMPLETO) -->
+        <!-- MÓDULO 2: MERCADO INTELIGENTE (SUPER PLANNER COMPLETO) -->
         <div id="module-market" class="hidden space-y-6">
             <section class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b pb-3">
@@ -181,7 +181,6 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 text-xs">
                     
-                    <!-- VERDURAS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-sage-700 border-b pb-1 mb-2">🥬 VERDURAS</h3>
                         <div class="grid grid-cols-2 gap-1 max-h-52 overflow-y-auto">
@@ -224,7 +223,6 @@
                         </div>
                     </div>
 
-                    <!-- FRUTAS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-coralAlert border-b pb-1 mb-2">🍎 FRUTAS</h3>
                         <div class="grid grid-cols-2 gap-1 max-h-52 overflow-y-auto">
@@ -251,7 +249,6 @@
                         </div>
                     </div>
 
-                    <!-- ENLATADOS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-amber-700 border-b pb-1 mb-2">🥫 ENLATADOS</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -266,7 +263,6 @@
                         </div>
                     </div>
 
-                    <!-- LÁCTEOS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-slateWarm-600 border-b pb-1 mb-2">🥛 LÁCTEOS</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -282,7 +278,6 @@
                         </div>
                     </div>
 
-                    <!-- VARIOS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-amber-800 border-b pb-1 mb-2">📦 VARIOS</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -316,7 +311,6 @@
                         </div>
                     </div>
 
-                    <!-- GRANOS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-amber-900 border-b pb-1 mb-2">🌾 GRANOS</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -331,7 +325,6 @@
                         </div>
                     </div>
 
-                    <!-- SNACKS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-purple-700 border-b pb-1 mb-2">🍿 SNACKS</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -346,7 +339,6 @@
                         </div>
                     </div>
 
-                    <!-- SALSAS Y UNTABLES -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-red-700 border-b pb-1 mb-2">🥫 SALSAS Y UNTABLES</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -366,7 +358,6 @@
                         </div>
                     </div>
 
-                    <!-- PANES -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-amber-600 border-b pb-1 mb-2">🍞 PANES</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -383,7 +374,6 @@
                         </div>
                     </div>
 
-                    <!-- DULCES -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-pink-600 border-b pb-1 mb-2">🍫 DULCES</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -399,7 +389,6 @@
                         </div>
                     </div>
 
-                    <!-- CONGELADOS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-blue-600 border-b pb-1 mb-2">❄️ CONGELADOS</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -418,7 +407,6 @@
                         </div>
                     </div>
 
-                    <!-- CONDIMENTOS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-orange-700 border-b pb-1 mb-2">🧂 CONDIMENTOS</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -436,7 +424,6 @@
                         </div>
                     </div>
 
-                    <!-- CHARCUTERÍA -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-slateWarm-700 border-b pb-1 mb-2">🥓 CHARCUTERÍA</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -455,7 +442,6 @@
                         </div>
                     </div>
 
-                    <!-- CARNE -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-red-800 border-b pb-1 mb-2">🥩 CARNE</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -467,7 +453,6 @@
                         </div>
                     </div>
 
-                    <!-- BEBIDAS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-teal-700 border-b pb-1 mb-2">🥤 BEBIDAS</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -488,7 +473,6 @@
                         </div>
                     </div>
 
-                    <!-- HIGIENE -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-indigo-700 border-b pb-1 mb-2">🧴 HIGIENE</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -509,7 +493,6 @@
                         </div>
                     </div>
 
-                    <!-- LIMPIEZA -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-cyan-700 border-b pb-1 mb-2">🧹 LIMPIEZA</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -529,7 +512,6 @@
                         </div>
                     </div>
 
-                    <!-- PLÁSTICOS Y PAPELES -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-gray-700 border-b pb-1 mb-2">🧻 PLÁSTICOS Y PAPELES</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -547,7 +529,6 @@
                         </div>
                     </div>
 
-                    <!-- OTROS -->
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <h3 class="font-bold text-emerald-700 border-b pb-1 mb-2">🐾 OTROS</h3>
                         <div class="grid grid-cols-1 gap-1 max-h-52 overflow-y-auto">
@@ -562,7 +543,6 @@
                 </button>
             </section>
 
-            <!-- CONTROL PREDICTIVO DE REABASTECIMIENTO -->
             <section class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
                 <h3 class="font-bold text-slateWarm-700 text-xs uppercase tracking-wider flex items-center gap-2">
                     <i data-lucide="clock" class="w-4 h-4 text-sage-600"></i> Estado de Inventario y Estimación de Agotamiento
@@ -731,7 +711,6 @@
 
     <!-- LÓGICA DE FIREBASE Y APLICACIÓN -->
     <script>
-        // CONFIGURACIÓN DE FIREBASE DIRECTA A MITAYMITA
         const firebaseConfig = {
             apiKey: "AIzaSyCYZdXsYvkXuefBx2a8EFLWsY6NvW1-n1s",
             authDomain: "mitaymita-82e32.firebaseapp.com",
@@ -754,7 +733,6 @@
         let chartDoughnutInstance = null;
         let chartBarInstance = null;
 
-        // ESCUCHA EN TIEMPO REAL DESDE FIRESTORE
         function initRealtimeListeners() {
             db.collection("transactions").orderBy("id", "desc").onSnapshot(snapshot => {
                 transactions = [];
@@ -808,7 +786,6 @@
             document.getElementById('btnUser2').className = user === user2Name ? "px-2 py-1 rounded-lg bg-white text-slateWarm-700 shadow-sm font-bold" : "px-2 py-1 rounded-lg text-gray-500 font-bold";
         }
 
-        // MERCADO Y REABASTECIMIENTO
         function clearShoppingList() {
             document.querySelectorAll('#module-market input[type="checkbox"]').forEach(cb => cb.checked = false);
         }
@@ -877,7 +854,6 @@
             container.innerHTML = html;
         }
 
-        // CRÉDITOS FIRESTORE
         function handleCreditSubmit(e) {
             e.preventDefault();
             const origin = document.getElementById('creditOrigin').value;
@@ -954,7 +930,6 @@
             }).join('');
         }
 
-        // CÁLCULOS Y MOVIMIENTOS FIRESTORE
         function setTxType(type) {
             currentTxType = type;
             document.getElementById('btnTypeExpense').className = type === 'expense' ? 'py-2 font-bold rounded-xl border bg-coralSoft text-coralAlert border-coralAlert' : 'py-2 font-bold rounded-xl border border-gray-200 text-gray-500';
@@ -966,7 +941,7 @@
             const desc = document.getElementById('txDesc').value.trim();
             const rawAmount = parseFloat(document.getElementById('txAmount').value);
             const currency = document.getElementById('txCurrency').value;
-            const rate = parseFloat(document.getElementById('exchangeRate').value) || 855.66;
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 857.00;
             const date = document.getElementById('txDate').value;
             const scope = document.getElementById('txScope').value;
             const fileInput = document.getElementById('txImage');
@@ -1007,7 +982,7 @@
         }
 
         function updateCalculations() {
-            const rate = parseFloat(document.getElementById('exchangeRate').value) || 855.66;
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 857.00;
 
             let totalIncome = 0;
             let totalExpenses = 0;
@@ -1028,8 +1003,8 @@
             });
 
             const totPairInc = u1Inc + u2Inc;
-            const u1Pct = totPairInc > 0 ? (u1Inc / totPairInc) * 100 : 36.8;
-            const u2Pct = totPairInc > 0 ? (u2Inc / totPairInc) * 100 : 63.2;
+            const u1Pct = totPairInc > 0 ? (u1Inc / totPairInc) * 100 : 50.0;
+            const u2Pct = totPairInc > 0 ? (u2Inc / totPairInc) * 100 : 50.0;
 
             document.getElementById('propUser1Pct').innerText = `${u1Pct.toFixed(1)}%`;
             document.getElementById('propUser1Income').innerText = `$${u1Inc.toFixed(2)}`;
@@ -1076,7 +1051,6 @@
             lucide.createIcons();
         }
 
-        // GRÁFICAS Y CALENDARIO
         function renderChartsAndCalendar() {
             renderDoughnutChart();
             renderBarChart();
